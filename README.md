@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kurs platformasi (GetCourse analogi)
 
-## Getting Started
+Next.js 15 + Prisma + Tailwind. Bitta ekspert uchun onlayn kurslar platformasi.
 
-First, run the development server:
+## Ishga tushirish
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env      # AUTH_SECRET ni to'ldiring
+npm run db:push           # bazani yaratish
+npm run db:seed           # admin + demo kurs
+npm run dev               # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Admin: `+998 90 123 45 67` / `admin123` (serverga chiqarishdan oldin albatta o'zgartiring).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tuzilma
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Yo'l | Nima |
+|---|---|
+| `/` , `/courses/[slug]` | Kurslar ro'yxati va sotuv sahifasi (UTM saqlanadi) |
+| `/checkout/...` | Buyurtma va to'lov |
+| `/cabinet` | O'quvchi kabineti: kurslar, darslar, progress |
+| `/admin` | Dashboard, kurslar, tariflar, darslar, buyurtmalar, o'quvchilar |
 
-## Learn More
+- `prisma/schema.prisma` — ma'lumotlar modeli
+- `src/lib/access.ts` — darsga kirish qoidalari va `fulfillOrder` (to'lovdan keyin kirish ochish)
+- `src/lib/actions/*` — server action'lar
 
-To learn more about Next.js, take a look at the following resources:
+## Kirish qoidalari
+- Har bir tarifda **daraja** bor (Standart = 1, VIP = 2 ...). Darsda "minimal daraja" belgilanadi.
+- Darsga **ochilish vaqti** qo'yish mumkin (zapusk uchun) — shu vaqtgacha yopiq turadi.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Prod
+`prisma/schema.prisma` da `provider = "postgresql"` qilib, `DATABASE_URL` ni PostgreSQL'ga almashtiring. `PAYMENT_TEST_MODE` ni o'chiring.

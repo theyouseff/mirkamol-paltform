@@ -1,0 +1,27 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const links = [
+  { href: "/admin", label: "📊 Dashboard" },
+  { href: "/admin/courses", label: "📚 Kurslar" },
+  { href: "/admin/orders", label: "🧾 Buyurtmalar" },
+  { href: "/admin/students", label: "👥 O'quvchilar" },
+];
+
+export function AdminNav() {
+  const path = usePathname();
+  return (
+    <nav className="flex gap-1 overflow-x-auto lg:flex-col">
+      {links.map((l) => {
+        const active = l.href === "/admin" ? path === "/admin" : path.startsWith(l.href);
+        return (
+          <Link key={l.href} href={l.href} className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm ${active ? "bg-brand-soft font-medium text-brand" : "text-zinc-600 hover:bg-zinc-100"}`}>
+            {l.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}

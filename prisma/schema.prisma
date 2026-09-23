@@ -1,0 +1,115 @@
+// Ishlab chiqishda SQLite, prod'da PostgreSQL: provider'ni "postgresql" ga almashtirish kifoya.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  phone        String   @unique
+  name         String
+  passwordHash String
+  role         String   @default("STUDENT") // ADMIN | CURATOR | STUDENT
+  createdAt    DateTime @default(now())
+
+  enrollments Enrollment[]
+  orders      Order[]
+  progress    LessonProgress[]
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  subtitle    String   @default("")
+  description String   @default("")
+  coverUrl    String   @default("")
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  tariffs     Tariff[]
+  modules     Module[]
+  enrollments Enrollment[]
+}
+
+// Tarif darajasi (level) yuqori bo'lsa, ko'proq dars ochiladi.
+model Tariff {
+  id          String  @id @default(cuid())
+  courseId    String
+  name        String
+  price       Int // so'mda
+  oldPrice    Int? // chizilgan eski narx
+  level       Int     @default(1)
+  features    String  @default("") // har bir qator — alohida punkt
+  active      Boolean @default(true)
+  course      Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  orders      Order[]
+  enrollments Enrollment[]
+}
+
+model Module {
+  id       String   @id @default(cuid())
+  courseId String
+  title    String
+  order    Int      @default(0)
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons  Lesson[]
+}
+
+model Lesson {
+  id       String    @id @default(cuid())
+  moduleId String
+  title    String
+  content  String    @default("")
+  videoUrl String    @default("")
+  order    Int       @default(0)
+  minLevel Int       @default(1) // shu darajadagi va undan yuqori tariflar ko'radi
+  openAt   DateTime? // zapusk uchun: shu sanagacha yopiq
+  module   Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  progress LessonProgress[]
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  tariffId  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tariff    Tariff   @relation(fields: [tariffId], references: [id])
+
+  @@unique([userId, courseId])
+}
+
+model Order {
+  id          String    @id @default(cuid())
+  number      Int       @unique // Payme/Click uchun qisqa raqam
+  userId      String
+  tariffId    String
+  amount      Int
+  status      String    @default("PENDING") // PENDING | PAID | CANCELED
+  provider    String    @default("") // payme | click | manual | test
+  utmSource   String    @default("")
+  utmCampaign String    @default("")
+  createdAt   DateTime  @default(now())
+  paidAt      DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tariff      Tariff    @relation(fields: [tariffId], references: [id])
+}
+
+model LessonProgress {
+  userId      String
+  lessonId    String
+  completedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@id([userId, lessonId])
+}
