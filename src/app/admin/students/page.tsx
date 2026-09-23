@@ -13,7 +13,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
   const { q = "" } = await searchParams;
   const digits = q.replace(/\D/g, "");
   const where: Prisma.UserWhereInput = q
-    ? { OR: [{ name: { contains: q } }, ...(digits ? [{ phone: { contains: digits } }] : [])] }
+    ? { OR: [{ name: { contains: q, mode: "insensitive" } }, ...(digits ? [{ phone: { contains: digits } }] : [])] }
     : {};
 
   const [users, tariffs] = await Promise.all([

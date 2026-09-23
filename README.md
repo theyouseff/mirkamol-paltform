@@ -6,7 +6,7 @@ Next.js 15 + Prisma + Tailwind. Bitta ekspert uchun onlayn kurslar platformasi.
 
 ```bash
 npm install
-cp .env.example .env      # AUTH_SECRET ni to'ldiring
+cp .env.example .env      # DATABASE_URL, AUTH_SECRET ni to'ldiring
 npm run db:push           # bazani yaratish
 npm run db:seed           # admin + demo kurs
 npm run dev               # http://localhost:3000
@@ -31,5 +31,10 @@ Admin: `+998 90 123 45 67` / `admin123` (serverga chiqarishdan oldin albatta o'z
 - Har bir tarifda **daraja** bor (Standart = 1, VIP = 2 ...). Darsda "minimal daraja" belgilanadi.
 - Darsga **ochilish vaqti** qo'yish mumkin (zapusk uchun) — shu vaqtgacha yopiq turadi.
 
-## Prod
-`prisma/schema.prisma` da `provider = "postgresql"` qilib, `DATABASE_URL` ni PostgreSQL'ga almashtiring. `PAYMENT_TEST_MODE` ni o'chiring.
+## Baza va deploy (Vercel + Neon)
+Baza — PostgreSQL (Neon). SQLite Vercel'da ishlamaydi.
+
+1. Vercel → loyiha → **Storage** → **Create Database** → **Neon** → loyihaga ulang (`DATABASE_URL`, `DATABASE_URL_UNPOOLED` avtomatik qo'shiladi).
+2. Vercel → **Settings → Environment Variables**: `AUTH_SECRET` (`openssl rand -hex 32`), `PAYMENT_TEST_MODE=true`.
+3. Lokal `.env` ga ham shu `DATABASE_URL` va `DATABASE_URL_UNPOOLED` ni yozing, keyin: `npm run db:push && npm run db:seed`.
+4. Vercel'da **Redeploy**.

@@ -17,7 +17,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const { status = "", q = "" } = await searchParams;
   const where: Prisma.OrderWhereInput = {
     ...(status && { status }),
-    ...(q && { OR: [{ user: { name: { contains: q } } }, { user: { phone: { contains: q.replace(/\D/g, "") || q } } }] }),
+    ...(q && { OR: [{ user: { name: { contains: q, mode: "insensitive" } } }, { user: { phone: { contains: q.replace(/\D/g, "") || q } } }] }),
   };
   const orders = await prisma.order.findMany({
     where,

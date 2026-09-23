@@ -1,11 +1,11 @@
-// Ishlab chiqishda SQLite, prod'da PostgreSQL: provider'ni "postgresql" ga almashtirish kifoya.
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled ulanish (ilova uchun)
+  directUrl = env("DATABASE_URL_UNPOOLED") // to'g'ridan-to'g'ri ulanish (db push / migratsiya uchun)
 }
 
 model User {
