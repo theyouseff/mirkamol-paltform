@@ -119,3 +119,19 @@ body {
 @media (min-aspect-ratio: 1/1) {
   .auth-bg { background-image: url(/auth-bg-wide.webp); }
 }
+
+/* Sahifa almashganda yangi kontent yumshoq paydo bo'ladi (server javobi kelganda) */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+main > *,
+main > .contents > *,
+.page-in {
+  animation: page-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main > *, main > .contents > *, .page-in { animation: none; }
+}
