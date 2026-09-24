@@ -34,16 +34,25 @@ export async function sendMail(to: string, subject: string, text: string, html: 
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
-// Yangi o'quvchi: bir martalik havola. Parolni o'quvchining o'zi o'rnatadi — admin parol ko'rmaydi.
-export function sendActivation(to: string, name: string, courseTitle: string, link: string) {
+const codeBox = (code: string) =>
+  `<div style="background:#f4f4f8;border-radius:10px;padding:16px;text-align:center;margin:16px 0"><span style="font-family:monospace;font-size:28px;letter-spacing:4px;font-weight:bold">${esc(code)}</span></div>`;
+
+// Yangi o'quvchi: bir martalik kod. Saytda email + kod kiritilib, parolni o'quvchining o'zi o'rnatadi.
+export function sendActivation(to: string, name: string, courseTitle: string, code: string) {
+  const site = SITE_URL.replace(/^https?:\/\//, "");
   const subject = `Kursingiz ochildi: ${courseTitle}`;
-  const text = `Salom, ${name}!\n\n«${courseTitle}» kursiga kirish ochildi.\n\nKirish uchun o'z parolingizni o'rnating (havola bir marta ishlaydi va 7 kun amal qiladi):\n${link}\n\nKeyingi safar ${SITE_URL} da shu email (${to}) va o'zingiz qo'ygan parol bilan kirasiz.`;
+  const text = `Salom, ${name}!\n\n«${courseTitle}» kursiga kirish ochildi.\n\nBir martalik kodingiz: ${code}\n\nKirish:\n1. ${site}/activate sahifasini oching\n2. Emailingiz (${to}) va shu kodni kiriting\n3. O'zingiz uchun parol o'ylab toping\n\nKod bir marta ishlaydi va 7 kun amal qiladi. Keyingi safar shu email va o'zingiz qo'ygan parol bilan kirasiz.`;
   const html = `<div style="font-family:Arial,sans-serif;max-width:480px;line-height:1.6">
 <p>Salom, <b>${esc(name)}</b>!</p>
 <p>«<b>${esc(courseTitle)}</b>» kursiga kirish ochildi.</p>
-<p>Kirish uchun o'z parolingizni o'rnating:</p>
-<p><a href="${esc(link)}" style="background:#334155;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block">Parol o'rnatish va kirish</a></p>
-<p style="color:#666;font-size:13px">Havola bir marta ishlaydi va 7 kun amal qiladi. Keyingi safar ${esc(SITE_URL)} da shu email (<b>${esc(to)}</b>) va o'zingiz qo'ygan parol bilan kirasiz.</p></div>`;
+<p>Bir martalik kodingiz:</p>
+${codeBox(code)}
+<p>Kirish uchun:</p>
+<ol style="padding-left:20px;margin:0">
+<li><b>${esc(site)}/activate</b> sahifasini oching</li>
+<li>Emailingiz (<b>${esc(to)}</b>) va shu kodni kiriting</li>
+<li>O'zingiz uchun parol o'ylab toping</li></ol>
+<p style="color:#666;font-size:13px">Kod bir marta ishlaydi va 7 kun amal qiladi. Keyingi safar shu email va o'zingiz qo'ygan parol bilan kirasiz.</p></div>`;
   return sendMail(to, subject, text, html);
 }
 
@@ -71,14 +80,16 @@ export function sendNewPassword(to: string, name: string, password: string) {
   return sendMail(to, subject, text, html);
 }
 
-// Parolni o'zi tiklash havolasi (1 soat amal qiladi)
-export function sendResetLink(to: string, name: string, link: string) {
-  const subject = "Parolni tiklash";
-  const text = `Salom, ${name}!\n\nParolni tiklash uchun havola (1 soat amal qiladi):\n${link}\n\nAgar bu so'rovni siz yubormagan bo'lsangiz, xatni e'tiborsiz qoldiring.`;
+// Parolni o'zi tiklash kodi (1 soat amal qiladi)
+export function sendResetCode(to: string, name: string, code: string) {
+  const site = SITE_URL.replace(/^https?:\/\//, "");
+  const subject = "Parolni tiklash kodi";
+  const text = `Salom, ${name}!\n\nParolni tiklash kodingiz: ${code}\n\n${site}/activate sahifasida emailingiz va shu kodni kiriting, keyin yangi parol o'ylab toping. Kod bir marta ishlaydi va 1 soat amal qiladi.\n\nAgar bu so'rovni siz yubormagan bo'lsangiz, xatni e'tiborsiz qoldiring.`;
   const html = `<div style="font-family:Arial,sans-serif;max-width:480px;line-height:1.6">
 <p>Salom, <b>${esc(name)}</b>!</p>
-<p>Parolni tiklash uchun tugmani bosing. Havola 1 soat amal qiladi.</p>
-<p><a href="${esc(link)}" style="background:#334155;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block">Yangi parol o'rnatish</a></p>
-<p style="color:#666;font-size:13px">Agar bu so'rovni siz yubormagan bo'lsangiz, xatni e'tiborsiz qoldiring.</p></div>`;
+<p>Parolni tiklash kodingiz:</p>
+${codeBox(code)}
+<p><b>${esc(site)}/activate</b> sahifasida emailingiz va shu kodni kiriting, keyin yangi parol o'ylab toping.</p>
+<p style="color:#666;font-size:13px">Kod bir marta ishlaydi va 1 soat amal qiladi. Agar bu so'rovni siz yubormagan bo'lsangiz, xatni e'tiborsiz qoldiring.</p></div>`;
   return sendMail(to, subject, text, html);
 }

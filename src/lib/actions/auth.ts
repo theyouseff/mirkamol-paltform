@@ -7,9 +7,9 @@ import { prisma } from "@/lib/db";
 import { createSession, destroySession } from "@/lib/auth";
 import { normalizeEmail } from "@/lib/format";
 import { clearAttempts, clientIp, isLimited, recordAttempt } from "@/lib/rate-limit";
-import { mailConfigured, sendResetLink, SITE_URL } from "@/lib/mail";
+import { mailConfigured, sendResetCode } from "@/lib/mail";
 import { MIN_PASSWORD } from "@/lib/constants";
-import { createResetToken, findValidReset, RESET_TTL_MS } from "@/lib/reset";
+import { createResetCode, RESET_TTL_MS, verifyResetCode } from "@/lib/reset";
 
 export type AuthState = { error?: string };
 
@@ -72,24 +72,37 @@ export async function requestPasswordReset(_: ResetRequestState, formData: FormD
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (user) {
-    const token = await createResetToken(user.id, RESET_TTL_MS);
+    const code = await createResetCode(user.id, RESET_TTL_MS);
     // Javobni kutdirmaymiz: xat tezligidan akkaunt bor-yo'qligi bilinib qolmasin
-    after(() => sendResetLink(user.email, user.name, `${SITE_URL}/reset/${token}`));
+    after(() => sendResetCode(user.email, user.name, code));
   }
   // Akkaunt bor-yo'qligidan qat'i nazar bir xil javob
   return { done: true };
 }
 
-export async function resetPassword(_: AuthState, formData: FormData): Promise<AuthState> {
-  const reset = await findValidReset(String(formData.get("token") ?? ""));
-  if (!reset) return { error: "Havola eskirgan yoki yaroqsiz. Yangisini so'rang." };
+// Emailga kelgan bir martalik kod bilan parol o'rnatish (yangi o'quvchi ham, parolini unutgan ham shu yerga keladi).
+export async function activateWithCode(_: AuthState, formData: FormData): Promise<AuthState> {
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
+  const code = String(formData.get("code") ?? "");
   const password = String(formData.get("password") ?? "");
+  if (!email) return { error: "Email noto'g'ri" };
   if (password.length < MIN_PASSWORD) return { error: `Parol kamida ${MIN_PASSWORD} ta belgidan iborat bo'lsin` };
 
-  const user = await prisma.user.update({ where: { id: reset.userId }, data: { passwordHash: await bcrypt.hash(password, 10) } });
+  // Kodni terib topib bo'lmasligi uchun urinishlar cheklanadi
+  const ip = await clientIp();
+  const keys = [`code:${ip}:${email}`, `code:ip:${ip}`, `code:email:${email}`];
+  if (await isLimited([{ key: keys[0], max: 5 }, { key: keys[1], max: 30 }, { key: keys[2], max: 15 }], LOGIN_WINDOW)) return { error: TOO_MANY };
+
+  const user = await verifyResetCode(email, code);
+  if (!user) {
+    await recordAttempt(keys);
+    return { error: "Email yoki kod noto'g'ri, yoki kod eskirgan" };
+  }
+
+  const updated = await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(password, 10) } });
   await prisma.passwordReset.deleteMany({ where: { userId: user.id } });
-  await clearAttempts([`login:email:${user.email}`]);
-  // Havola emailga kelgan — egasi ekani tasdiqlangan, shu zahoti kiritamiz
-  await createSession(user);
-  redirect(user.role === "ADMIN" ? "/admin" : "/cabinet");
+  await clearAttempts([...keys, `login:email:${email}`]);
+  // Kod emailga kelgan — egasi ekani tasdiqlangan, shu zahoti kiritamiz
+  await createSession(updated);
+  redirect(updated.role === "ADMIN" ? "/admin" : "/cabinet");
 }

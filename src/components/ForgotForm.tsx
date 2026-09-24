@@ -16,8 +16,9 @@ export function ForgotForm() {
   if (state.done) {
     return (
       <div className={authCard}>
-        <h1 className="text-2xl font-bold">Xat yuborildi</h1>
-        <p className="text-sm text-gold-text/80">Agar bu email ro&apos;yxatdan o&apos;tgan bo&apos;lsa, parolni tiklash havolasi yuborildi. Havola 1 soat amal qiladi. «Spam» papkasini ham tekshiring.</p>
+        <h1 className="text-2xl font-bold">Kod yuborildi</h1>
+        <p className="text-sm text-gold-text/80">Agar bu email ro&apos;yxatdan o&apos;tgan bo&apos;lsa, emailga bir martalik kod yuborildi (1 soat amal qiladi). «Spam» papkasini ham tekshiring.</p>
+        <Link href="/activate" className="btn-primary block w-full py-3.5 text-base">Kodni kiritish</Link>
         <Link href="/login" className={`${authLink} block text-sm`}>← Kirish sahifasiga</Link>
       </div>
     );
@@ -40,7 +41,7 @@ export function ForgotForm() {
     <form action={action} className={authCard}>
       <div className="enter" style={step(1)}>
         <h1 className="text-2xl font-bold">Parolni tiklash</h1>
-        <p className="mt-2 text-sm text-gold-text/80">Emailingizni yozing — parolni tiklash havolasini yuboramiz</p>
+        <p className="mt-2 text-sm text-gold-text/80">Emailingizni yozing — bir martalik kod yuboramiz</p>
       </div>
       <div className="enter" style={step(2)}>
         <label className="label text-gold-text">Email</label>
@@ -48,7 +49,7 @@ export function ForgotForm() {
       </div>
       {state.error && <p className={authError}>{state.error}</p>}
       <div className="enter" style={step(3)}>
-        <SubmitButton className="btn-primary w-full py-3.5 text-base">Havola yuborish</SubmitButton>
+        <SubmitButton className="btn-primary w-full py-3.5 text-base">Kod yuborish</SubmitButton>
       </div>
       <Link href="/login" className={`${authLink} enter block text-sm`} style={step(4)}>← Kirish sahifasiga</Link>
     </form>

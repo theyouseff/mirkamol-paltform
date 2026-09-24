@@ -19,7 +19,7 @@ Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 | Yo'l | Nima |
 |---|---|
 | `/` , `/login` | Kirish (email + parol). O'zi ro'yxatdan o'tish yo'q — akkauntni admin ochadi |
-| `/forgot`, `/reset/[token]` | Parolni o'zi tiklash (emailga havola; SMTP kerak) |
+| `/activate`, `/forgot` | Emailga kelgan bir martalik kod bilan parol o'rnatish (yangi o'quvchi) va tiklash (SMTP kerak) |
 | `/courses`, `/courses/[slug]` | Kurslar katalogi va sotuv sahifasi: faqat dastur (modul/dars nomlari), video va matn yo'q |
 | `/cabinet` | O'quvchi kabineti: kurs → modul → dars (video). Faqat o'zi to'lagan kurslar, progress |
 | `/cabinet/settings` | Parolni o'zgartirish |
@@ -27,7 +27,7 @@ Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 
 ## Ish tartibi
 1. Mijoz Telegramda kelishadi va kartaga to'laydi (skrinshot yuboradi).
-2. Admin: **O'quvchilar → O'quvchi qo'shish** — email, kurs/tarif, summa. Yangi o'quvchiga akkaunt va parol yaratiladi, emailga yuboriladi (SMTP sozlangan bo'lsa), parol panelda ham ko'rinadi.
+2. Admin: **O'quvchilar → O'quvchi qo'shish** — email, kurs/tarif, summa. Yangi o'quvchiga akkaunt ochiladi va emailga bir martalik kod yuboriladi; u saytda `/activate` sahifasida email + kodni kiritib, parolni o'zi qo'yadi. Xat ketmasa, kod panelda ko'rinadi (Telegramda yuborasiz).
 3. O'quvchi kirib faqat o'zi to'lagan kursni ko'radi. Boshqa kurslar (boshqa mualliflarniki ham) yopiq.
 
 ## Mualliflar va brend
