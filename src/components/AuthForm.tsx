@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState } from "react";
-import Link from "next/link";
 import type { CSSProperties } from "react";
 import { login, type AuthState } from "@/lib/actions/auth";
 import { ADMIN_TELEGRAM, adminContactUrl } from "@/lib/config";
@@ -39,11 +38,6 @@ export function AuthForm() {
         <SubmitButton className="btn-primary w-full py-3.5 text-base">Kirish</SubmitButton>
       </div>
       <div className="enter space-y-2 text-center text-sm text-gold-text/80" style={step(5)}>
-        <p>
-          <Link href="/activate" className={authLink}>Emailga kod keldimi?</Link>
-          <span className="mx-2 text-gold-text/40">·</span>
-          <Link href="/forgot" className={authLink}>Parolni unutdingizmi?</Link>
-        </p>
         <p>
           Akkauntingiz yo&apos;qmi?{" "}
           {ADMIN_TELEGRAM ? (
