@@ -17,7 +17,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
 
   return (
     <BrandScope color={course.brandColor}>
-      <section className="text-gold-text" style={{ background: "linear-gradient(135deg, var(--brand-dark), var(--brand))" }}>
+      <section className="text-gold-text">
         <div className="mx-auto max-w-4xl px-4 py-20 text-center">
           {course.logoUrl && (
             <div className="mb-6 inline-block rounded-xl bg-white px-4 py-2">
