@@ -8,7 +8,7 @@ export async function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-ink-950/60 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="text-lg font-bold text-gold-text">TeachUmma</Link>
+        <Link href="/" className="text-lg font-bold text-gold-text">Ilmaviya</Link>
         <nav className="flex items-center gap-1 text-sm">
           {user ? (
             <>

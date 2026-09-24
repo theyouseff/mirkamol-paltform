@@ -7,9 +7,9 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyr
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TeachUmma",
+  title: "Ilmaviya",
   description: "Onlayn kurslar platformasi",
-  appleWebApp: { capable: true, title: "TeachUmma", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Ilmaviya", statusBarStyle: "black-translucent" },
   icons: { apple: "/pwa/192" },
 };
 
