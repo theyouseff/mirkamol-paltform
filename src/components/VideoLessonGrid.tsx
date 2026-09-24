@@ -21,10 +21,10 @@ export function VideoLessonGrid({ lessons, basePath }: { lessons: DemoLesson[]; 
         <Link
           key={l.title}
           href={`${basePath}/${i + 1}`}
-          className="enter group block overflow-hidden rounded-2xl border border-gold/30 bg-emerald-950/55 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-emerald-950/70"
+          className="enter group block overflow-hidden rounded-2xl border border-gold/30 bg-ink-950/55 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-ink-950/70"
           style={step(i)}
         >
-          <div className="relative flex aspect-video items-center justify-center bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-600">
+          <div className="relative flex aspect-video items-center justify-center bg-gradient-to-br from-ink-800 via-ink-700 to-steel-600">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_22%,rgba(241,198,87,0.28),transparent_58%)]" />
             <Play />
             <span className="absolute bottom-2 right-2 rounded-md bg-black/55 px-2 py-0.5 text-xs font-medium text-white">{l.duration}</span>

@@ -2,9 +2,26 @@
 
 /* Kurs brendi (rang) shu o'zgaruvchilarni qayta yozadi — qarang: lib/brand.ts */
 :root {
-  --brand: #0d5c46;
-  --brand-dark: #094836;
-  --brand-soft: #e6f2ec;
+  --brand: #a8741a;
+  --brand-dark: #855a10;
+  --brand-soft: #f6efdf;
+}
+
+/* Neytral (grafit) palitra: hamma yo'nalishlar uchun bir xil. Rangni shu yerdan almashtirish kifoya. */
+@theme {
+  --color-ink-50: #f4f5f7;
+  --color-ink-100: #e6e8ec;
+  --color-ink-200: #cfd3da;
+  --color-ink-300: #aab0bb;
+  --color-ink-400: #7d8595;
+  --color-ink-500: #5d6575;
+  --color-ink-600: #474e5c;
+  --color-ink-700: #363c48;
+  --color-ink-800: #272c36;
+  --color-ink-900: #1a1e26;
+  --color-ink-950: #11141a;
+  --color-steel-500: #64748b;
+  --color-steel-600: #526071;
 }
 
 @theme inline {
@@ -18,7 +35,7 @@
 }
 
 body {
-  background: #0f3d2e;
+  background: #151922;
   color: #e6b04f;
 }
 
@@ -38,7 +55,7 @@ body {
 
 /* Yaltiroq oltin: ranglar oblojkadagi oltin tasmadan olingan */
 @utility gold-gloss {
-  color: #0b3d2e;
+  color: #211a0a;
   font-weight: 600;
   background: linear-gradient(180deg, #f8d27a 0%, #ecb955 48%, #dba548 52%, #e8b350 100%);
   box-shadow:
@@ -123,7 +140,7 @@ body {
 
 /* Kirish sahifalari fonu: telefonda tik, kompyuterda keng rasm (oltin-yashil oblojka) */
 .auth-bg {
-  background: #134b36 url(/auth-bg-tall.webp) center / cover no-repeat;
+  background: #1c212b url(/auth-bg-tall.webp) center / cover no-repeat;
 }
 
 @media (min-aspect-ratio: 1/1) {

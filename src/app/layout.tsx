@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   icons: { apple: "/pwa/192" },
 };
 
-export const viewport: Viewport = { themeColor: "#0f3d2e" };
+export const viewport: Viewport = { themeColor: "#151922" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   preload("/auth-bg-wide.webp", { as: "image", media: "(min-aspect-ratio: 1/1)" });

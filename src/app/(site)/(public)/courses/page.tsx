@@ -20,7 +20,7 @@ export default async function HomePage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={c.coverUrl} alt="" className="mb-4 aspect-video w-full rounded-xl object-cover" />
             ) : (
-              <div className="mb-4 aspect-video w-full rounded-xl bg-gradient-to-br from-emerald-800 to-emerald-500" />
+              <div className="mb-4 aspect-video w-full rounded-xl bg-gradient-to-br from-ink-800 to-ink-500" />
             )}
             <h2 className="text-lg font-semibold">{c.title}</h2>
             <p className="mt-1 flex-1 text-sm text-zinc-500">{c.subtitle}</p>

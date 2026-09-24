@@ -67,7 +67,7 @@ export function HeaderNav({ isAdmin }: { isAdmin: boolean }) {
             ref={(el) => { refs.current[l.href] = el; }}
             href={l.href}
             onClick={() => setTarget(l.href)}
-            className={`relative z-10 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors duration-700 ${activeHref === l.href ? "text-emerald-950" : "text-gold-text/80 hover:text-gold-text"}`}
+            className={`relative z-10 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors duration-700 ${activeHref === l.href ? "text-ink-950" : "text-gold-text/80 hover:text-gold-text"}`}
           >
             {l.label}
           </Link>

@@ -12,10 +12,10 @@ export function ModuleGrid({ courseSlug }: { courseSlug: string }) {
         <Link
           key={m.slug}
           href={`/courses/${courseSlug}/${m.slug}`}
-          className="enter group block overflow-hidden rounded-2xl border border-gold/30 bg-emerald-950/55 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-emerald-950/70"
+          className="enter group block overflow-hidden rounded-2xl border border-gold/30 bg-ink-950/55 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-ink-950/70"
           style={step(i)}
         >
-          <div className="relative flex aspect-[16/8] items-center justify-center bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-600">
+          <div className="relative flex aspect-[16/8] items-center justify-center bg-gradient-to-br from-ink-800 via-ink-700 to-steel-600">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_22%,rgba(241,198,87,0.28),transparent_58%)]" />
           </div>
           <div className="p-5">

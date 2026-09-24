@@ -8,7 +8,7 @@ import { findDemoLesson } from "@/lib/demo-course";
 
 type Props = { params: Promise<{ slug: string; module: string; lesson: string }> };
 
-const glass = "rounded-2xl border border-gold/30 bg-emerald-950/55 backdrop-blur-sm";
+const glass = "rounded-2xl border border-gold/30 bg-ink-950/55 backdrop-blur-sm";
 
 export default async function LessonPage({ params }: Props) {
   const { slug, module: moduleSlug, lesson: lessonParam } = await params;
@@ -39,7 +39,7 @@ export default async function LessonPage({ params }: Props) {
             {lesson.videoUrl ? (
               <VideoPlayer url={lesson.videoUrl} />
             ) : (
-              <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl border border-gold/40 bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-600 shadow-2xl">
+              <div className="relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl border border-gold/40 bg-gradient-to-br from-ink-800 via-ink-700 to-steel-600 shadow-2xl">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_22%,rgba(241,198,87,0.28),transparent_58%)]" />
                 <div className="relative flex flex-col items-center gap-4 text-center">
                   <span className="gold-gloss relative isolate flex h-20 w-20 items-center justify-center overflow-hidden rounded-full before:rounded-none!">
@@ -88,7 +88,7 @@ export default async function LessonPage({ params }: Props) {
                       href={`${base}/${i + 1}`}
                       className={`flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm transition ${active ? "bg-gold/20 text-gold-text ring-1 ring-gold/50" : "text-gold-text/80 hover:bg-white/5 hover:text-gold-text"}`}
                     >
-                      <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${active ? "bg-gold text-emerald-950" : "bg-white/10"}`}>{i + 1}</span>
+                      <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${active ? "bg-gold text-ink-950" : "bg-white/10"}`}>{i + 1}</span>
                       <span className="min-w-0 flex-1 leading-snug">{l.title}</span>
                       <span className="shrink-0 text-xs text-gold-text/60">{l.duration}</span>
                     </Link>
