@@ -21,9 +21,15 @@ export default async function CabinetPage() {
     prisma.lessonWatch.findFirst({
       where: { userId: user.id },
       orderBy: { updatedAt: "desc" },
-      include: { lesson: { select: { id: true, title: true, videoUrl: true, module: { select: { title: true } } } } },
+      include: { lesson: { select: { id: true, title: true, videoUrl: true, moduleId: true, module: { select: { title: true, courseId: true } } } } },
     }),
   ]);
+  // Dars raqami: kursdagi nechanchi modul va moduldagi nechanchi dars
+  const modules = last
+    ? await prisma.module.findMany({ where: { courseId: last.lesson.module.courseId }, orderBy: { order: "asc" }, select: { id: true, lessons: { orderBy: { order: "asc" }, select: { id: true } } } })
+    : [];
+  const moduleIndex = last ? modules.findIndex((m) => m.id === last.lesson.moduleId) : -1;
+  const lessonNumber = moduleIndex >= 0 ? modules[moduleIndex].lessons.findIndex((l) => l.id === last!.lesson.id) + 1 : 0;
   const videoId = last?.lesson.videoUrl ? kinescopeId(last.lesson.videoUrl) : null;
   // Oxirigacha ko'rilgan bo'lsa, boshidan; aks holda to'xtagan joyidan davom etadi
   const finished = !!last && last.duration > 0 && last.position >= last.duration - 5;
@@ -53,6 +59,9 @@ export default async function CabinetPage() {
         ) : null}
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">
+            {lessonNumber > 0 && (
+              <p className="text-xs font-medium uppercase tracking-widest text-gold-text/70">{moduleIndex + 1}-modul · {lessonNumber}-dars</p>
+            )}
             <p className="text-lg font-bold">{last.lesson.title}</p>
             <p className="text-sm text-gold-text/70">{last.lesson.module.title}</p>
           </div>
