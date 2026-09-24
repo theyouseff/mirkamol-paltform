@@ -24,7 +24,7 @@ Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 | `/courses` → `/cabinet/courses/[slug]` | Kirgach o'quvchi «Kurslar» sahifasiga tushadi; o'zi to'lagan kurs blokini bossa kurs ochiladi: modul → video dars, progress |
 | `/cabinet` | Akkaunt egasining avatari, ismi va progress (nechta dars ko'rilgani); kurslar bu yerda chiqmaydi |
 | `/cabinet/settings` | Parolni o'zgartirish |
-| `/admin` | Dashboard, kurslar, mualliflar, to'lovlar, o'quvchilar |
+| `/admin` | Dashboard, kurslar, mualliflar, to'lovlar, o'quvchilar, **analitika** (videolar qayergacha ko'rilgan, har bir o'quvchi qaysi darsda va qaysi daqiqada to'xtagan) |
 
 ## Ish tartibi
 1. Mijoz Telegramda kelishadi va kartaga to'laydi (skrinshot yuboradi).

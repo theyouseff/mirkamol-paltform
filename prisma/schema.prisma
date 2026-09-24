@@ -19,6 +19,7 @@ model User {
   enrollments Enrollment[]
   orders      Order[]
   progress    LessonProgress[]
+  watches     LessonWatch[]
   resets      PasswordReset[]
 }
 
@@ -75,6 +76,7 @@ model Lesson {
   module   Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
   progress LessonProgress[]
+  watches  LessonWatch[]
 }
 
 model Enrollment {
@@ -113,6 +115,21 @@ model LessonProgress {
   lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@id([userId, lessonId])
+}
+
+// Video ko'rish analitikasi: o'quvchi har bir darsda qayergacha ko'rgani va qaysi soniyada to'xtagani (admin "Analitika" uchun).
+model LessonWatch {
+  userId    String
+  lessonId  String
+  position  Int      @default(0) // to'xtagan joyi, soniyada
+  duration  Int      @default(0) // video uzunligi, soniyada
+  watched   Int      @default(0) // haqiqatan ijro etilgan noyob soniyalar
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@id([userId, lessonId])
+  @@index([updatedAt])
 }
 
 // Kirish va parol tiklash urinishlari (brute-force'dan himoya). key: "login:ip:email", "login:ip:1.2.3.4", "reset:email:a@b.c" ...

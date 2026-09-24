@@ -9,8 +9,8 @@ const initials = (name: string) =>
 // Kabinet: chap yuqori burchakda yumaloq kapsula — avatar, ism va o'quvchi nechta video dars ko'rgani (progress).
 export default async function CabinetPage() {
   const user = await requireUser();
-  // O'quvchi yozilgan barcha kurslardagi darslar
-  const inMyCourses = { module: { course: { enrollments: { some: { userId: user.id } } } } };
+  // O'quvchi yozilgan barcha kurslardagi darslar (admin uchun — platformadagi hamma dars)
+  const inMyCourses = user.role === "ADMIN" ? {} : { module: { course: { enrollments: { some: { userId: user.id } } } } };
   const [total, done] = await Promise.all([
     prisma.lesson.count({ where: inMyCourses }),
     prisma.lessonProgress.count({ where: { userId: user.id, lesson: inMyCourses } }),
@@ -23,12 +23,10 @@ export default async function CabinetPage() {
       </span>
       <div className="min-w-0 space-y-2 sm:min-w-64">
         <p className="truncate text-xl font-bold text-gold-text">{user.name}</p>
-        {total > 0 && (
-          <>
-            <ProgressBar dark value={(done / total) * 100} />
-            <p className="text-sm text-gold-text/75">{done} / {total} video dars ko&apos;rildi</p>
-          </>
-        )}
+        <ProgressBar dark value={total ? (done / total) * 100 : 0} />
+        <p className="text-sm text-gold-text/75">
+          {total > 0 ? `${done} / ${total} video dars ko'rildi` : "Hali ochiq kurs yo'q"}
+        </p>
       </div>
     </div>
   );

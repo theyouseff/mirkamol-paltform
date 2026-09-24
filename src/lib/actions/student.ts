@@ -38,6 +38,30 @@ export async function markLessonWatched(lessonId: string) {
   revalidatePath("/cabinet", "layout");
 }
 
+const clamp = (n: number, max: number) => (Number.isFinite(n) ? Math.min(Math.max(Math.round(n), 0), max) : 0);
+
+// Video ko'rilayotganda brauzer davriy chaqiradi: qaysi soniyada to'xtagani va qancha ko'rgani (admin "Analitika" uchun).
+export async function saveWatchProgress(lessonId: string, position: number, duration: number, watched: number) {
+  const user = await requireUser();
+  if (user.role === "ADMIN") return; // adminning ko'rishlari o'quvchi analitikasiga kirmasin
+  const lesson = await prisma.lesson.findUnique({ where: { id: lessonId }, include: { module: true } });
+  if (!lesson) return;
+  const enrollment = await getEnrollment(user.id, lesson.module.courseId);
+  if (lessonState(lesson, !!enrollment, false) !== "open") return;
+
+  const dur = clamp(duration, 86_400);
+  const pos = clamp(position, dur || 86_400);
+  const w = clamp(watched, dur || 86_400);
+  const key = { userId_lessonId: { userId: user.id, lessonId } };
+  const existing = await prisma.lessonWatch.findUnique({ where: key });
+  await prisma.lessonWatch.upsert({
+    where: key,
+    create: { userId: user.id, lessonId, position: pos, duration: dur, watched: w },
+    // Boshqa qurilmada kamroq ko'rilgan bo'lsa ham, ilgari ko'rilgan miqdor kamaymaydi
+    update: { position: pos, duration: dur || existing?.duration || 0, watched: Math.max(existing?.watched ?? 0, w) },
+  });
+}
+
 export type PasswordState = { error?: string; ok?: boolean };
 
 export async function changePassword(_: PasswordState, formData: FormData): Promise<PasswordState> {

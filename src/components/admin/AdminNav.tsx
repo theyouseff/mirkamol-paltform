@@ -9,6 +9,7 @@ const links = [
   { href: "/admin/authors", label: "🧑‍🏫 Mualliflar" },
   { href: "/admin/orders", label: "🧾 To'lovlar" },
   { href: "/admin/students", label: "👥 O'quvchilar" },
+  { href: "/admin/analytics", label: "📈 Analitika" },
 ];
 
 export function AdminNav() {

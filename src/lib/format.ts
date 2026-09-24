@@ -35,3 +35,22 @@ export function toEmbedUrl(url: string) {
   if (kinescope) return `https://kinescope.io/embed/${kinescope[1]}`;
   return url;
 }
+
+// 462 -> "7:42", 3725 -> "1:02:05"
+export function formatClock(totalSeconds: number) {
+  const s = Math.max(0, Math.round(totalSeconds));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = String(s % 60).padStart(2, "0");
+  return h ? `${h}:${String(m).padStart(2, "0")}:${sec}` : `${m}:${sec}`;
+}
+
+// "5 daqiqa oldin", "2 soat oldin", "3 kun oldin"; bir haftadan eski bo'lsa — sana
+export function timeAgo(date: Date) {
+  const min = Math.floor((Date.now() - date.getTime()) / 60_000);
+  if (min < 1) return "hozirgina";
+  if (min < 60) return `${min} daqiqa oldin`;
+  if (min < 24 * 60) return `${Math.floor(min / 60)} soat oldin`;
+  if (min < 7 * 24 * 60) return `${Math.floor(min / (24 * 60))} kun oldin`;
+  return formatDate(date);
+}

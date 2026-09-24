@@ -3,10 +3,12 @@
 import type {} from "@kinescope/player-iframe-api-loader/types";
 import { useEffect, useRef, useState } from "react";
 import { load } from "@kinescope/player-iframe-api-loader";
-import { markLessonWatched } from "@/lib/actions/student";
+import { markLessonWatched, saveWatchProgress } from "@/lib/actions/student";
 
 // Video oxirigacha ko'rilgan hisoblanishi uchun kerak bo'lgan ulush (boshi/oxiridagi qisqa qismni o'tkazib yuborsa ham bo'ladi)
 const REQUIRED = 0.8;
+// Analitika uchun serverga qanchalik tez-tez yuboriladi (ms)
+const HEARTBEAT = 15_000;
 
 const storageKey = (lessonId: string) => `watched:${lessonId}`;
 const readSeconds = (lessonId: string) => {
@@ -34,6 +36,16 @@ export function LessonVideo({ videoId, lessonId, watermark, embedUrl }: { videoI
     let player: Kinescope.IframePlayer.Player | undefined;
     let cancelled = false;
     const seconds = readSeconds(lessonId);
+    // Analitika: to'xtagan joyi va ko'rilgan miqdor serverga yuboriladi (o'zgargan bo'lsagina)
+    const track = { pos: 0, duration: 0, sentAt: 0, dirty: false };
+    const flush = () => {
+      if (!track.dirty || !track.duration) return;
+      track.dirty = false;
+      track.sentAt = Date.now();
+      saveWatchProgress(lessonId, track.pos, track.duration, seconds.size).catch(() => {});
+    };
+    const onHide = () => document.visibilityState === "hidden" && flush();
+    document.addEventListener("visibilitychange", onHide);
 
     (async () => {
       const factory = await load();
@@ -49,17 +61,24 @@ export function LessonVideo({ videoId, lessonId, watermark, embedUrl }: { videoI
       let duration = 0;
       let last: number | null = null;
       let sent = false;
-      p.on(p.Events.DurationChange, (e) => { duration = e.data.duration; });
+      p.on(p.Events.DurationChange, (e) => { duration = e.data.duration; track.duration = duration; });
       p.on(p.Events.Seeked, () => { last = null; });
-      p.on(p.Events.Pause, () => saveSeconds(lessonId, seconds));
+      p.on(p.Events.Pause, () => {
+        saveSeconds(lessonId, seconds);
+        flush();
+      });
       p.on(p.Events.TimeUpdate, (e) => {
         const t = e.data.currentTime;
         // Faqat oddiy ijro (bir necha soniyalik qadam) sanaladi; sakrash — yo'q
         if (last !== null && t > last && t - last < 5) for (let s = Math.floor(last); s <= Math.floor(t); s += 1) seconds.add(s);
         last = t;
+        track.pos = t;
+        track.dirty = true;
+        if (Date.now() - track.sentAt > HEARTBEAT) flush();
       });
       p.on(p.Events.Ended, async () => {
         saveSeconds(lessonId, seconds);
+        flush();
         const total = duration || (await p.getDuration());
         if (sent || !total || seconds.size < total * REQUIRED) return;
         sent = true;
@@ -74,7 +93,9 @@ export function LessonVideo({ videoId, lessonId, watermark, embedUrl }: { videoI
 
     return () => {
       cancelled = true;
+      document.removeEventListener("visibilitychange", onHide);
       saveSeconds(lessonId, seconds);
+      flush();
       player?.destroy().catch(() => {});
     };
   }, [videoId, lessonId]);
