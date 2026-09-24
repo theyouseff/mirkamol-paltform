@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { ADMIN_TELEGRAM, adminContactUrl } from "@/lib/config";
@@ -10,6 +10,25 @@ type Tariff = { id: string; name: string; price: number; oldPrice: number | null
 type Course = { slug: string; title: string; subtitle: string; coverUrl: string };
 
 const step = (i: number) => ({ "--i": i }) as CSSProperties;
+
+// Namuna (imitatsiya) video darslar: keyinroq kursning haqiqiy darslariga ulanadi
+const DEMO_LESSONS = [
+  { title: "LOR asoslari: quloq, burun, tomoq", duration: "12:40" },
+  { title: "Otoskopiya va rinoskopiya texnikasi", duration: "18:05" },
+  { title: "Bemor bilan suhbat va anamnez", duration: "09:30" },
+  { title: "Eng ko'p uchraydigan kasalliklar", duration: "24:15" },
+  { title: "Klinik amaliyot: real holatlar tahlili", duration: "21:50" },
+];
+
+function Play() {
+  return (
+    <span className="gold-gloss relative isolate flex h-14 w-14 items-center justify-center overflow-hidden rounded-full transition-transform duration-300 before:rounded-none! group-hover:scale-110">
+      <svg viewBox="0 0 24 24" className="ml-0.5 h-6 w-6" fill="currentColor" aria-hidden>
+        <path d="M8 5.5v13a1 1 0 001.5.86l10.5-6.5a1 1 0 000-1.72L9.5 4.64A1 1 0 008 5.5z" />
+      </svg>
+    </span>
+  );
+}
 
 function Check() {
   return (
@@ -24,12 +43,17 @@ function Check() {
 // Katalogdagi kurs bloki. Bosilganda tarif tanlash oynasi ochiladi (native <dialog>: Esc, fokus, orqa fon tayyor).
 export function CourseTariffsCard({ course, tariffs }: { course: Course; tariffs: Tariff[] }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const [tab, setTab] = useState<"videos" | "tariffs">("videos");
   const close = () => dialog.current?.close();
+  const open = () => {
+    setTab("videos"); // har safar video darslardan boshlanadi
+    dialog.current?.showModal();
+  };
   const cols = tariffs.length >= 3 ? "lg:grid-cols-3" : tariffs.length === 2 ? "sm:grid-cols-2" : "";
 
   return (
     <>
-      <button type="button" onClick={() => dialog.current?.showModal()} className="card-gold flex w-full cursor-pointer flex-col text-left">
+      <button type="button" onClick={open} className="card-gold flex w-full cursor-pointer flex-col text-left">
         {course.coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={course.coverUrl} alt="" className="mb-4 aspect-video w-full rounded-xl object-cover" />
@@ -54,11 +78,52 @@ export function CourseTariffsCard({ course, tariffs }: { course: Course; tariffs
             </button>
 
             <div className="enter pr-10" style={step(0)}>
-              <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">Tarifni tanlang</p>
+              <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">Kurs mazmuni</p>
               <h2 className="mt-1 text-2xl font-bold text-gold-text sm:text-3xl">{course.title}</h2>
             </div>
 
-            <div className={`mt-7 grid gap-5 ${cols} ${tariffs.length === 1 ? "mx-auto max-w-sm" : ""}`}>
+            <div className="enter mt-6 inline-flex rounded-full border border-gold/40 bg-black/20 p-1" style={step(1)} role="tablist">
+              {([
+                ["videos", `Video darslar · ${DEMO_LESSONS.length}`],
+                ["tariffs", `Tariflar · ${tariffs.length}`],
+              ] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === key}
+                  onClick={() => setTab(key)}
+                  className={`relative isolate cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-300 ${tab === key ? "gold-gloss" : "text-gold-text/80 hover:text-gold-text"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {tab === "videos" ? (
+              <div key="videos">
+                <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {DEMO_LESSONS.map((l, i) => (
+                    <div key={l.title} className="enter group cursor-pointer overflow-hidden rounded-2xl border border-gold/30 bg-white/5 transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-white/10" style={step(i)}>
+                      <div className="relative flex aspect-video items-center justify-center bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-600">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_22%,rgba(241,198,87,0.28),transparent_58%)]" />
+                        <Play />
+                        <span className="absolute bottom-2 right-2 rounded-md bg-black/55 px-2 py-0.5 text-xs font-medium text-white">{l.duration}</span>
+                      </div>
+                      <div className="p-4">
+                        <p className="text-xs font-medium uppercase tracking-wider text-gold-text/60">{i + 1}-dars</p>
+                        <h3 className="mt-1 font-semibold leading-snug text-gold-text">{l.title}</h3>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="enter mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/30 bg-white/5 px-5 py-4" style={step(DEMO_LESSONS.length)}>
+                  <p className="text-sm text-gold-text/85">Darslarni ko&apos;rish uchun tarifni tanlang</p>
+                  <button type="button" onClick={() => setTab("tariffs")} className="btn-primary px-5">Tarifni tanlash</button>
+                </div>
+              </div>
+            ) : (
+              <div key="tariffs" className={`mt-6 grid gap-5 ${cols} ${tariffs.length === 1 ? "mx-auto max-w-sm" : ""}`}>
               {tariffs.map((t, i) => (
                 <div key={t.id} className="enter card-gold flex flex-col" style={step(i + 1)}>
                   <h3 className="text-xl font-semibold">{t.name}</h3>
@@ -78,7 +143,8 @@ export function CourseTariffsCard({ course, tariffs }: { course: Course; tariffs
                   )}
                 </div>
               ))}
-            </div>
+              </div>
+            )}
 
             <div className="enter mt-7 text-center" style={step(tariffs.length + 1)}>
               <Link href={`/courses/${course.slug}`} className="text-sm font-medium text-gold-text underline-offset-4 hover:underline">
