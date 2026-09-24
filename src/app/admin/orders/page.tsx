@@ -45,7 +45,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       <div className="flex flex-wrap items-center gap-2">
         {filters.map((f) => (
           <Link key={f.value} href={link({ status: f.value })}
-            className={`rounded-full px-3 py-1.5 text-sm ${status === f.value ? "bg-brand text-white" : "border border-zinc-200 bg-white text-zinc-600"}`}>
+            className={`rounded-full px-3 py-1.5 text-sm ${status === f.value ? "gold-gloss relative isolate" : "border border-zinc-200 bg-white text-zinc-600"}`}>
             {f.label}
           </Link>
         ))}

@@ -40,7 +40,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
           {prev ? <Link href={`/cabinet/lessons/${prev.id}`} className="btn-outline">← Oldingi</Link> : <span />}
           <form action={toggleLessonComplete}>
             <input type="hidden" name="lessonId" value={lesson.id} />
-            <SubmitButton className={isDone ? "btn-outline" : "btn bg-green-600 text-white hover:bg-green-700"}>
+            <SubmitButton className={isDone ? "btn-outline" : "btn-primary"}>
               {isDone ? "✅ Tugatilgan (bekor qilish)" : "Darsni tugatdim"}
             </SubmitButton>
           </form>

@@ -34,7 +34,7 @@ export function AuthForm() {
       </div>
       {state.error && <p className="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-100">{state.error}</p>}
       <div className="enter" style={step(4)}>
-        <SubmitButton className="btn w-full bg-amber-400 py-3.5 text-base font-semibold text-emerald-950 hover:bg-amber-300">Kirish</SubmitButton>
+        <SubmitButton className="btn-primary w-full py-3.5 text-base">Kirish</SubmitButton>
       </div>
       <p className="enter text-center text-sm text-emerald-100/80" style={step(5)}>
         Akkauntingiz yo&apos;qmi?{" "}

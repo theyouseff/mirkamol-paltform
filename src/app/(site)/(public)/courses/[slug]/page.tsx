@@ -27,7 +27,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
           )}
           <h1 className="text-4xl font-bold sm:text-5xl">{course.title}</h1>
           {course.subtitle && <p className="mt-4 text-xl text-white/85">{course.subtitle}</p>}
-          <a href="#tariffs" className="btn mt-8 bg-white px-8 py-3 text-base text-brand hover:bg-white/90">Tariflarni ko&apos;rish</a>
+          <a href="#tariffs" className="btn-primary mt-8 px-8 py-3 text-base">Tariflarni ko&apos;rish</a>
         </div>
       </section>
 

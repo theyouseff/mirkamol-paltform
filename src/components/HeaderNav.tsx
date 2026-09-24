@@ -38,7 +38,7 @@ export function HeaderNav({ isAdmin }: { isAdmin: boolean }) {
             {active && (
               <motion.span
                 layoutId="header-pill"
-                className="absolute inset-0 rounded-xl bg-amber-400"
+                className="gold-gloss absolute inset-0 isolate rounded-xl"
                 transition={{ type: "spring", stiffness: 420, damping: 34 }}
               />
             )}
