@@ -21,6 +21,14 @@ model User {
   progress    LessonProgress[]
 }
 
+// Kurs muallifi (ekspert). Barcha to'lovlar egasining hisobiga tushadi — muallif bo'yicha hisobot uchun.
+model Author {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  courses   Course[]
+}
+
 model Course {
   id          String   @id @default(cuid())
   slug        String   @unique
@@ -30,6 +38,13 @@ model Course {
   coverUrl    String   @default("")
   published   Boolean  @default(false)
   createdAt   DateTime @default(now())
+
+  authorId   String?
+  author     Author? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  // Kursning o'z brendi (B variant): logotip, nom va asosiy rang
+  brandName  String  @default("")
+  logoUrl    String  @default("")
+  brandColor String  @default("")
 
   tariffs     Tariff[]
   modules     Module[]
@@ -98,6 +113,7 @@ model Order {
   provider    String    @default("") // payme | click | manual | test
   utmSource   String    @default("")
   utmCampaign String    @default("")
+  note        String    @default("") // masalan: "Karta orqali, skrinshot Telegramda"
   createdAt   DateTime  @default(now())
   paidAt      DateTime?
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)

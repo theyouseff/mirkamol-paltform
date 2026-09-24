@@ -5,7 +5,7 @@ import { StatusBadge } from "@/components/admin/StatusBadge";
 
 export default async function AdminDashboard() {
   const since = new Date(Date.now() - 30 * 24 * 3600 * 1000);
-  const [revenue, revenue30, paidCount, pendingCount, students, recent, bySource] = await Promise.all([
+  const [revenue, revenue30, paidCount, pendingCount, students, recent, bySource, paidOrders] = await Promise.all([
     prisma.order.aggregate({ where: { status: "PAID" }, _sum: { amount: true } }),
     prisma.order.aggregate({ where: { status: "PAID", paidAt: { gte: since } }, _sum: { amount: true } }),
     prisma.order.count({ where: { status: "PAID" } }),
@@ -13,13 +13,23 @@ export default async function AdminDashboard() {
     prisma.user.count({ where: { role: "STUDENT" } }),
     prisma.order.findMany({ take: 8, orderBy: { createdAt: "desc" }, include: { user: true, tariff: { include: { course: true } } } }),
     prisma.order.groupBy({ by: ["utmSource"], where: { status: "PAID" }, _sum: { amount: true }, _count: true }),
+    prisma.order.findMany({
+      where: { status: "PAID" },
+      select: { amount: true, tariff: { select: { course: { select: { author: { select: { name: true } } } } } } },
+    }),
   ]);
+  const byAuthor = new Map<string, { count: number; sum: number }>();
+  for (const o of paidOrders) {
+    const name = o.tariff.course.author?.name ?? "Muallifsiz";
+    const cur = byAuthor.get(name) ?? { count: 0, sum: 0 };
+    byAuthor.set(name, { count: cur.count + 1, sum: cur.sum + o.amount });
+  }
   const total = paidCount + pendingCount;
 
   const stats = [
     { label: "Umumiy daromad", value: formatPrice(revenue._sum.amount ?? 0) },
     { label: "Oxirgi 30 kun", value: formatPrice(revenue30._sum.amount ?? 0) },
-    { label: "To'langan buyurtmalar", value: paidCount },
+    { label: "To'langan to'lovlar", value: paidCount },
     { label: "Konversiya (buyurtma → to'lov)", value: total ? `${Math.round((paidCount / total) * 100)}%` : "—" },
     { label: "O'quvchilar", value: students },
   ];
@@ -59,8 +69,21 @@ export default async function AdminDashboard() {
           {recent.length === 0 && <p className="text-sm text-zinc-500">Hali buyurtmalar yo&apos;q</p>}
         </div>
 
+        <div className="space-y-6">
         <div className="card">
-          <h2 className="mb-4 font-semibold">Manbalar bo&apos;yicha (UTM)</h2>
+          <h2 className="mb-4 font-semibold">Mualliflar bo&apos;yicha sotuv</h2>
+          <ul className="space-y-2 text-sm">
+            {[...byAuthor.entries()].sort((a, b) => b[1].sum - a[1].sum).map(([name, v]) => (
+              <li key={name} className="flex justify-between">
+                <span>{name} <span className="text-zinc-400">({v.count})</span></span>
+                <span className="font-medium">{formatPrice(v.sum)}</span>
+              </li>
+            ))}
+          </ul>
+          {byAuthor.size === 0 && <p className="text-sm text-zinc-500">Ma&apos;lumot yo&apos;q</p>}
+        </div>
+        <div className="card">
+          <h2 className="mb-4 font-semibold">Manbalar bo&apos;yicha</h2>
           <ul className="space-y-2 text-sm">
             {bySource.sort((a, b) => (b._sum.amount ?? 0) - (a._sum.amount ?? 0)).map((s) => (
               <li key={s.utmSource} className="flex justify-between">
@@ -70,6 +93,7 @@ export default async function AdminDashboard() {
             ))}
           </ul>
           {bySource.length === 0 && <p className="text-sm text-zinc-500">Ma&apos;lumot yo&apos;q</p>}
+        </div>
         </div>
       </div>
     </div>

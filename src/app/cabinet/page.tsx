@@ -2,6 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { ProgressBar } from "@/components/ProgressBar";
+import { BrandScope } from "@/components/BrandScope";
+import { CourseBrand } from "@/components/CourseBrand";
 
 export default async function CabinetPage() {
   const user = await requireUser();
@@ -25,19 +27,21 @@ export default async function CabinetPage() {
           const completed = lessons.filter((l) => done.has(l.id)).length;
           const pct = lessons.length ? (completed / lessons.length) * 100 : 0;
           return (
-            <Link key={e.id} href={`/cabinet/courses/${e.course.slug}`} className="card space-y-3 transition hover:border-brand">
-              <span className="badge bg-brand-soft text-brand">{e.tariff.name}</span>
-              <h2 className="text-lg font-semibold">{e.course.title}</h2>
-              <ProgressBar value={pct} />
-              <p className="text-sm text-zinc-500">{completed} / {lessons.length} dars · {Math.round(pct)}%</p>
-            </Link>
+            <BrandScope key={e.id} color={e.course.brandColor}>
+              <Link href={`/cabinet/courses/${e.course.slug}`} className="card space-y-3 transition hover:border-brand">
+                <CourseBrand course={e.course} />
+                <span className="badge bg-brand-soft text-brand">{e.tariff.name}</span>
+                <h2 className="text-lg font-semibold">{e.course.title}</h2>
+                <ProgressBar value={pct} />
+                <p className="text-sm text-zinc-500">{completed} / {lessons.length} dars · {Math.round(pct)}%</p>
+              </Link>
+            </BrandScope>
           );
         })}
       </div>
       {enrollments.length === 0 && (
         <div className="card mt-8 text-center">
-          <p className="text-zinc-500">Sizda hali kurslar yo&apos;q.</p>
-          <Link href="/courses" className="btn-primary mt-4">Kurslarni ko&apos;rish</Link>
+          <p className="text-zinc-500">Sizda hali ochiq kurslar yo&apos;q. Kurs ochilishi uchun adminga yozing.</p>
         </div>
       )}
     </div>

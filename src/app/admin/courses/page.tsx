@@ -6,7 +6,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 export default async function AdminCoursesPage() {
   const courses = await prisma.course.findMany({
     orderBy: { createdAt: "desc" },
-    include: { _count: { select: { enrollments: true, modules: true } } },
+    include: { author: true, _count: { select: { enrollments: true, modules: true } } },
   });
 
   return (
@@ -21,7 +21,7 @@ export default async function AdminCoursesPage() {
           <Link key={c.id} href={`/admin/courses/${c.id}`} className="card flex items-center justify-between transition hover:border-brand">
             <div>
               <h2 className="font-semibold">{c.title}</h2>
-              <p className="text-sm text-zinc-500">/{c.slug} · {c._count.modules} modul · {c._count.enrollments} o&apos;quvchi</p>
+              <p className="text-sm text-zinc-500">{c.author ? `${c.author.name} · ` : ""}/{c.slug} · {c._count.modules} modul · {c._count.enrollments} o&apos;quvchi</p>
             </div>
             <span className={`badge ${c.published ? "bg-green-100 text-green-700" : "bg-zinc-100 text-zinc-500"}`}>
               {c.published ? "Nashr qilingan" : "Qoralama"}

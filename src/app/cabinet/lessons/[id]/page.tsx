@@ -7,6 +7,8 @@ import { toggleLessonComplete } from "@/lib/actions/student";
 import { LessonList } from "@/components/LessonList";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { SubmitButton } from "@/components/SubmitButton";
+import { BrandScope } from "@/components/BrandScope";
+import { CourseBrand } from "@/components/CourseBrand";
 
 export default async function LessonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -24,9 +26,11 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
   const prev = flatLessons.slice(0, index).reverse().find((l) => l.state === "open");
 
   return (
+    <BrandScope color={course.brandColor}>
     <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
       <article className="space-y-6">
         <div>
+          <CourseBrand course={course} className="mb-3 block" />
           <Link href={`/cabinet/courses/${course.slug}`} className="text-sm text-brand">← {course.title}</Link>
           <h1 className="mt-2 text-2xl font-bold">{lesson.title}</h1>
         </div>
@@ -47,5 +51,6 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
         <LessonList modules={modules} done={done} activeId={lesson.id} />
       </aside>
     </div>
+    </BrandScope>
   );
 }

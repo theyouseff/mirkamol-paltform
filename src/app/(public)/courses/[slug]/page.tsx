@@ -1,13 +1,11 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { formatPrice } from "@/lib/format";
+import { ADMIN_TELEGRAM, adminContactUrl } from "@/lib/config";
+import { BrandScope } from "@/components/BrandScope";
 
-type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | undefined>> };
-
-export default async function CoursePage({ params, searchParams }: Props) {
+export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const sp = await searchParams;
   const course = await prisma.course.findUnique({
     where: { slug },
     include: {
@@ -17,19 +15,19 @@ export default async function CoursePage({ params, searchParams }: Props) {
   });
   if (!course || !course.published) notFound();
 
-  // Reklama manbasini buyurtmaga olib o'tamiz
-  const utm = new URLSearchParams();
-  if (sp.utm_source) utm.set("utm_source", sp.utm_source);
-  if (sp.utm_campaign) utm.set("utm_campaign", sp.utm_campaign);
-  const utmQuery = utm.size ? `?${utm}` : "";
-
   return (
-    <div>
-      <section className="bg-gradient-to-br from-violet-700 to-fuchsia-600 text-white">
+    <BrandScope color={course.brandColor}>
+      <section className="text-white" style={{ background: "linear-gradient(135deg, var(--brand-dark), var(--brand))" }}>
         <div className="mx-auto max-w-4xl px-4 py-20 text-center">
+          {course.logoUrl && (
+            <div className="mb-6 inline-block rounded-xl bg-white px-4 py-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={course.logoUrl} alt={course.brandName || course.title} className="h-10 w-auto object-contain" />
+            </div>
+          )}
           <h1 className="text-4xl font-bold sm:text-5xl">{course.title}</h1>
           {course.subtitle && <p className="mt-4 text-xl text-white/85">{course.subtitle}</p>}
-          <a href="#tariffs" className="btn mt-8 bg-white px-8 py-3 text-base text-violet-700 hover:bg-violet-50">Tarifni tanlash</a>
+          <a href="#tariffs" className="btn mt-8 bg-white px-8 py-3 text-base text-brand hover:bg-white/90">Tariflarni ko&apos;rish</a>
         </div>
       </section>
 
@@ -68,12 +66,16 @@ export default async function CoursePage({ params, searchParams }: Props) {
                 <ul className="mt-4 flex-1 space-y-2 text-sm text-zinc-600">
                   {t.features.split("\n").filter(Boolean).map((f, i) => <li key={i}>✓ {f}</li>)}
                 </ul>
-                <Link href={`/checkout/${t.id}${utmQuery}`} className="btn-primary mt-6 w-full">Sotib olish</Link>
+                {ADMIN_TELEGRAM ? (
+                  <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className="btn-primary mt-6 w-full">Sotib olish uchun yozing</a>
+                ) : (
+                  <p className="mt-6 text-center text-sm text-zinc-500">Sotib olish uchun adminga yozing</p>
+                )}
               </div>
             ))}
           </div>
         </section>
       </div>
-    </div>
+    </BrandScope>
   );
 }

@@ -55,6 +55,7 @@ function TariffForm({ courseId, tariff }: { courseId: string; tariff?: Tariff })
 
 export default async function AdminCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const authors = await prisma.author.findMany({ orderBy: { name: "asc" } });
   const course = await prisma.course.findUnique({
     where: { id },
     include: {
@@ -103,6 +104,30 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
           <div>
             <label className="label">Muqova rasmi (URL)</label>
             <input name="coverUrl" className="input" defaultValue={course.coverUrl} placeholder="https://..." />
+          </div>
+          <div>
+            <label className="label">Muallif</label>
+            <select name="authorId" className="input" defaultValue={course.authorId ?? ""}>
+              <option value="">Muallifsiz</option>
+              {authors.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select>
+          </div>
+          <div className="space-y-3 rounded-xl bg-zinc-50 p-4">
+            <p className="text-sm font-medium">Kurs brendi <span className="font-normal text-zinc-500">— o&apos;quvchi shu kursni ochganda ko&apos;radigan logotip va rang</span></p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div>
+                <label className="label">Nomi (logotip o&apos;rnida)</label>
+                <input name="brandName" className="input" defaultValue={course.brandName} placeholder="Arab tili maktabi" />
+              </div>
+              <div>
+                <label className="label">Logotip (URL)</label>
+                <input name="logoUrl" className="input" defaultValue={course.logoUrl} placeholder="https://..." />
+              </div>
+              <div>
+                <label className="label">Asosiy rang</label>
+                <input name="brandColor" type="color" className="h-[42px] w-full cursor-pointer rounded-xl border border-zinc-300 bg-white p-1" defaultValue={course.brandColor || "#6d28d9"} />
+              </div>
+            </div>
           </div>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="published" defaultChecked={course.published} /> Nashr qilingan (saytda ko&apos;rinadi)

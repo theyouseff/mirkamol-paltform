@@ -5,6 +5,8 @@ import { requireUser } from "@/lib/auth";
 import { loadCourseForStudent } from "@/lib/course";
 import { LessonList } from "@/components/LessonList";
 import { ProgressBar } from "@/components/ProgressBar";
+import { BrandScope } from "@/components/BrandScope";
+import { CourseBrand } from "@/components/CourseBrand";
 
 export default async function StudentCoursePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -27,8 +29,10 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
   const next = flatLessons.find((l) => l.state === "open" && !done.has(l.id));
 
   return (
+    <BrandScope color={course.brandColor}>
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="card space-y-4">
+        <CourseBrand course={course} />
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h1 className="text-2xl font-bold">{course.title}</h1>
           {enrollment && <span className="badge bg-brand-soft text-brand">{enrollment.tariff.name}</span>}
@@ -41,5 +45,6 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
         <LessonList modules={modules} done={done} />
       </div>
     </div>
+    </BrandScope>
   );
 }

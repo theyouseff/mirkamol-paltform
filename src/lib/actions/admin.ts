@@ -5,7 +5,11 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { fulfillOrder } from "@/lib/access";
+import bcrypt from "bcryptjs";
 import { normalizeEmail } from "@/lib/format";
+import { isHexColor } from "@/lib/brand";
+import { generatePassword } from "@/lib/password";
+import { sendCourseOpened, sendCredentials, sendNewPassword, type MailResult } from "@/lib/mail";
 
 const str = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 const int = (fd: FormData, key: string, fallback = 0) => {
@@ -53,6 +57,10 @@ export async function updateCourse(formData: FormData) {
       subtitle: str(formData, "subtitle"),
       description: str(formData, "description"),
       coverUrl: str(formData, "coverUrl"),
+      brandName: str(formData, "brandName"),
+      logoUrl: str(formData, "logoUrl"),
+      brandColor: isHexColor(str(formData, "brandColor")) ? str(formData, "brandColor") : "",
+      authorId: str(formData, "authorId") || null,
       published: formData.get("published") === "on",
       ...(clash ? {} : { slug }),
     },
@@ -176,27 +184,103 @@ export async function cancelOrder(formData: FormData) {
   revalidatePath("/admin", "layout");
 }
 
-export type GrantState = { error?: string; ok?: string };
+export type MailStatus = "sent" | "failed" | "skipped";
+export type AddStudentState = {
+  error?: string;
+  result?: { name: string; email: string; course: string; tariff: string; isNew: boolean; password: string | null; mail: MailStatus; mailReason?: string };
+};
 
-// Qo'lda kirish berish (naqd to'lov, bonus, jamoa a'zosi va h.k.)
-export async function grantAccess(_: GrantState, formData: FormData): Promise<GrantState> {
+function mailStatus(r: MailResult | null): { mail: MailStatus; mailReason?: string } {
+  if (!r) return { mail: "skipped" };
+  return r.sent ? { mail: "sent" } : { mail: "failed", mailReason: r.reason };
+}
+
+// To'lov admin tomonidan tasdiqlangach: akkaunt ochadi (yoki mavjudini topadi), kursni ochadi, emailga login/parol yuboradi.
+export async function addStudent(_: AddStudentState, formData: FormData): Promise<AddStudentState> {
   await requireAdmin();
   const email = normalizeEmail(str(formData, "email"));
   if (!email) return { error: "Email noto'g'ri" };
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return { error: "Bu email bilan foydalanuvchi topilmadi. Avval u ro'yxatdan o'tishi kerak." };
   const tariff = await prisma.tariff.findUnique({ where: { id: str(formData, "tariffId") }, include: { course: true } });
-  if (!tariff) return { error: "Tarifni tanlang" };
+  if (!tariff) return { error: "Kurs va tarifni tanlang" };
+
+  let user = await prisma.user.findUnique({ where: { email } });
+  const isNew = !user;
+  let password: string | null = null;
+
+  if (user) {
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId: user.id, courseId: tariff.courseId } },
+      include: { tariff: true },
+    });
+    if (enrollment && enrollment.tariff.level >= tariff.level) {
+      return { error: `${user.name} ga «${tariff.course.title}» allaqachon ochiq (${enrollment.tariff.name} tarifi).` };
+    }
+  } else {
+    const name = str(formData, "name");
+    if (name.length < 2) return { error: "Yangi o'quvchi uchun ism va familiyani yozing" };
+    password = generatePassword();
+    user = await prisma.user.create({ data: { name, email, passwordHash: await bcrypt.hash(password, 10) } });
+  }
 
   const order = await prisma.$transaction(async (tx) => {
     const last = await tx.order.findFirst({ orderBy: { number: "desc" }, select: { number: true } });
     return tx.order.create({
-      data: { number: (last?.number ?? 1000) + 1, userId: user.id, tariffId: tariff.id, amount: int(formData, "amount") },
+      data: {
+        number: (last?.number ?? 1000) + 1,
+        userId: user!.id,
+        tariffId: tariff.id,
+        amount: int(formData, "amount"),
+        utmSource: str(formData, "source"),
+        note: str(formData, "note"),
+      },
     });
   });
   await fulfillOrder(order.id, "manual");
+
+  let mail: MailResult | null = null;
+  if (formData.get("sendMail") === "on") {
+    mail = password
+      ? await sendCredentials(email, user.name, tariff.course.title, password)
+      : await sendCourseOpened(email, user.name, tariff.course.title);
+  }
   revalidatePath("/admin", "layout");
-  return { ok: `${user.name} → «${tariff.course.title}» (${tariff.name}) ochildi` };
+  return {
+    result: { name: user.name, email, course: tariff.course.title, tariff: tariff.name, isNew, password, ...mailStatus(mail) },
+  };
+}
+
+export type ResetPasswordState = { error?: string; password?: string; mail?: MailStatus; mailReason?: string };
+
+// Yangi parol yaratadi va emailga yuboradi (o'quvchi parolni yo'qotsa).
+export async function resetStudentPassword(_: ResetPasswordState, formData: FormData): Promise<ResetPasswordState> {
+  await requireAdmin();
+  const user = await prisma.user.findUnique({ where: { id: str(formData, "id") } });
+  if (!user) return { error: "Foydalanuvchi topilmadi" };
+  const password = generatePassword();
+  await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(password, 10) } });
+  const mail = mailStatus(await sendNewPassword(user.email, user.name, password));
+  return { password, ...mail };
+}
+
+// ---------- Mualliflar ----------
+
+export async function createAuthor(formData: FormData) {
+  await requireAdmin();
+  const name = str(formData, "name");
+  if (name) await prisma.author.create({ data: { name } });
+  revalidatePath("/admin", "layout");
+}
+
+export async function updateAuthor(formData: FormData) {
+  await requireAdmin();
+  await prisma.author.update({ where: { id: str(formData, "id") }, data: { name: str(formData, "name") } });
+  revalidatePath("/admin", "layout");
+}
+
+export async function deleteAuthor(formData: FormData) {
+  await requireAdmin();
+  await prisma.author.delete({ where: { id: str(formData, "id") } }); // kurslari "muallifsiz" bo'lib qoladi
+  revalidatePath("/admin", "layout");
 }
 
 export async function setUserRole(formData: FormData) {

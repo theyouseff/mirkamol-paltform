@@ -14,12 +14,12 @@ export async function SiteHeader() {
             <>
               {user.role === "ADMIN" && <Link href="/admin" className="btn-outline">Admin panel</Link>}
               <Link href="/cabinet" className="btn-primary">Kabinet</Link>
+              <Link href="/cabinet/settings" className="btn text-zinc-600 hover:text-zinc-900">Parol</Link>
               <form action={logout}><button className="btn text-zinc-500 hover:text-zinc-900">Chiqish</button></form>
             </>
           ) : (
             <>
-              <Link href="/login" className="btn-outline">Kirish</Link>
-              <Link href="/register" className="btn-primary">Ro&apos;yxatdan o&apos;tish</Link>
+              <Link href="/login" className="btn-primary">Kirish</Link>
             </>
           )}
         </nav>

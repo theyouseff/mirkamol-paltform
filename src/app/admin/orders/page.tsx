@@ -13,51 +13,72 @@ const filters = [
   { value: "CANCELED", label: "Bekor qilingan" },
 ];
 
-export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string }> }) {
-  const { status = "", q = "" } = await searchParams;
+export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string; author?: string }> }) {
+  const { status = "", q = "", author = "" } = await searchParams;
   const where: Prisma.OrderWhereInput = {
     ...(status && { status }),
+    ...(author && { tariff: { course: { authorId: author } } }),
     ...(q && { OR: [{ user: { name: { contains: q, mode: "insensitive" } } }, { user: { email: { contains: q, mode: "insensitive" } } }] }),
   };
-  const orders = await prisma.order.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    take: 200,
-    include: { user: true, tariff: { include: { course: true } } },
-  });
+  const [orders, authors] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: 200,
+      include: { user: true, tariff: { include: { course: { include: { author: true } } } } },
+    }),
+    prisma.author.findMany({ orderBy: { name: "asc" } }),
+  ]);
+  const paidSum = orders.filter((o) => o.status === "PAID").reduce((s, o) => s + o.amount, 0);
+  const link = (patch: Record<string, string>) => {
+    const p = new URLSearchParams({ ...(status && { status }), ...(author && { author }), ...(q && { q }), ...patch });
+    for (const [k, v] of [...p]) if (!v) p.delete(k);
+    return `/admin/orders${p.size ? `?${p}` : ""}`;
+  };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Buyurtmalar</h1>
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <h1 className="text-2xl font-bold">To&apos;lovlar</h1>
+        <p className="text-sm text-zinc-500">Ko&apos;rsatilgan to&apos;langanlar: <b className="text-zinc-900">{formatPrice(paidSum)}</b></p>
+      </div>
       <div className="flex flex-wrap items-center gap-2">
         {filters.map((f) => (
-          <Link key={f.value} href={`/admin/orders${f.value ? `?status=${f.value}` : ""}`}
-            className={`rounded-full px-3 py-1.5 text-sm ${status === f.value ? "bg-brand text-white" : "bg-white text-zinc-600 border border-zinc-200"}`}>
+          <Link key={f.value} href={link({ status: f.value })}
+            className={`rounded-full px-3 py-1.5 text-sm ${status === f.value ? "bg-brand text-white" : "border border-zinc-200 bg-white text-zinc-600"}`}>
             {f.label}
           </Link>
         ))}
-        <form className="ml-auto">
+        <form className="ml-auto flex gap-2">
           {status && <input type="hidden" name="status" value={status} />}
-          <input name="q" defaultValue={q} className="input w-64" placeholder="Ism yoki email bo'yicha qidirish" />
+          <select name="author" defaultValue={author} className="input w-48">
+            <option value="">Barcha mualliflar</option>
+            {authors.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+          </select>
+          <input name="q" defaultValue={q} className="input w-56" placeholder="Ism yoki email" />
+          <button className="btn-outline">Filtr</button>
         </form>
       </div>
 
       <div className="card overflow-x-auto p-0">
-        <table className="w-full min-w-[800px] text-sm">
+        <table className="w-full min-w-[900px] text-sm">
           <thead className="bg-zinc-50 text-left text-zinc-500">
             <tr>
-              <th className="px-4 py-3">№</th><th>Mijoz</th><th>Kurs / tarif</th><th>Summa</th><th>Holat</th><th>Manba</th><th>Sana</th><th></th>
+              <th className="px-4 py-3">№</th><th>Mijoz</th><th>Kurs / tarif</th><th>Summa</th><th>Holat</th><th>Manba / izoh</th><th>Sana</th><th></th>
             </tr>
           </thead>
           <tbody>
             {orders.map((o) => (
-              <tr key={o.id} className="border-t border-zinc-100">
+              <tr key={o.id} className="border-t border-zinc-100 align-top">
                 <td className="px-4 py-3">{o.number}</td>
                 <td>{o.user.name}<div className="text-xs text-zinc-400">{o.user.email}</div></td>
-                <td>{o.tariff.course.title}<div className="text-xs text-zinc-400">{o.tariff.name}</div></td>
+                <td>
+                  {o.tariff.course.title}
+                  <div className="text-xs text-zinc-400">{o.tariff.name}{o.tariff.course.author ? ` · ${o.tariff.course.author.name}` : ""}</div>
+                </td>
                 <td>{formatPrice(o.amount)}</td>
                 <td><StatusBadge status={o.status} />{o.provider && <div className="text-xs text-zinc-400">{o.provider}</div>}</td>
-                <td className="text-zinc-500">{o.utmSource || "—"}</td>
+                <td className="text-zinc-500">{o.utmSource || "—"}{o.note && <div className="text-xs text-zinc-400">{o.note}</div>}</td>
                 <td className="text-zinc-500">{formatDate(o.createdAt)}</td>
                 <td className="pr-4">
                   {o.status === "PENDING" && (
@@ -72,7 +93,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             ))}
           </tbody>
         </table>
-        {orders.length === 0 && <p className="p-6 text-center text-zinc-500">Buyurtmalar topilmadi</p>}
+        {orders.length === 0 && <p className="p-6 text-center text-zinc-500">To&apos;lovlar topilmadi</p>}
       </div>
     </div>
   );

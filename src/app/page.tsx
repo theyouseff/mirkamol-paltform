@@ -14,7 +14,7 @@ export default async function WelcomePage() {
       className="flex min-h-screen items-center justify-center bg-cover bg-center px-4 py-10"
       style={{ backgroundImage: "url(/welcome-bg.webp)" }}
     >
-      <AuthForm mode="login" />
+      <AuthForm />
     </div>
   );
 }

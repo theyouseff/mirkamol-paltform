@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState } from "react";
 import { MotionConfig, motion, type Variants } from "framer-motion";
-import { login, register, type AuthState } from "@/lib/actions/auth";
+import { login, type AuthState } from "@/lib/actions/auth";
 import { ADMIN_TELEGRAM, adminContactUrl } from "@/lib/config";
 import { SubmitButton } from "./SubmitButton";
 
@@ -25,10 +24,8 @@ const item: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
 };
 
-export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: string }) {
-  const [state, action] = useActionState<AuthState, FormData>(mode === "login" ? login : register, {});
-  const isLogin = mode === "login";
-  const q = next ? `?next=${encodeURIComponent(next)}` : "";
+export function AuthForm({ next }: { next?: string }) {
+  const [state, action] = useActionState<AuthState, FormData>(login, {});
 
   return (
     // reducedMotion="user": "harakatni kamaytirish" yoqilgan qurilmalarda animatsiya o'chadi
@@ -41,49 +38,28 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
         className="w-full max-w-md space-y-5 rounded-2xl bg-white/40 p-7 text-center shadow-xl backdrop-blur-md"
       >
         <motion.div variants={item}>
-          <h1 className="text-2xl font-bold">{isLogin ? "Kirish" : "Ro'yxatdan o'tish"}</h1>
-          <p className="mt-2 text-sm text-zinc-700">
-            {isLogin ? "Kabinetingizga kirish uchun adminga yozing" : "Ma'lumotlaringizni kiriting, akkaunt shu zahoti ochiladi."}
-          </p>
+          <h1 className="text-2xl font-bold">Kirish</h1>
+          <p className="mt-2 text-sm text-zinc-700">Kabinetingizga kirish uchun adminga yozing</p>
         </motion.div>
         <input type="hidden" name="next" value={next ?? ""} />
-        {!isLogin && (
-          <motion.div variants={item}>
-            <label className="label">Ism va familiya</label>
-            <input name="name" className="input bg-white/60! text-center" placeholder="Masalan, Aziz Karimov" required />
-          </motion.div>
-        )}
         <motion.div variants={item}>
           <label className="label">Email (Gmail)</label>
           <input name="email" type="email" autoComplete="email" className="input bg-white/60! text-center" placeholder="ism@gmail.com" required />
         </motion.div>
         <motion.div variants={item}>
           <label className="label">Parol</label>
-          <input
-            name="password"
-            type="password"
-            autoComplete={isLogin ? "current-password" : "new-password"}
-            className="input bg-white/60! text-center"
-            placeholder={isLogin ? "Parolingiz" : "Kamida 6 ta belgi"}
-            required
-            minLength={isLogin ? 1 : 6}
-          />
+          <input name="password" type="password" autoComplete="current-password" className="input bg-white/60! text-center" placeholder="Parolingiz" required />
         </motion.div>
         {state.error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
         <motion.div variants={item}>
-          <SubmitButton className="btn w-full bg-slate-700 py-3.5 text-base text-white hover:bg-slate-800">
-            {isLogin ? "Kirish" : "Ro'yxatdan o'tish"}
-          </SubmitButton>
+          <SubmitButton className="btn w-full bg-slate-700 py-3.5 text-base text-white hover:bg-slate-800">Kirish</SubmitButton>
         </motion.div>
         <motion.p variants={item} className="text-center text-sm text-zinc-700">
-          {isLogin ? (
-            ADMIN_TELEGRAM ? (
-              <>Akkauntingiz yo&apos;qmi? <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className="text-brand">Adminga yozish</a></>
-            ) : (
-              <>Akkauntingiz yo&apos;qmi? <Link href={`/register${q}`} className="text-brand">Ro&apos;yxatdan o&apos;ting</Link></>
-            )
+          Akkauntingiz yo&apos;qmi?{" "}
+          {ADMIN_TELEGRAM ? (
+            <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className="text-brand">Adminga yozish</a>
           ) : (
-            <>Akkauntingiz bormi? <Link href={`/login${q}`} className="text-brand">Kiring</Link></>
+            "Adminga yozing"
           )}
         </motion.p>
       </motion.form>
