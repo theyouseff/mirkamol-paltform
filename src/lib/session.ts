@@ -2,7 +2,17 @@
 import { SignJWT, jwtVerify } from "jose";
 
 export const SESSION_COOKIE = "session";
-const secret = new TextEncoder().encode(process.env.AUTH_SECRET);
+// AUTH_SECRET bo'sh yoki qisqa bo'lsa, kalit maxfiy baza ulanish manzilidan hosil qilinadi
+// (bo'sh kalit bilan sessiya imzolab bo'lmaydi va kirish 500 xato beradi).
+function getSecret() {
+  const explicit = process.env.AUTH_SECRET;
+  if (explicit && explicit.length >= 16) return new TextEncoder().encode(explicit);
+  const fallback = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
+  if (!fallback) throw new Error("AUTH_SECRET yoki DATABASE_URL sozlanmagan");
+  return new TextEncoder().encode(`session-key:${fallback}`);
+}
+
+const secret = getSecret();
 
 export type Session = { userId: string; role: string };
 
