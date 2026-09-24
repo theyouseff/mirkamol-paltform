@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { prisma } from "@/lib/db";
-import { formatClock, kinescopeId, tashkentDay, timeAgo, toEmbedUrl } from "@/lib/format";
+import { addDays, dayRange, formatClock, kinescopeId, tashkentDay, timeAgo, toEmbedUrl } from "@/lib/format";
 import { ProgressBar } from "@/components/ProgressBar";
 import { StudentVideo } from "@/components/admin/StudentVideo";
 import { VisitCalendar } from "@/components/VisitCalendar";
@@ -51,6 +51,22 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
   const rows = all.filter((r) => !q || r.u.name.toLowerCase().includes(q.toLowerCase()) || r.u.email.toLowerCase().includes(q.toLowerCase()));
   const selected = all.find((r) => r.u.id === student);
   // Tanlangan o'quvchi platformaga kirgan kunlar (kalendar uchun)
+  // Oxirgi 7 kunda (kechagacha) eng ko'p kun qoldirganlar: kirmagan kunlar soni bo'yicha
+  const today = tashkentDay();
+  const windowStart = addDays(today, -7);
+  const yesterday = addDays(today, -1);
+  const weekLogins = selected ? [] : await prisma.loginDay.findMany({ where: { day: { gte: windowStart } }, select: { userId: true, day: true } });
+  const visitedBy = new Map<string, Set<string>>();
+  for (const l of weekLogins) visitedBy.set(l.userId, (visitedBy.get(l.userId) ?? new Set()).add(l.day));
+  const skippers = all
+    .map((r) => {
+      const from = missedFrom(r.u.createdAt); // akkaunt ochilishidan yoki yozuv boshlanishidan oldingi kunlar hisobga olinmaydi
+      const strip = dayRange(windowStart, yesterday).map((d) => ({ d, state: d < from ? "n/a" : visitedBy.get(r.u.id)?.has(d) ? "in" : "out" }));
+      return { r, strip, missed: strip.filter((s) => s.state === "out").length, counted: strip.filter((s) => s.state !== "n/a").length };
+    })
+    .filter((x) => x.missed > 0)
+    .sort((a, b) => b.missed - a.missed || (a.r.last?.updatedAt.getTime() ?? 0) - (b.r.last?.updatedAt.getTime() ?? 0));
+
   const loginDays = selected ? (await prisma.loginDay.findMany({ where: { userId: selected.u.id }, select: { day: true } })).map((d) => d.day) : [];
 
   const href = (patch: { student?: string; q?: string }) => {
@@ -107,7 +123,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
             )}
           </div>
           <div className="enter" style={step(1)}>
-            <VisitCalendar days={loginDays} today={tashkentDay()} from={missedFrom(selected.u.createdAt)} subject="student" />
+            <VisitCalendar days={loginDays} today={today} from={missedFrom(selected.u.createdAt)} subject="student" />
           </div>
         </div>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -133,6 +149,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
           </div>
         </div>
       ) : (
+        <>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           {metrics.map((m, i) => (
             <div key={m.label} className="card enter" style={step(i)}>
@@ -141,6 +158,40 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
             </div>
           ))}
         </div>
+
+        <section className="card enter space-y-4" style={step(5)}>
+          <div>
+            <h2 className="font-semibold">Oxirgi 7 kunda eng ko&apos;p dars qoldirganlar</h2>
+            <p className="text-sm text-zinc-500">Platformaga kirmagan kunlari soni bo&apos;yicha (kechagacha). Doiralar: <span className="text-amber-500">●</span> kirgan, <span className="text-red-500">●</span> kirmagan.</p>
+          </div>
+          {skippers.length > 0 ? (
+            <ul className="divide-y divide-zinc-100">
+              {skippers.map(({ r, strip, missed, counted }) => (
+                <li key={r.u.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
+                  <div className="min-w-0">
+                    <StudentLink href={href({ student: r.u.id })} className="font-medium text-brand hover:underline">{r.u.name}</StudentLink>
+                    <p className="truncate text-xs text-zinc-400">{r.u.email} · {r.last ? `oxirgi faollik ${timeAgo(r.last.updatedAt)}` : "hali video ko'rmagan"}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex gap-1" aria-label="Oxirgi 7 kun">
+                      {strip.map((s) => (
+                        <span
+                          key={s.d}
+                          title={`${s.d}: ${s.state === "in" ? "kirgan" : s.state === "out" ? "kirmagan" : "hisobga olinmaydi"}`}
+                          className={`h-3.5 w-3.5 rounded-full ${s.state === "in" ? "bg-amber-400" : s.state === "out" ? "bg-red-500" : "bg-zinc-200"}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="badge shrink-0 bg-red-100 text-red-700">{missed} / {counted} kun kirmagan</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="rounded-lg bg-zinc-50 px-3 py-2 text-sm text-zinc-500">Hozircha hech kim kun qoldirmagan. Kirgan kunlar yozuvi 24-sentabrdan boshlangan, shuning uchun bu ro&apos;yxat ertadan boshlab to&apos;lib boradi.</p>
+          )}
+        </section>
+        </>
       )}
       </TopPanel>
 

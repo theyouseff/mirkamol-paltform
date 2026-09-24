@@ -59,3 +59,17 @@ export function timeAgo(date: Date) {
 export function tashkentDay(date: Date = new Date()) {
   return date.toLocaleDateString("sv-SE", { timeZone: "Asia/Tashkent" });
 }
+
+// "2026-09-24" + n kun (n manfiy bo'lishi mumkin)
+export function addDays(day: string, n: number) {
+  const d = new Date(`${day}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+// from..to (ikkalasi ham kiradi) kunlar ro'yxati; to < from bo'lsa — bo'sh
+export function dayRange(from: string, to: string) {
+  const days: string[] = [];
+  for (let d = from; d <= to; d = addDays(d, 1)) days.push(d);
+  return days;
+}
