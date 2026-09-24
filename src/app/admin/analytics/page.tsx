@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { formatClock, timeAgo } from "@/lib/format";
+import { formatClock, kinescopeId, timeAgo, toEmbedUrl } from "@/lib/format";
 import { ProgressBar } from "@/components/ProgressBar";
+import { StudentVideo } from "@/components/admin/StudentVideo";
+import { VideoPlayer } from "@/components/VideoPlayer";
 
 const pct = (part: number, whole: number) => (whole > 0 ? Math.min(100, Math.round((part / whole) * 100)) : 0);
 const duration = (seconds: number) => {
@@ -17,7 +19,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
   const [users, lessons, watches, progress] = await Promise.all([
     prisma.user.findMany({ where: { role: "STUDENT", enrollments: { some: {} } }, include: { enrollments: { select: { courseId: true } } } }),
     prisma.lesson.findMany({
-      select: { id: true, title: true, order: true, module: { select: { title: true, order: true, courseId: true } } },
+      select: { id: true, title: true, order: true, videoUrl: true, module: { select: { title: true, order: true, courseId: true } } },
       orderBy: [{ module: { order: "asc" } }, { order: "asc" }],
     }),
     prisma.lessonWatch.findMany(),
@@ -38,8 +40,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       const myWatches = new Map((watchByUser.get(u.id) ?? []).map((w) => [w.lessonId, w]));
       const completed = mine.filter((l) => done.has(`${u.id}:${l.id}`)).length;
       const last = [...myWatches.values()].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())[0];
-      const watchedSeconds = [...myWatches.values()].reduce((n, w) => n + w.watched, 0);
-      return { u, mine, myWatches, completed, last, watchedSeconds };
+      return { u, mine, myWatches, completed, last };
     })
     .sort((a, b) => (b.last?.updatedAt.getTime() ?? 0) - (a.last?.updatedAt.getTime() ?? 0));
   const rows = all.filter((r) => !q || r.u.name.toLowerCase().includes(q.toLowerCase()) || r.u.email.toLowerCase().includes(q.toLowerCase()));
@@ -51,42 +52,19 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
     return `/admin/analytics${p.size ? `?${p}` : ""}`;
   };
 
-  // ---- Metrikalar: tanlangan o'quvchiniki yoki hammaniki
-  let metrics: { label: string; value: string | number; hint?: string }[];
-  if (selected) {
-    const lastLesson = selected.last && lessonById.get(selected.last.lessonId);
-    metrics = [
-      { label: "Progress", value: `${pct(selected.completed, selected.mine.length)}%`, hint: `${selected.completed} / ${selected.mine.length} dars tugatgan` },
-      { label: "Jami ko'rilgan vaqt", value: duration(selected.watchedSeconds) },
-      { label: "Boshlagan darslari", value: selected.myWatches.size, hint: `${selected.mine.length} tadan` },
-      { label: "Oxirgi faollik", value: selected.last ? timeAgo(selected.last.updatedAt) : "—" },
-      {
-        label: "Oxirgi ko'rgan dars",
-        value: lastLesson ? formatClock(selected.last!.position) : "—",
-        hint: lastLesson ? `${lastLesson.title} · to'xtagan joyi (${formatClock(selected.last!.duration)} dan)` : "Hali video ko'rmagan",
-      },
-    ];
-  } else {
-    const active = new Set(watches.filter((w) => w.updatedAt.getTime() >= weekAgo).map((w) => w.userId)).size;
-    metrics = [
-      { label: "O'quvchilar", value: all.length },
-      { label: "Faol (oxirgi 7 kun)", value: active },
-      { label: "Tugatilgan darslar", value: all.reduce((n, r) => n + r.completed, 0) },
-      { label: "O'rtacha progress", value: `${all.length ? Math.round(all.reduce((n, r) => n + pct(r.completed, r.mine.length), 0) / all.length) : 0}%` },
-      { label: "Jami ko'rilgan vaqt", value: duration(watches.reduce((n, w) => n + w.watched, 0)) },
-    ];
-  }
+  // ---- Umumiy metrikalar (o'quvchi tanlanmagan holda)
+  const active = new Set(watches.filter((w) => w.updatedAt.getTime() >= weekAgo).map((w) => w.userId)).size;
+  const metrics = [
+    { label: "O'quvchilar", value: all.length },
+    { label: "Faol (oxirgi 7 kun)", value: active },
+    { label: "Tugatilgan darslar", value: all.reduce((n, r) => n + r.completed, 0) },
+    { label: "O'rtacha progress", value: `${all.length ? Math.round(all.reduce((n, r) => n + pct(r.completed, r.mine.length), 0) / all.length) : 0}%` },
+    { label: "Jami ko'rilgan vaqt", value: duration(watches.reduce((n, w) => n + w.watched, 0)) },
+  ];
 
-  // ---- "Videolar qayergacha ko'rilgan": tanlangan o'quvchi bo'yicha yoki darslar bo'yicha umumiy
-  const perLesson = lessons.map((l) => {
-    const ws = watches.filter((w) => w.lessonId === l.id && w.duration > 0);
-    return {
-      l,
-      avg: ws.length ? Math.round(ws.reduce((n, w) => n + pct(w.watched, w.duration), 0) / ws.length) : 0,
-      viewers: ws.length,
-      finished: progress.filter((p) => p.lessonId === l.id).length,
-    };
-  });
+  // ---- Tanlangan o'quvchi: oxirgi ko'rgan video va uning 4 ta asosiy metrikasi
+  const lastLesson = selected?.last ? lessonById.get(selected.last.lessonId) : undefined;
+  const lastVideoId = lastLesson?.videoUrl ? kinescopeId(lastLesson.videoUrl) : null;
 
   return (
     <div className="space-y-8">
@@ -98,64 +76,58 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         {selected && <Link href={href({ student: "" })} className="btn-outline">← Umumiy ko&apos;rinish</Link>}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        {metrics.map((m) => (
-          <div key={m.label} className="card">
-            <p className="text-sm text-zinc-500">{m.label}</p>
-            <p className="mt-2 text-2xl font-bold">{m.value}</p>
-            {m.hint && <p className="mt-1 text-xs text-zinc-500">{m.hint}</p>}
+      {selected ? (
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <div className="card space-y-3">
+            <p className="text-sm text-zinc-500">Oxirgi ko&apos;rgan video</p>
+            {selected.last && lastLesson ? (
+              <>
+                {lastVideoId ? (
+                  <StudentVideo key={lastLesson.id} videoId={lastVideoId} position={selected.last.position} embedUrl={toEmbedUrl(lastLesson.videoUrl) ?? lastLesson.videoUrl} />
+                ) : lastLesson.videoUrl ? (
+                  <VideoPlayer url={lastLesson.videoUrl} />
+                ) : null}
+                <div>
+                  <p className="text-lg font-semibold">{lastLesson.title}</p>
+                  <p className="text-sm text-zinc-500">{lastLesson.module.title}</p>
+                </div>
+              </>
+            ) : (
+              <p className="rounded-xl bg-zinc-50 px-4 py-10 text-center text-sm text-zinc-500">O&apos;quvchi hali video ko&apos;rmagan</p>
+            )}
           </div>
-        ))}
-      </div>
-
-      <section className="card space-y-4">
-        <div>
-          <h2 className="font-semibold">Videolar qayergacha ko&apos;rilgan</h2>
-          <p className="text-sm text-zinc-500">
-            {selected
-              ? "Har bir darsda o'quvchi qancha qismini ko'rgan va qaysi daqiqada to'xtagan."
-              : "Har bir dars bo'yicha: o'rtacha qancha qismi ko'rilgan, nechta o'quvchi ko'rgan va nechtasi oxirigacha tugatgan."}
-          </p>
+          <div className="grid content-start gap-4">
+            <div className="card">
+              <p className="text-sm text-zinc-500">To&apos;xtagan joyi</p>
+              <p className="mt-2 text-2xl font-bold">{selected.last ? formatClock(selected.last.position) : "—"}</p>
+              {selected.last && (
+                <>
+                  <div className="mt-2"><ProgressBar value={pct(selected.last.position, selected.last.duration)} /></div>
+                  <p className="mt-1 text-xs text-zinc-500">{formatClock(selected.last.duration)} dan · {pct(selected.last.position, selected.last.duration)}%</p>
+                </>
+              )}
+            </div>
+            <div className="card">
+              <p className="text-sm text-zinc-500">Ko&apos;rib tugatgan videolari</p>
+              <p className="mt-2 text-2xl font-bold">{selected.completed} <span className="text-base font-normal text-zinc-400">/ {selected.mine.length}</span></p>
+              <div className="mt-2"><ProgressBar value={pct(selected.completed, selected.mine.length)} /></div>
+            </div>
+            <div className="card">
+              <p className="text-sm text-zinc-500">Oxirgi faollik</p>
+              <p className="mt-2 text-2xl font-bold">{selected.last ? timeAgo(selected.last.updatedAt) : "—"}</p>
+            </div>
+          </div>
         </div>
-        <ul className="space-y-3">
-          {selected
-            ? selected.mine.map((l) => {
-                const w = selected.myWatches.get(l.id);
-                const isDone = done.has(`${selected.u.id}:${l.id}`);
-                const value = isDone ? 100 : w ? pct(w.watched, w.duration) : 0;
-                return (
-                  <li key={l.id} className="grid items-center gap-2 sm:grid-cols-[minmax(0,1fr)_220px_170px]">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{isDone && "✓ "}{l.title}</p>
-                      <p className="truncate text-xs text-zinc-400">{l.module.title}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1"><ProgressBar value={value} /></div>
-                      <span className="w-10 text-right text-sm font-medium">{value}%</span>
-                    </div>
-                    <p className="text-xs text-zinc-500">{w ? `To'xtagan: ${formatClock(w.position)} / ${formatClock(w.duration)}` : "Ko'rilmagan"}</p>
-                  </li>
-                );
-              })
-            : perLesson.map(({ l, avg, viewers, finished }) => (
-                <li key={l.id} className="grid items-center gap-2 sm:grid-cols-[minmax(0,1fr)_220px_170px]">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{l.title}</p>
-                    <p className="truncate text-xs text-zinc-400">{l.module.title}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1"><ProgressBar value={avg} /></div>
-                    <span className="w-10 text-right text-sm font-medium">{avg}%</span>
-                  </div>
-                  <p className="text-xs text-zinc-500">{viewers} ta ko&apos;rgan · {finished} ta tugatgan</p>
-                </li>
-              ))}
-          {(selected ? selected.mine.length : perLesson.length) === 0 && <p className="text-sm text-zinc-500">Darslar yo&apos;q</p>}
-        </ul>
-        {!selected && watches.length === 0 && (
-          <p className="rounded-lg bg-zinc-50 px-3 py-2 text-sm text-zinc-500">Hali hech kim video ko&apos;rmagan. Ma&apos;lumotlar o&apos;quvchilar video ko&apos;rgan sari to&apos;lib boradi.</p>
-        )}
-      </section>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {metrics.map((m) => (
+            <div key={m.label} className="card">
+              <p className="text-sm text-zinc-500">{m.label}</p>
+              <p className="mt-2 text-2xl font-bold">{m.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-2">
