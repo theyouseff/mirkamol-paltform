@@ -15,8 +15,8 @@ export function ResetForm({ token }: { token: string }) {
     <form action={action} className={authCard}>
       <input type="hidden" name="token" value={token} />
       <div className="enter" style={step(1)}>
-        <h1 className="text-2xl font-bold">Yangi parol</h1>
-        <p className="mt-2 text-sm text-gold-text/80">Kamida {MIN_PASSWORD} ta belgi</p>
+        <h1 className="text-2xl font-bold">Parol o&apos;rnating</h1>
+        <p className="mt-2 text-sm text-gold-text/80">O&apos;zingiz eslab qoladigan parol yozing (kamida {MIN_PASSWORD} ta belgi). Shundan keyin shu parol bilan kirasiz.</p>
       </div>
       <div className="enter" style={step(2)}>
         <label className="label text-gold-text">Yangi parol</label>

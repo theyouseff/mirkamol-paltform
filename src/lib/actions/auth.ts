@@ -1,7 +1,6 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { randomBytes } from "node:crypto";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -10,7 +9,7 @@ import { normalizeEmail } from "@/lib/format";
 import { clearAttempts, clientIp, isLimited, recordAttempt } from "@/lib/rate-limit";
 import { mailConfigured, sendResetLink, SITE_URL } from "@/lib/mail";
 import { MIN_PASSWORD } from "@/lib/password";
-import { findValidReset, hashToken, RESET_TTL_MS } from "@/lib/reset";
+import { createResetToken, findValidReset, RESET_TTL_MS } from "@/lib/reset";
 
 export type AuthState = { error?: string };
 
@@ -73,9 +72,7 @@ export async function requestPasswordReset(_: ResetRequestState, formData: FormD
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (user) {
-    const token = randomBytes(32).toString("base64url");
-    await prisma.passwordReset.deleteMany({ where: { userId: user.id } });
-    await prisma.passwordReset.create({ data: { userId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + RESET_TTL_MS) } });
+    const token = await createResetToken(user.id, RESET_TTL_MS);
     // Javobni kutdirmaymiz: xat tezligidan akkaunt bor-yo'qligi bilinib qolmasin
     after(() => sendResetLink(user.email, user.name, `${SITE_URL}/reset/${token}`));
   }

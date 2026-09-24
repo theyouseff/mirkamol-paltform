@@ -34,18 +34,16 @@ export async function sendMail(to: string, subject: string, text: string, html: 
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
-// Yangi akkaunt: login va parol
-export function sendCredentials(to: string, name: string, courseTitle: string, password: string) {
+// Yangi o'quvchi: bir martalik havola. Parolni o'quvchining o'zi o'rnatadi — admin parol ko'rmaydi.
+export function sendActivation(to: string, name: string, courseTitle: string, link: string) {
   const subject = `Kursingiz ochildi: ${courseTitle}`;
-  const text = `Salom, ${name}!\n\n«${courseTitle}» kursiga kirish ochildi.\n\nKirish: ${SITE_URL}\nLogin: ${to}\nParol: ${password}\n\nKirgach, parolni "Parol" bo'limidan o'zgartirishingiz mumkin.`;
+  const text = `Salom, ${name}!\n\n«${courseTitle}» kursiga kirish ochildi.\n\nKirish uchun o'z parolingizni o'rnating (havola bir marta ishlaydi va 7 kun amal qiladi):\n${link}\n\nKeyingi safar ${SITE_URL} da shu email (${to}) va o'zingiz qo'ygan parol bilan kirasiz.`;
   const html = `<div style="font-family:Arial,sans-serif;max-width:480px;line-height:1.6">
 <p>Salom, <b>${esc(name)}</b>!</p>
 <p>«<b>${esc(courseTitle)}</b>» kursiga kirish ochildi.</p>
-<div style="background:#f4f4f8;border-radius:10px;padding:14px 16px">
-<div>Login: <b>${esc(to)}</b></div>
-<div>Parol: <b style="font-family:monospace;font-size:16px">${esc(password)}</b></div></div>
-<p><a href="${SITE_URL}" style="background:#334155;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block">Kabinetga kirish</a></p>
-<p style="color:#666;font-size:13px">Kirgach, parolni «Parol» bo'limidan o'zgartirishingiz mumkin.</p></div>`;
+<p>Kirish uchun o'z parolingizni o'rnating:</p>
+<p><a href="${esc(link)}" style="background:#334155;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block">Parol o'rnatish va kirish</a></p>
+<p style="color:#666;font-size:13px">Havola bir marta ishlaydi va 7 kun amal qiladi. Keyingi safar ${esc(SITE_URL)} da shu email (<b>${esc(to)}</b>) va o'zingiz qo'ygan parol bilan kirasiz.</p></div>`;
   return sendMail(to, subject, text, html);
 }
 

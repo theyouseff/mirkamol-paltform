@@ -9,7 +9,8 @@ import bcrypt from "bcryptjs";
 import { normalizeEmail } from "@/lib/format";
 import { isHexColor } from "@/lib/brand";
 import { generatePassword } from "@/lib/password";
-import { sendCourseOpened, sendCredentials, sendNewPassword, type MailResult } from "@/lib/mail";
+import { SITE_URL, sendActivation, sendCourseOpened, sendNewPassword, type MailResult } from "@/lib/mail";
+import { createResetToken, INVITE_TTL_MS } from "@/lib/reset";
 
 const str = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 const int = (fd: FormData, key: string, fallback = 0) => {
@@ -213,7 +214,7 @@ export async function cancelOrder(formData: FormData) {
 export type MailStatus = "sent" | "failed" | "skipped";
 export type AddStudentState = {
   error?: string;
-  result?: { name: string; email: string; course: string; tariff: string; isNew: boolean; password: string | null; mail: MailStatus; mailReason?: string };
+  result?: { name: string; email: string; course: string; tariff: string; isNew: boolean; activationLink: string | null; mail: MailStatus; mailReason?: string };
 };
 
 function mailStatus(r: MailResult | null): { mail: MailStatus; mailReason?: string } {
@@ -221,7 +222,8 @@ function mailStatus(r: MailResult | null): { mail: MailStatus; mailReason?: stri
   return r.sent ? { mail: "sent" } : { mail: "failed", mailReason: r.reason };
 }
 
-// To'lov admin tomonidan tasdiqlangach: akkaunt ochadi (yoki mavjudini topadi), kursni ochadi, emailga login/parol yuboradi.
+// To'lov admin tomonidan tasdiqlangach: akkaunt ochadi (yoki mavjudini topadi), kursni ochadi va yangi o'quvchiga
+// emailga bir martalik havola yuboradi — parolni o'quvchining o'zi qo'yadi.
 export async function addStudent(_: AddStudentState, formData: FormData): Promise<AddStudentState> {
   await requireAdmin();
   const email = normalizeEmail(str(formData, "email"));
@@ -231,7 +233,7 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
 
   let user = await prisma.user.findUnique({ where: { email } });
   const isNew = !user;
-  let password: string | null = null;
+  let activationLink: string | null = null;
 
   if (user) {
     const enrollment = await prisma.enrollment.findUnique({
@@ -244,8 +246,9 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
   } else {
     const name = str(formData, "name");
     if (name.length < 2) return { error: "Yangi o'quvchi uchun ism va familiyani yozing" };
-    password = generatePassword();
-    user = await prisma.user.create({ data: { name, email, passwordHash: await bcrypt.hash(password, 10) } });
+    // Vaqtinchalik parol hech kimga ko'rsatilmaydi; o'quvchi havola orqali o'zi parol qo'yadi
+    user = await prisma.user.create({ data: { name, email, passwordHash: await bcrypt.hash(generatePassword(24), 10) } });
+    activationLink = `${SITE_URL}/reset/${await createResetToken(user.id, INVITE_TTL_MS)}`;
   }
 
   const order = await prisma.$transaction(async (tx) => {
@@ -265,13 +268,19 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
 
   let mail: MailResult | null = null;
   if (formData.get("sendMail") === "on") {
-    mail = password
-      ? await sendCredentials(email, user.name, tariff.course.title, password)
+    mail = activationLink
+      ? await sendActivation(email, user.name, tariff.course.title, activationLink)
       : await sendCourseOpened(email, user.name, tariff.course.title);
   }
   revalidatePath("/admin", "layout");
+  const status = mailStatus(mail);
   return {
-    result: { name: user.name, email, course: tariff.course.title, tariff: tariff.name, isNew, password, ...mailStatus(mail) },
+    result: {
+      name: user.name, email, course: tariff.course.title, tariff: tariff.name, isNew,
+      // Xat ketgan bo'lsa havolani ko'rsatmaymiz; ketmasa admin uni Telegramda o'zi yuboradi
+      activationLink: status.mail === "sent" ? null : activationLink,
+      ...status,
+    },
   };
 }
 

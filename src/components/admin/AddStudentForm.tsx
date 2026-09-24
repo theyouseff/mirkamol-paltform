@@ -7,7 +7,7 @@ import { SubmitButton } from "../SubmitButton";
 type TariffOption = { id: string; label: string; price: number };
 
 const MAIL_TEXT = {
-  sent: "✓ Login va parol emailga yuborildi",
+  sent: "✓ Kirish havolasi emailga yuborildi",
   failed: "⚠ Email yuborilmadi",
   skipped: "Email yuborilmadi (tanlanmagan)",
 } as const;
@@ -22,7 +22,7 @@ export function AddStudentForm({ tariffs }: { tariffs: TariffOption[] }) {
       <div>
         <h2 className="font-semibold">O&apos;quvchi qo&apos;shish / kurs ochish</h2>
         <p className="text-sm text-zinc-500">
-          To&apos;lov kelgach shu yerda kiriting: yangi o&apos;quvchiga akkaunt ochiladi, parol yaratiladi va emailiga yuboriladi. Mavjud o&apos;quvchiga faqat yangi kurs ochiladi.
+          To&apos;lov kelgach shu yerda kiriting: yangi o&apos;quvchiga akkaunt ochiladi va emailiga bir martalik havola yuboriladi — parolni o&apos;quvchining o&apos;zi qo&apos;yadi. Mavjud o&apos;quvchiga faqat yangi kurs ochiladi.
         </p>
       </div>
       <form action={action} className="space-y-3">
@@ -65,7 +65,7 @@ export function AddStudentForm({ tariffs }: { tariffs: TariffOption[] }) {
           <input name="note" className="input" placeholder="Masalan: kartaga tushdi, skrinshot Telegramda" />
         </div>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="sendMail" defaultChecked /> Emailga login/parol yuborilsin
+          <input type="checkbox" name="sendMail" defaultChecked /> Emailga kirish havolasi yuborilsin
         </label>
         <SubmitButton>Kirish ochish</SubmitButton>
       </form>
@@ -77,11 +77,11 @@ export function AddStudentForm({ tariffs }: { tariffs: TariffOption[] }) {
           <p className="font-medium text-green-800">
             {r.isNew ? "Yangi akkaunt ochildi" : "Mavjud akkauntga kurs qo'shildi"}: {r.name} → «{r.course}» ({r.tariff})
           </p>
-          {r.password && (
+          {r.activationLink && (
             <div className="rounded-lg bg-white p-3">
               <p>Login: <b>{r.email}</b></p>
-              <p>Parol: <b className="font-mono text-base">{r.password}</b></p>
-              <p className="mt-1 text-xs text-zinc-500">Parol faqat hozir ko&apos;rinadi. Email yuborilmasa, Telegramda o&apos;zingiz yuboring.</p>
+              <p className="mt-1 break-all">Bir martalik havola (7 kun): <b className="font-mono text-xs">{r.activationLink}</b></p>
+              <p className="mt-1 text-xs text-zinc-500">Xat ketmadi, havolani o&apos;quvchiga Telegramda shaxsiy xabarda yuboring. U ochib, o&apos;zi parol qo&apos;yadi. Bu havola faqat hozir ko&apos;rinadi.</p>
             </div>
           )}
           <p className={r.mail === "failed" ? "text-amber-700" : "text-zinc-600"}>
