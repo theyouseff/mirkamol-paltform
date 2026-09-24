@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import type { CSSProperties } from "react";
 import { resetPassword, type AuthState } from "@/lib/actions/auth";
-import { MIN_PASSWORD } from "@/lib/password";
+import { MIN_PASSWORD } from "@/lib/constants";
 import { SubmitButton } from "./SubmitButton";
 import { authCard, authError, authInput } from "./auth-ui";
 

@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { createSession, requireUser } from "@/lib/auth";
-import { MIN_PASSWORD } from "@/lib/password";
+import { MIN_PASSWORD } from "@/lib/constants";
 import { getEnrollment, lessonState } from "@/lib/access";
 
 export async function toggleLessonComplete(formData: FormData) {

@@ -8,7 +8,7 @@ import { createSession, destroySession } from "@/lib/auth";
 import { normalizeEmail } from "@/lib/format";
 import { clearAttempts, clientIp, isLimited, recordAttempt } from "@/lib/rate-limit";
 import { mailConfigured, sendResetLink, SITE_URL } from "@/lib/mail";
-import { MIN_PASSWORD } from "@/lib/password";
+import { MIN_PASSWORD } from "@/lib/constants";
 import { createResetToken, findValidReset, RESET_TTL_MS } from "@/lib/reset";
 
 export type AuthState = { error?: string };
