@@ -19,7 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <form action={logout}><button className="mt-1 text-gold-text/60 hover:text-gold-text">Chiqish</button></form>
         </div>
       </aside>
-      <main className="p-4 sm:p-8">{children}</main>
+      <main className="min-w-0 p-4 sm:p-8">{children}</main>
     </div>
   );
 }

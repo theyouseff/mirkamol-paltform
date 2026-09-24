@@ -1,8 +1,9 @@
 import type { CSSProperties } from "react";
 import { prisma } from "@/lib/db";
-import { formatClock, kinescopeId, timeAgo, toEmbedUrl } from "@/lib/format";
+import { formatClock, kinescopeId, tashkentDay, timeAgo, toEmbedUrl } from "@/lib/format";
 import { ProgressBar } from "@/components/ProgressBar";
 import { StudentVideo } from "@/components/admin/StudentVideo";
+import { VisitCalendar } from "@/components/VisitCalendar";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { StudentLink, SwitchProvider, TopPanel } from "@/components/admin/StudentSwitch";
 
@@ -48,6 +49,8 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
     .sort((a, b) => (b.last?.updatedAt.getTime() ?? 0) - (a.last?.updatedAt.getTime() ?? 0));
   const rows = all.filter((r) => !q || r.u.name.toLowerCase().includes(q.toLowerCase()) || r.u.email.toLowerCase().includes(q.toLowerCase()));
   const selected = all.find((r) => r.u.id === student);
+  // Tanlangan o'quvchi platformaga kirgan kunlar (kalendar uchun)
+  const loginDays = selected ? (await prisma.loginDay.findMany({ where: { userId: selected.u.id }, select: { day: true } })).map((d) => d.day) : [];
 
   const href = (patch: { student?: string; q?: string }) => {
     const p = new URLSearchParams({ ...(q && { q }), ...(student && { student }), ...patch });
@@ -82,7 +85,8 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       </div>
 
       {selected ? (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="space-y-4">
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="card enter space-y-3" style={step(0)}>
             <p className="text-sm text-zinc-500">Oxirgi ko&apos;rgan video</p>
             {selected.last && lastLesson ? (
@@ -101,8 +105,12 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
               <p className="rounded-xl bg-zinc-50 px-4 py-10 text-center text-sm text-zinc-500">O&apos;quvchi hali video ko&apos;rmagan</p>
             )}
           </div>
-          <div className="grid content-start gap-4">
-            <div className="card enter" style={step(1)}>
+          <div className="enter" style={step(1)}>
+            <VisitCalendar days={loginDays} today={tashkentDay()} subject="student" />
+          </div>
+        </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="card enter" style={step(2)}>
               <p className="text-sm text-zinc-500">To&apos;xtagan joyi</p>
               <p className="mt-2 text-2xl font-bold">{selected.last ? formatClock(selected.last.position) : "—"}</p>
               {selected.last && (
@@ -112,12 +120,12 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
                 </>
               )}
             </div>
-            <div className="card enter" style={step(2)}>
+            <div className="card enter" style={step(3)}>
               <p className="text-sm text-zinc-500">Ko&apos;rib tugatgan videolari</p>
               <p className="mt-2 text-2xl font-bold">{selected.completed} <span className="text-base font-normal text-zinc-400">/ {selected.mine.length}</span></p>
               <div className="mt-2"><ProgressBar value={pct(selected.completed, selected.mine.length)} /></div>
             </div>
-            <div className="card enter" style={step(3)}>
+            <div className="card enter" style={step(4)}>
               <p className="text-sm text-zinc-500">Oxirgi faollik</p>
               <p className="mt-2 text-2xl font-bold">{selected.last ? timeAgo(selected.last.updatedAt) : "—"}</p>
             </div>

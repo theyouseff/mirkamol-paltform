@@ -8,7 +8,7 @@ const WEEKDAYS = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
 const pad = (n: number) => String(n).padStart(2, "0");
 
 // O'quvchi platformaga kirgan kunlar oltin doirada belgilanadi. today — "2026-09-24" (Toshkent vaqti).
-export function VisitCalendar({ days, today }: { days: string[]; today: string }) {
+export function VisitCalendar({ days, today, subject = "you" }: { days: string[]; today: string; subject?: "you" | "student" }) {
   const visited = new Set(days);
   const [ty, tm] = today.split("-").map(Number);
   const [view, setView] = useState({ year: ty, month: tm - 1 }); // month: 0..11
@@ -51,7 +51,7 @@ export function VisitCalendar({ days, today }: { days: string[]; today: string }
       </div>
 
       <p className="mt-4 border-t border-white/10 pt-3 text-sm text-gold-text/80">
-        {isCurrent ? "Shu oyda" : `${MONTHS[view.month]} oyida`} <b className="text-gold-text">{monthCount}</b> kun kirgansiz
+        {isCurrent ? "Shu oyda" : `${MONTHS[view.month]} oyida`} <b className="text-gold-text">{monthCount}</b> kun {subject === "student" ? "kirgan" : "kirgansiz"}
       </p>
     </section>
   );
