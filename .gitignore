@@ -42,3 +42,6 @@ next-env.d.ts
 
 !.env.example
 /prisma/*.db*
+
+# rasmlarning asl nusxalari (saytga public/ dagi tayyor variantlar chiqadi)
+/photo/
