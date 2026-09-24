@@ -17,6 +17,7 @@ export const DEMO_MODULES: DemoModule[] = [
       {
         title: "Kursga xush kelibsiz",
         duration: "06:20",
+        videoUrl: "https://kinescope.io/embed/vVtjrxph9JN5x6XyrH2fgh",
         description: "Kurs qanday tuzilgani, darslar ketma-ketligi va o'qish rejasi bilan tanishasiz. Har bir modulda nimalar kutayotganini va natijaga qanday erishishni bilib olasiz.",
         points: ["Kurs tuzilmasi va o'qish rejasi", "Darslarni qanday ko'rish kerak", "Natijaga erishish uchun tavsiyalar"],
       },

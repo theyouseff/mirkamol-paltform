@@ -5,7 +5,7 @@ export function VideoPlayer({ url }: { url: string }) {
   if (!src) return null;
   return (
     <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
-      <iframe src={src} className="h-full w-full" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowFullScreen />
+      <iframe src={src} className="h-full w-full" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock" allowFullScreen />
     </div>
   );
 }
