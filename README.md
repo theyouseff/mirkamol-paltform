@@ -1,4 +1,4 @@
-# Ilmaviya — kurs platformasi (GetCourse analogi)
+# ilmaviya — kurs platformasi (GetCourse analogi)
 
 Next.js 15 + Prisma + Tailwind. Bitta ekspert uchun onlayn kurslar platformasi.
 

@@ -7,7 +7,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ size: stri
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#151922", color: "#e6b04f", fontSize: px * 0.55, fontWeight: 700 }}>
-        I
+        i
       </div>
     ),
     { width: px, height: px },
