@@ -15,7 +15,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
       <div>
         <h1 className="text-2xl font-bold">{isLogin ? "Kirish" : "Ro'yxatdan o'tish"}</h1>
         <p className="mt-2 text-sm text-zinc-700">
-          {isLogin ? "Kabinetingizga kiring" : "Ma'lumotlaringizni kiriting, akkaunt shu zahoti ochiladi."}
+          {isLogin ? "Kabinetingizga kirish uchun adminga yozing" : "Ma'lumotlaringizni kiriting, akkaunt shu zahoti ochiladi."}
         </p>
       </div>
       <input type="hidden" name="next" value={next ?? ""} />
