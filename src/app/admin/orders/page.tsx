@@ -40,7 +40,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <h1 className="text-2xl font-bold">To&apos;lovlar</h1>
-        <p className="text-sm text-zinc-500">Ko&apos;rsatilgan to&apos;langanlar: <b className="text-zinc-900">{formatPrice(paidSum)}</b></p>
+        <p className="text-sm text-white/70">Ko&apos;rsatilgan to&apos;langanlar: <b className="text-white">{formatPrice(paidSum)}</b></p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {filters.map((f) => (

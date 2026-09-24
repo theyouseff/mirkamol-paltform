@@ -31,7 +31,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
       <article className="space-y-6">
         <div>
           <CourseBrand course={course} className="mb-3 block" />
-          <Link href={`/cabinet/courses/${course.slug}`} className="text-sm text-brand">← {course.title}</Link>
+          <Link href={`/cabinet/courses/${course.slug}`} className="text-sm text-amber-300 hover:underline">← {course.title}</Link>
           <h1 className="mt-2 text-2xl font-bold">{lesson.title}</h1>
         </div>
         {lesson.videoUrl && <VideoPlayer url={lesson.videoUrl} />}
@@ -44,7 +44,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
               {isDone ? "✅ Tugatilgan (bekor qilish)" : "Darsni tugatdim"}
             </SubmitButton>
           </form>
-          {next ? <Link href={`/cabinet/lessons/${next.id}`} className="btn-primary">Keyingi →</Link> : <span />}
+          {next ? <Link href={`/cabinet/lessons/${next.id}`} className="btn-gold">Keyingi →</Link> : <span />}
         </div>
       </article>
       <aside className="card h-fit lg:sticky lg:top-6">

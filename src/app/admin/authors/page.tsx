@@ -20,7 +20,7 @@ export default async function AdminAuthorsPage() {
     <div className="max-w-3xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Mualliflar</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-white/70">
           Kurs egalari: siz, mijozlaringiz. Kursni muallifga biriktirsangiz, sotuvlar muallif bo&apos;yicha hisoblanadi (hisob-kitob uchun).
         </p>
       </div>
@@ -47,7 +47,7 @@ export default async function AdminAuthorsPage() {
           </div>
         );
       })}
-      {authors.length === 0 && <p className="text-sm text-zinc-500">Hali mualliflar yo&apos;q.</p>}
+      {authors.length === 0 && <p className="text-sm text-white/70">Hali mualliflar yo&apos;q.</p>}
     </div>
   );
 }

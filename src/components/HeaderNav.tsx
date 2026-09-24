@@ -33,16 +33,16 @@ export function HeaderNav({ isAdmin }: { isAdmin: boolean }) {
             key={l.href}
             href={l.href}
             onClick={() => setTarget(l.href)}
-            className={`relative rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${active ? "text-white" : "text-zinc-600 hover:text-zinc-900"}`}
+            className={`relative rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${active ? "text-emerald-950" : "text-white/75 hover:text-white"}`}
           >
             {active && (
               <motion.span
                 layoutId="header-pill"
-                className="absolute inset-0 rounded-xl bg-brand"
+                className="absolute inset-0 rounded-xl bg-amber-400"
                 transition={{ type: "spring", stiffness: 420, damping: 34 }}
               />
             )}
-            <span className="relative">{l.label}</span>
+            <span className="relative font-medium">{l.label}</span>
           </Link>
         );
       })}

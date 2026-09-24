@@ -70,7 +70,7 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
     <div className="max-w-4xl space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <Link href="/admin/courses" className="text-sm text-brand">← Kurslar</Link>
+          <Link href="/admin/courses" className="text-sm text-amber-300 hover:underline">← Kurslar</Link>
           <h1 className="mt-1 text-2xl font-bold">{course.title}</h1>
         </div>
         <div className="flex gap-2">

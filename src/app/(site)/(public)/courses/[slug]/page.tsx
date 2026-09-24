@@ -32,7 +32,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
       </section>
 
       <div className="mx-auto max-w-4xl space-y-16 px-4 py-16">
-        {course.description && <section className="whitespace-pre-line text-lg leading-relaxed text-zinc-700">{course.description}</section>}
+        {course.description && <section className="whitespace-pre-line text-lg leading-relaxed text-white/85">{course.description}</section>}
 
         <section>
           <h2 className="text-2xl font-bold">Kurs dasturi</h2>

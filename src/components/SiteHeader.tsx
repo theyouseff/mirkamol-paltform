@@ -6,19 +6,19 @@ import { HeaderNav } from "./HeaderNav";
 export async function SiteHeader() {
   const user = await getSession(); // bazaga bormaydi — rol sessiyaning o'zida
   return (
-    <header className="border-b border-zinc-200 bg-white">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-emerald-950/60 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="text-lg font-bold text-brand">Akademiya</Link>
+        <Link href="/" className="text-lg font-bold text-amber-300">Akademiya</Link>
         <nav className="flex items-center gap-1 text-sm">
           {user ? (
             <>
               <HeaderNav isAdmin={user.role === "ADMIN"} />
-              <form action={logout}><button className="btn text-zinc-500 hover:text-zinc-900">Chiqish</button></form>
+              <form action={logout}><button className="btn text-white/60 hover:text-white">Chiqish</button></form>
             </>
           ) : (
             <>
-              <Link href="/courses" className="btn text-zinc-600 hover:text-zinc-900">Kurslar</Link>
-              <Link href="/login" className="btn-primary">Kirish</Link>
+              <Link href="/courses" className="btn text-white/80 hover:text-white">Kurslar</Link>
+              <Link href="/login" className="btn-gold">Kirish</Link>
             </>
           )}
         </nav>

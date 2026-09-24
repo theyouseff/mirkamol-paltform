@@ -14,7 +14,7 @@ export default async function HomePage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
       <h1 className="text-3xl font-bold">Kurslar</h1>
-      <p className="mt-2 text-zinc-500">O&apos;zingizga mos kursni tanlang</p>
+      <p className="mt-2 text-white/70">O&apos;zingizga mos kursni tanlang</p>
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {courses.map((c) => (
           <Link key={c.id} href={`/courses/${c.slug}`} className="card-gold flex flex-col">
@@ -29,7 +29,7 @@ export default async function HomePage() {
             {c.tariffs[0] && <p className="mt-4 font-semibold text-brand">{formatPrice(c.tariffs[0].price)} dan</p>}
           </Link>
         ))}
-        {courses.length === 0 && <p className="text-zinc-500">Hozircha kurslar yo&apos;q.</p>}
+        {courses.length === 0 && <p className="text-white/70">Hozircha kurslar yo&apos;q.</p>}
       </div>
     </div>
   );
