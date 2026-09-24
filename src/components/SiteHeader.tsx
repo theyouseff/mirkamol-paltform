@@ -4,9 +4,10 @@ import { logout } from "@/lib/actions/auth";
 import { callCenterUrl } from "@/lib/config";
 import { HeaderNav } from "./HeaderNav";
 
-// Menyuning o'ng chetidagi yaltiroq tilla "Call - Centre". Raqam kiritilgan bo'lsa, bosilganda qo'ng'iroq boshlanadi (tel:).
-const CallCentre = () => {
-  const cls = "btn ml-1 gold-text-gloss px-2 text-sm font-semibold sm:ml-4 sm:px-3 sm:text-base";
+// Yaltiroq tilla "Call - Centre". Raqam kiritilgan bo'lsa, bosilganda qo'ng'iroq boshlanadi (tel:).
+// Keng ekranda (noutbuk, 1440px+) oynaning eng o'ng chetiga taqab turadi; torroq ekranda menyuning oxirida.
+const CallCentre = ({ className = "" }: { className?: string }) => {
+  const cls = `btn gold-text-gloss px-2 text-sm font-semibold sm:px-3 sm:text-base ${className}`;
   return callCenterUrl ? (
     <a href={callCenterUrl} className={`${cls} transition hover:brightness-110`}>Call - Centre</a>
   ) : (
@@ -25,16 +26,19 @@ export async function SiteHeader() {
             <>
               <HeaderNav isAdmin={user.role === "ADMIN"} />
               <form action={logout}><button className="btn text-gold-text/70 hover:text-gold-text">Chiqish</button></form>
-              <CallCentre />
+              <CallCentre className="ml-1 sm:ml-3 min-[1440px]:hidden" />
             </>
           ) : (
             <>
               <Link href="/courses" className="btn text-gold-text/85 hover:text-gold-text">Kurslar</Link>
               <Link href="/login" className="btn-gold">Kirish</Link>
-              <CallCentre />
+              <CallCentre className="ml-1 sm:ml-3 min-[1440px]:hidden" />
             </>
           )}
         </nav>
+      </div>
+      <div className="absolute inset-y-0 right-4 hidden items-center min-[1440px]:flex">
+        <CallCentre />
       </div>
     </header>
   );
