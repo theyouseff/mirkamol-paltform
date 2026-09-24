@@ -14,11 +14,12 @@
   --color-brand-dark: var(--brand-dark);
   --color-brand-soft: var(--brand-soft);
   --color-gold: #c9a227;
+  --color-gold-text: #e6b04f; /* fonda turgan yozuvlar: tugmalardagi oltin, tekis */
 }
 
 body {
   background: #0f3d2e;
-  color: #fff;
+  color: #e6b04f;
 }
 
 @utility btn {

@@ -17,7 +17,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
 
   return (
     <BrandScope color={course.brandColor}>
-      <section className="text-white" style={{ background: "linear-gradient(135deg, var(--brand-dark), var(--brand))" }}>
+      <section className="text-gold-text" style={{ background: "linear-gradient(135deg, var(--brand-dark), var(--brand))" }}>
         <div className="mx-auto max-w-4xl px-4 py-20 text-center">
           {course.logoUrl && (
             <div className="mb-6 inline-block rounded-xl bg-white px-4 py-2">
@@ -26,13 +26,13 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
             </div>
           )}
           <h1 className="text-4xl font-bold sm:text-5xl">{course.title}</h1>
-          {course.subtitle && <p className="mt-4 text-xl text-white/85">{course.subtitle}</p>}
+          {course.subtitle && <p className="mt-4 text-xl text-gold-text/90">{course.subtitle}</p>}
           <a href="#tariffs" className="btn-primary mt-8 px-8 py-3 text-base">Tariflarni ko&apos;rish</a>
         </div>
       </section>
 
       <div className="mx-auto max-w-4xl space-y-16 px-4 py-16">
-        {course.description && <section className="whitespace-pre-line text-lg leading-relaxed text-white/85">{course.description}</section>}
+        {course.description && <section className="whitespace-pre-line text-lg leading-relaxed text-gold-text/90">{course.description}</section>}
 
         <section>
           <h2 className="text-2xl font-bold">Kurs dasturi</h2>

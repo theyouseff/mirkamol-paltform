@@ -8,16 +8,16 @@ export async function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-emerald-950/60 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="text-lg font-bold text-amber-300">Akademiya</Link>
+        <Link href="/" className="text-lg font-bold text-gold-text">Akademiya</Link>
         <nav className="flex items-center gap-1 text-sm">
           {user ? (
             <>
               <HeaderNav isAdmin={user.role === "ADMIN"} />
-              <form action={logout}><button className="btn text-white/60 hover:text-white">Chiqish</button></form>
+              <form action={logout}><button className="btn text-gold-text/70 hover:text-gold-text">Chiqish</button></form>
             </>
           ) : (
             <>
-              <Link href="/courses" className="btn text-white/80 hover:text-white">Kurslar</Link>
+              <Link href="/courses" className="btn text-gold-text/85 hover:text-gold-text">Kurslar</Link>
               <Link href="/login" className="btn-gold">Kirish</Link>
             </>
           )}

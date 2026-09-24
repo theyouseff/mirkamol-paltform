@@ -23,7 +23,7 @@ export default async function AdminLessonPage({ params }: { params: Promise<{ id
   return (
     <div className="max-w-3xl space-y-6">
       <div>
-        <Link href={`/admin/courses/${course.id}`} className="text-sm text-amber-300 hover:underline">← {course.title} / {lesson.module.title}</Link>
+        <Link href={`/admin/courses/${course.id}`} className="text-sm text-gold-text hover:underline">← {course.title} / {lesson.module.title}</Link>
         <h1 className="mt-1 text-2xl font-bold">{lesson.title}</h1>
       </div>
 

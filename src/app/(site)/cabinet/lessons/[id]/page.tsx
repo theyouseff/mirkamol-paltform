@@ -31,7 +31,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
       <article className="space-y-6">
         <div>
           <CourseBrand course={course} className="mb-3 block" />
-          <Link href={`/cabinet/courses/${course.slug}`} className="text-sm text-amber-300 hover:underline">← {course.title}</Link>
+          <Link href={`/cabinet/courses/${course.slug}`} className="text-sm text-gold-text hover:underline">← {course.title}</Link>
           <h1 className="mt-2 text-2xl font-bold">{lesson.title}</h1>
         </div>
         {lesson.videoUrl && <VideoPlayer url={lesson.videoUrl} />}

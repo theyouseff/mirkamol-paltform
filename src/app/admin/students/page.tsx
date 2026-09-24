@@ -49,7 +49,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
           {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
         </select>
         <button className="btn-outline">Filtr</button>
-        {(q || author || course) && <Link href="/admin/students" className="btn text-white/70 hover:text-white">Tozalash</Link>}
+        {(q || author || course) && <Link href="/admin/students" className="btn text-gold-text/80 hover:text-gold-text">Tozalash</Link>}
       </form>
 
       <div className="card overflow-x-auto p-0">

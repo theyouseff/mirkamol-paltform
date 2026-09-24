@@ -33,7 +33,7 @@ export function HeaderNav({ isAdmin }: { isAdmin: boolean }) {
             key={l.href}
             href={l.href}
             onClick={() => setTarget(l.href)}
-            className={`relative rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${active ? "text-emerald-950" : "text-white/75 hover:text-white"}`}
+            className={`relative rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${active ? "text-emerald-950" : "text-gold-text/80 hover:text-gold-text"}`}
           >
             {active && (
               <motion.span
