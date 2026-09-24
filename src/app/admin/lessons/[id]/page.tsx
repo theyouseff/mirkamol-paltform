@@ -29,10 +29,14 @@ export default async function AdminLessonPage({ params }: { params: Promise<{ id
 
       <form action={updateLesson} className="card space-y-4">
         <input type="hidden" name="id" value={lesson.id} />
-        <div className="grid gap-4 sm:grid-cols-[1fr_100px]">
+        <div className="grid gap-4 sm:grid-cols-[1fr_120px_100px]">
           <div>
             <label className="label">Dars nomi</label>
             <input name="title" className="input" defaultValue={lesson.title} required />
+          </div>
+          <div>
+            <label className="label">Davomiyligi</label>
+            <input name="duration" className="input" defaultValue={lesson.duration} placeholder="12:40" />
           </div>
           <div>
             <label className="label">Tartib</label>
@@ -48,6 +52,7 @@ export default async function AdminLessonPage({ params }: { params: Promise<{ id
         <div>
           <label className="label">Matn / konspekt</label>
           <textarea name="content" rows={10} className="input" defaultValue={lesson.content} />
+          <p className="mt-1 text-xs text-zinc-400">Bo&apos;sh qator — yangi abzats. «- » bilan boshlangan qatorlar belgili ro&apos;yxat bo&apos;ladi; «Bu darsda:» kabi ikki nuqtali qator sarlavha bo&apos;ladi.</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>

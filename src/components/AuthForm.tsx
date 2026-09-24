@@ -1,10 +1,12 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import type { CSSProperties } from "react";
 import { login, type AuthState } from "@/lib/actions/auth";
 import { ADMIN_TELEGRAM, adminContactUrl } from "@/lib/config";
 import { SubmitButton } from "./SubmitButton";
+import { authCard, authError, authInput, authLink } from "./auth-ui";
 
 // Ketma-ket paydo bo'lish: har bir blok o'z raqami (--i) bo'yicha biroz kechroq chiqadi
 const step = (i: number) => ({ "--i": i }) as CSSProperties;
@@ -19,31 +21,34 @@ export function AuthForm() {
   };
 
   return (
-    <form action={submit} className="enter w-full max-w-md space-y-5 rounded-2xl bg-ink-950/45 p-7 text-center text-gold-text shadow-2xl backdrop-blur-md">
+    <form action={submit} className={authCard}>
       <div className="enter" style={step(1)}>
         <h1 className="text-2xl font-bold text-gold-text">Kirish</h1>
         <p className="mt-2 text-sm text-gold-text/80">Kabinetingizga kirish uchun adminga yozing</p>
       </div>
       <div className="enter" style={step(2)}>
         <label className="label text-gold-text">Email (Gmail)</label>
-        <input name="email" type="email" autoComplete="email" className="input border-white/20! bg-white/10! text-center text-white! placeholder:text-white/45 focus:border-amber-300! focus:ring-amber-300/30!" placeholder="ism@gmail.com" required />
+        <input name="email" type="email" autoComplete="email" className={authInput} placeholder="ism@gmail.com" required />
       </div>
       <div className="enter" style={step(3)}>
         <label className="label text-gold-text">Parol</label>
-        <input name="password" type="password" autoComplete="current-password" className="input border-white/20! bg-white/10! text-center text-white! placeholder:text-white/45 focus:border-amber-300! focus:ring-amber-300/30!" placeholder="Parolingiz" required />
+        <input name="password" type="password" autoComplete="current-password" className={authInput} placeholder="Parolingiz" required />
       </div>
-      {state.error && <p className="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-100">{state.error}</p>}
+      {state.error && <p className={authError}>{state.error}</p>}
       <div className="enter" style={step(4)}>
         <SubmitButton className="btn-primary w-full py-3.5 text-base">Kirish</SubmitButton>
       </div>
-      <p className="enter text-center text-sm text-gold-text/80" style={step(5)}>
-        Akkauntingiz yo&apos;qmi?{" "}
-        {ADMIN_TELEGRAM ? (
-          <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-gold-text underline-offset-2 hover:underline">Adminga yozish</a>
-        ) : (
-          "Adminga yozing"
-        )}
-      </p>
+      <div className="enter space-y-2 text-center text-sm text-gold-text/80" style={step(5)}>
+        <p><Link href="/forgot" className={authLink}>Parolni unutdingizmi?</Link></p>
+        <p>
+          Akkauntingiz yo&apos;qmi?{" "}
+          {ADMIN_TELEGRAM ? (
+            <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className={authLink}>Adminga yozish</a>
+          ) : (
+            "Adminga yozing"
+          )}
+        </p>
+      </div>
     </form>
   );
 }

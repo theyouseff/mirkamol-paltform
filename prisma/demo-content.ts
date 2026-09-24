@@ -1,10 +1,11 @@
-// Namuna (imitatsiya) modullar va video darslar. Keyinroq kursning haqiqiy modul/darslariga ulanadi.
+// Namuna modullar va video darslar: yangi bazani to'ldirish (seed) va demo kursni yangilash (import-demo) uchun.
+// Saytning o'zi bu faylni ishlatmaydi — hamma narsa bazadan o'qiladi.
 export type DemoLesson = {
   title: string;
   duration: string;
   description: string;
   points: string[]; // "Bu darsda" ro'yxati
-  videoUrl?: string; // YouTube/Kinescope havolasi; bo'sh bo'lsa video joyi namuna ko'rinishida
+  videoUrl?: string; // YouTube/Kinescope havolasi
 };
 export type DemoModule = { slug: string; title: string; description: string; lessons: DemoLesson[] };
 
@@ -123,15 +124,7 @@ export const DEMO_MODULES: DemoModule[] = [
   },
 ];
 
-export function findDemoModule(slug: string) {
-  const index = DEMO_MODULES.findIndex((m) => m.slug === slug);
-  return index === -1 ? null : { module: DEMO_MODULES[index], number: index + 1 };
-}
-
-// Dars raqami 1 dan boshlanadi (URL: /courses/[kurs]/[modul]/[dars])
-export function findDemoLesson(moduleSlug: string, lessonNumber: string) {
-  const found = findDemoModule(moduleSlug);
-  const n = Number(lessonNumber);
-  if (!found || !Number.isInteger(n) || n < 1 || n > found.module.lessons.length) return null;
-  return { ...found, lesson: found.module.lessons[n - 1], lessonNumber: n };
+// Dars matni: tavsif, keyin "Bu darsda:" ro'yxati ("- " bilan). LessonContent shu formatni chiroyli ko'rsatadi.
+export function lessonContent(l: DemoLesson) {
+  return `${l.description}\n\nBu darsda:\n${l.points.map((p) => `- ${p}`).join("\n")}`;
 }

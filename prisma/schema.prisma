@@ -19,6 +19,7 @@ model User {
   enrollments Enrollment[]
   orders      Order[]
   progress    LessonProgress[]
+  resets      PasswordReset[]
 }
 
 // Kurs muallifi (ekspert). Barcha to'lovlar egasining hisobiga tushadi — muallif bo'yicha hisobot uchun.
@@ -70,10 +71,11 @@ model Tariff {
 model Module {
   id       String   @id @default(cuid())
   courseId String
-  title    String
-  order    Int      @default(0)
-  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons  Lesson[]
+  title       String
+  description String   @default("")
+  order       Int      @default(0)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
 }
 
 model Lesson {
@@ -82,6 +84,7 @@ model Lesson {
   title    String
   content  String    @default("")
   videoUrl String    @default("")
+  duration String    @default("") // masalan: "12:40" (ixtiyoriy)
   order    Int       @default(0)
   minLevel Int       @default(1) // shu darajadagi va undan yuqori tariflar ko'radi
   openAt   DateTime? // zapusk uchun: shu sanagacha yopiq
@@ -128,4 +131,23 @@ model LessonProgress {
   lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@id([userId, lessonId])
+}
+
+// Kirish va parol tiklash urinishlari (brute-force'dan himoya). key: "login:ip:email", "login:ip:1.2.3.4", "reset:email:a@b.c" ...
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
+// Parolni o'zi tiklash: emailga yuboriladigan bir martalik havola. Bazada faqat token xeshi saqlanadi.
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

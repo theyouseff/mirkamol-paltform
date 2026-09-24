@@ -1,5 +1,6 @@
 import type { Lesson, Tariff } from "@prisma/client";
 import { prisma } from "./db";
+import { formatDate } from "./format";
 
 export type LessonState = "open" | "tariff" | "scheduled";
 
@@ -8,6 +9,13 @@ export function lessonState(lesson: Pick<Lesson, "minLevel" | "openAt">, tariff:
   if (!tariff || tariff.level < lesson.minLevel) return "tariff";
   if (lesson.openAt && lesson.openAt > new Date()) return "scheduled";
   return "open";
+}
+
+// Yopiq dars ustidagi izoh
+export function lessonHint(lesson: Pick<Lesson, "openAt">, state: LessonState) {
+  if (state === "tariff") return "Yuqori tarifda ochiladi";
+  if (state === "scheduled" && lesson.openAt) return `${formatDate(lesson.openAt)} da ochiladi`;
+  return null;
 }
 
 export function getEnrollment(userId: string, courseId: string) {

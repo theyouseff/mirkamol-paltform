@@ -3,7 +3,8 @@
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { requireUser } from "@/lib/auth";
+import { createSession, requireUser } from "@/lib/auth";
+import { MIN_PASSWORD } from "@/lib/password";
 import { getEnrollment, lessonState } from "@/lib/access";
 
 export async function toggleLessonComplete(formData: FormData) {
@@ -28,8 +29,10 @@ export async function changePassword(_: PasswordState, formData: FormData): Prom
   const user = await requireUser();
   const current = String(formData.get("current") ?? "");
   const next = String(formData.get("next") ?? "");
-  if (next.length < 6) return { error: "Yangi parol kamida 6 ta belgidan iborat bo'lsin" };
+  if (next.length < MIN_PASSWORD) return { error: `Yangi parol kamida ${MIN_PASSWORD} ta belgidan iborat bo'lsin` };
   if (!(await bcrypt.compare(current, user.passwordHash))) return { error: "Joriy parol noto'g'ri" };
-  await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(next, 10) } });
+  const updated = await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(next, 10) } });
+  // Boshqa qurilmalardagi eski sessiyalar bekor bo'ladi; bu qurilma yangi sessiya bilan qoladi
+  await createSession(updated);
   return { ok: true };
 }

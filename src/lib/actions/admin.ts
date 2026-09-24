@@ -121,11 +121,36 @@ export async function createModule(formData: FormData) {
 
 export async function updateModule(formData: FormData) {
   await requireAdmin();
-  const m = await prisma.module.update({
+  await prisma.module.update({
     where: { id: str(formData, "id") },
-    data: { title: str(formData, "title"), order: int(formData, "order") },
+    data: { title: str(formData, "title"), description: str(formData, "description") },
   });
-  revalidatePath(`/admin/courses/${m.courseId}`);
+  revalidatePath("/", "layout");
+}
+
+// Ketma-ketlikda bir qadam yuqoriga/pastga suradi va tartib raqamlarini 1..n qilib tuzatadi.
+async function reorder(ids: string[], id: string, dir: string, save: (id: string, order: number) => Promise<unknown>) {
+  const from = ids.indexOf(id);
+  const to = dir === "up" ? from - 1 : from + 1;
+  if (from === -1 || to < 0 || to >= ids.length) return;
+  [ids[from], ids[to]] = [ids[to], ids[from]];
+  await Promise.all(ids.map((mid, i) => save(mid, i + 1)));
+}
+
+export async function moveModule(formData: FormData) {
+  await requireAdmin();
+  const m = await prisma.module.findUniqueOrThrow({ where: { id: str(formData, "id") } });
+  const siblings = await prisma.module.findMany({ where: { courseId: m.courseId }, orderBy: [{ order: "asc" }, { id: "asc" }], select: { id: true } });
+  await reorder(siblings.map((x) => x.id), m.id, str(formData, "dir"), (id, order) => prisma.module.update({ where: { id }, data: { order } }));
+  revalidatePath("/", "layout");
+}
+
+export async function moveLesson(formData: FormData) {
+  await requireAdmin();
+  const l = await prisma.lesson.findUniqueOrThrow({ where: { id: str(formData, "id") } });
+  const siblings = await prisma.lesson.findMany({ where: { moduleId: l.moduleId }, orderBy: [{ order: "asc" }, { id: "asc" }], select: { id: true } });
+  await reorder(siblings.map((x) => x.id), l.id, str(formData, "dir"), (id, order) => prisma.lesson.update({ where: { id }, data: { order } }));
+  revalidatePath("/", "layout");
 }
 
 export async function deleteModule(formData: FormData) {
@@ -154,6 +179,7 @@ export async function updateLesson(formData: FormData) {
       title: str(formData, "title"),
       content: str(formData, "content"),
       videoUrl: str(formData, "videoUrl"),
+      duration: str(formData, "duration"),
       order: int(formData, "order"),
       minLevel: Math.max(1, int(formData, "minLevel", 1)),
       openAt: parseTashkent(str(formData, "openAt")),

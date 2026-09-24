@@ -14,7 +14,8 @@ function getSecret() {
 
 const secret = getSecret();
 
-export type Session = { userId: string; role: string };
+// pv — parol xeshining qisqa izi: parol o'zgarsa, eski sessiyalar avtomatik bekor bo'ladi.
+export type Session = { userId: string; role: string; pv: string };
 
 export async function signSession(session: Session) {
   return new SignJWT(session)
@@ -28,7 +29,7 @@ export async function verifySession(token?: string): Promise<Session | null> {
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secret);
-    return { userId: payload.userId as string, role: payload.role as string };
+    return { userId: payload.userId as string, role: payload.role as string, pv: (payload.pv as string) ?? "" };
   } catch {
     return null;
   }

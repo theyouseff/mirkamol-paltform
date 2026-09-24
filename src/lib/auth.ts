@@ -1,12 +1,16 @@
 import { cache } from "react";
+import { createHash } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "./db";
-import { SESSION_COOKIE, signSession, verifySession, type Session } from "./session";
+import { SESSION_COOKIE, signSession, verifySession } from "./session";
 
-export async function createSession(session: Session) {
+// Parol xeshining qisqa izi. Parol o'zgarsa iz ham o'zgaradi va eski sessiyalar yaroqsiz bo'ladi.
+const passwordVersion = (passwordHash: string) => createHash("sha256").update(passwordHash).digest("base64url").slice(0, 16);
+
+export async function createSession(user: { id: string; role: string; passwordHash: string }) {
   const store = await cookies();
-  store.set(SESSION_COOKIE, await signSession(session), {
+  store.set(SESSION_COOKIE, await signSession({ userId: user.id, role: user.role, pv: passwordVersion(user.passwordHash) }), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -27,12 +31,18 @@ export async function getSession() {
 export const getCurrentUser = cache(async () => {
   const session = await getSession();
   if (!session) return null;
-  return prisma.user.findUnique({ where: { id: session.userId } });
+  const user = await prisma.user.findUnique({ where: { id: session.userId } });
+  if (!user || session.pv !== passwordVersion(user.passwordHash)) return null;
+  return user;
 });
 
 export async function requireUser() {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    // Yaroqsiz sessiya (parol o'zgargan yoki akkaunt o'chirilgan) bo'lsa — avval cookie tozalanadi,
+    // aks holda middleware "kirgan" deb /login dan qaytarib, cheksiz aylanish bo'ladi.
+    redirect((await getSession()) ? "/api/session/clear" : "/login");
+  }
   return user;
 }
 

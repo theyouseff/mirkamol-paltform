@@ -19,8 +19,9 @@ Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 | Yo'l | Nima |
 |---|---|
 | `/` , `/login` | Kirish (email + parol). O'zi ro'yxatdan o'tish yo'q — akkauntni admin ochadi |
-| `/courses`, `/courses/[slug]` | Kurslar katalogi va sotuv sahifasi (kursning o'z logotipi va rangida) |
-| `/cabinet` | O'quvchi kabineti: faqat o'zi to'lagan kurslar, darslar, progress |
+| `/forgot`, `/reset/[token]` | Parolni o'zi tiklash (emailga havola; SMTP kerak) |
+| `/courses`, `/courses/[slug]` | Kurslar katalogi va sotuv sahifasi: faqat dastur (modul/dars nomlari), video va matn yo'q |
+| `/cabinet` | O'quvchi kabineti: kurs → modul → dars (video). Faqat o'zi to'lagan kurslar, progress |
 | `/cabinet/settings` | Parolni o'zgartirish |
 | `/admin` | Dashboard, kurslar, mualliflar, to'lovlar, o'quvchilar |
 
@@ -32,6 +33,14 @@ Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 ## Mualliflar va brend
 - **Mualliflar** — kurs egalari (siz, mijozlaringiz). Kursga muallif biriktiriladi; dashboard va to'lovlarda muallif bo'yicha hisobot va filtr bor.
 - Har kursning **brendi**: nom/logotip va asosiy rang (kurs sozlamalarida). O'quvchi shu kursni ochganda o'sha rangni ko'radi.
+
+## Xavfsizlik
+- Video va dars matni faqat kabinetda, faqat kursga yozilgan (yoki admin) foydalanuvchiga serverdan chiqadi. Sotuv sahifasida faqat nomlar.
+- Video ustida o'quvchi emaili xira ko'rinadi (tarqatilsa kimdan chiqqani bilinadi).
+- **Kinescope'da domen cheklovi**: Kinescope → loyiha sozlamalari → Xavfsizlik (Domain restriction) → `ilmaviya.vercel.app` ni qo'shing. Busiz embed havolasini istalgan saytga qo'yib ko'rsatish mumkin.
+- Kirishda urinishlar chegarasi (5 xato → 15 daqiqa kutish). Parol o'zgarsa yoki tiklansa, boshqa qurilmalardagi sessiyalar yopiladi.
+- Vercel'da **AUTH_SECRET** albatta sozlang; admin dashboardda sozlanmagan narsalar ko'rsatiladi.
+- Demo kursga namuna modul/darslarni yuklash: `npx tsx prisma/import-demo.ts` (o'quvchisi bo'lgan kursga tegmaydi).
 
 ## Kirish qoidalari
 - Har bir tarifda **daraja** bor (Standart = 1, VIP = 2 ...). Darsda "minimal daraja" belgilanadi.

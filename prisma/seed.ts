@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { DEMO_MODULES, lessonContent } from "./demo-content";
 
 const prisma = new PrismaClient();
 
@@ -34,28 +35,20 @@ async function main() {
         ],
       },
       modules: {
-        create: [
-          {
-            title: "1-modul. Asoslar",
-            order: 1,
-            lessons: {
-              create: [
-                { title: "Kirish: kurs qanday o'tadi", order: 1, videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", content: "Xush kelibsiz! Bu darsda kurs tuzilmasi bilan tanishasiz." },
-                { title: "Profilni qadoqlash", order: 2, content: "Bio, avatar va aktual stories'ni to'g'ri to'ldirish." },
-              ],
-            },
+        create: DEMO_MODULES.map((m, mi) => ({
+          title: m.title,
+          description: m.description,
+          order: mi + 1,
+          lessons: {
+            create: m.lessons.map((l, li) => ({
+              title: l.title,
+              duration: l.duration,
+              videoUrl: l.videoUrl ?? "",
+              content: lessonContent(l),
+              order: li + 1,
+            })),
           },
-          {
-            title: "2-modul. Sotuvlar",
-            order: 2,
-            lessons: {
-              create: [
-                { title: "Kontent-reja", order: 1, content: "Sotuvchi kontent qanday tuziladi." },
-                { title: "VIP bonus: shaxsiy strategiya", order: 2, minLevel: 2, content: "Faqat VIP tarif uchun." },
-              ],
-            },
-          },
-        ],
+        })),
       },
     },
   });

@@ -72,3 +72,15 @@ export function sendNewPassword(to: string, name: string, password: string) {
 <p><a href="${SITE_URL}" style="background:#334155;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block">Kabinetga kirish</a></p></div>`;
   return sendMail(to, subject, text, html);
 }
+
+// Parolni o'zi tiklash havolasi (1 soat amal qiladi)
+export function sendResetLink(to: string, name: string, link: string) {
+  const subject = "Parolni tiklash";
+  const text = `Salom, ${name}!\n\nParolni tiklash uchun havola (1 soat amal qiladi):\n${link}\n\nAgar bu so'rovni siz yubormagan bo'lsangiz, xatni e'tiborsiz qoldiring.`;
+  const html = `<div style="font-family:Arial,sans-serif;max-width:480px;line-height:1.6">
+<p>Salom, <b>${esc(name)}</b>!</p>
+<p>Parolni tiklash uchun tugmani bosing. Havola 1 soat amal qiladi.</p>
+<p><a href="${esc(link)}" style="background:#334155;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block">Yangi parol o'rnatish</a></p>
+<p style="color:#666;font-size:13px">Agar bu so'rovni siz yubormagan bo'lsangiz, xatni e'tiborsiz qoldiring.</p></div>`;
+  return sendMail(to, subject, text, html);
+}

@@ -4,7 +4,7 @@ import type { Tariff } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { formatDate, formatPrice } from "@/lib/format";
 import {
-  createLesson, createModule, deleteCourse, deleteModule, deleteTariff, saveTariff, updateCourse, updateModule,
+  createLesson, createModule, deleteCourse, deleteModule, deleteTariff, moveLesson, moveModule, saveTariff, updateCourse, updateModule,
 } from "@/lib/actions/admin";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ConfirmButton } from "@/components/ConfirmButton";
@@ -157,25 +157,39 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
 
       <section className="card space-y-6">
         <h2 className="text-lg font-semibold">Dastur: modullar va darslar</h2>
-        {course.modules.map((m) => (
+        {course.modules.map((m, mi) => (
           <div key={m.id} className="rounded-xl border border-zinc-200">
-            <form action={updateModule} className="flex flex-wrap items-center gap-2 border-b border-zinc-100 bg-zinc-50 p-3">
-              <input type="hidden" name="id" value={m.id} />
-              <input name="order" type="number" className="input w-16" defaultValue={m.order} title="Tartib" />
-              <input name="title" className="input flex-1 font-medium" defaultValue={m.title} />
-              <SubmitButton className="btn-outline">Saqlash</SubmitButton>
-              <ConfirmButton formAction={deleteModule} message="Modul va undagi barcha darslar o'chiriladi. Davom etasizmi?">✕</ConfirmButton>
-            </form>
+            <div className="flex items-start gap-2 border-b border-zinc-100 bg-zinc-50 p-3">
+              <form action={moveModule} className="flex gap-1">
+                <input type="hidden" name="id" value={m.id} />
+                <button name="dir" value="up" disabled={mi === 0} className="btn-outline px-2.5" title="Yuqoriga">↑</button>
+                <button name="dir" value="down" disabled={mi === course.modules.length - 1} className="btn-outline px-2.5" title="Pastga">↓</button>
+              </form>
+              <form action={updateModule} className="min-w-0 flex-1 space-y-2">
+                <input type="hidden" name="id" value={m.id} />
+                <div className="flex flex-wrap items-center gap-2">
+                  <input name="title" className="input min-w-0 flex-1 font-medium" defaultValue={m.title} />
+                  <SubmitButton className="btn-outline">Saqlash</SubmitButton>
+                  <ConfirmButton formAction={deleteModule} message="Modul va undagi barcha darslar o'chiriladi. Davom etasizmi?">✕</ConfirmButton>
+                </div>
+                <input name="description" className="input text-zinc-600" defaultValue={m.description} placeholder="Modul haqida qisqa tavsif (ixtiyoriy)" />
+              </form>
+            </div>
             <ul className="divide-y divide-zinc-100">
-              {m.lessons.map((l) => (
-                <li key={l.id}>
-                  <Link href={`/admin/lessons/${l.id}`} className="flex items-center justify-between gap-2 px-4 py-2.5 text-sm hover:bg-zinc-50">
-                    <span>{l.order}. {l.title} {l.videoUrl && "🎬"}</span>
+              {m.lessons.map((l, li) => (
+                <li key={l.id} className="flex items-center hover:bg-zinc-50">
+                  <Link href={`/admin/lessons/${l.id}`} className="flex flex-1 items-center justify-between gap-2 px-4 py-2.5 text-sm">
+                    <span>{li + 1}. {l.title} {l.videoUrl && "🎬"}</span>
                     <span className="flex gap-1">
                       {l.minLevel > 1 && <span className="badge bg-amber-100 text-amber-700">{tariffName(l.minLevel)}+</span>}
                       {l.openAt && <span className="badge bg-sky-100 text-sky-700">🕒 {formatDate(l.openAt)}</span>}
                     </span>
                   </Link>
+                  <form action={moveLesson} className="flex gap-1 pr-3">
+                    <input type="hidden" name="id" value={l.id} />
+                    <button name="dir" value="up" disabled={li === 0} className="btn-outline px-2 py-1" title="Yuqoriga">↑</button>
+                    <button name="dir" value="down" disabled={li === m.lessons.length - 1} className="btn-outline px-2 py-1" title="Pastga">↓</button>
+                  </form>
                 </li>
               ))}
             </ul>

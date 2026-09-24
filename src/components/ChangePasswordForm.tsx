@@ -15,10 +15,10 @@ export function ChangePasswordForm() {
       </div>
       <div>
         <label className="label">Yangi parol</label>
-        <input name="next" type="password" autoComplete="new-password" className="input" minLength={6} placeholder="Kamida 6 ta belgi" required />
+        <input name="next" type="password" autoComplete="new-password" className="input" minLength={8} placeholder="Kamida 8 ta belgi" required />
       </div>
       {state.error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
-      {state.ok && <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">Parol o&apos;zgartirildi</p>}
+      {state.ok && <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">Parol o&apos;zgartirildi. Boshqa qurilmalardagi sessiyalar yopildi.</p>}
       <SubmitButton className="btn-primary w-full">Saqlash</SubmitButton>
     </form>
   );

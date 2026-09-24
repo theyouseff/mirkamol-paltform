@@ -2,6 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { formatDate, formatPrice } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { ADMIN_TELEGRAM } from "@/lib/config";
+import { mailConfigured } from "@/lib/mail";
 
 export default async function AdminDashboard() {
   const since = new Date(Date.now() - 30 * 24 * 3600 * 1000);
@@ -26,6 +28,18 @@ export default async function AdminDashboard() {
   }
   const total = paidCount + pendingCount;
 
+  // Ishga tushirish uchun hali sozlanmagan narsalar
+  const todo: { title: string; hint: string }[] = [];
+  if ((process.env.AUTH_SECRET ?? "").length < 16) {
+    todo.push({ title: "AUTH_SECRET sozlanmagan", hint: "Vercel → Settings → Environment Variables: AUTH_SECRET = tasodifiy 64 belgi (openssl rand -hex 32). Sozlangach hamma qayta kiradi." });
+  }
+  if (!mailConfigured()) {
+    todo.push({ title: "Email yuborish (SMTP) sozlanmagan", hint: "Parollar emailga ketmaydi va o'quvchi parolni o'zi tiklay olmaydi. Parolni shu paneldan ko'chirib yuborasiz. SMTP_* o'zgaruvchilari — .env.example da." });
+  }
+  if (!ADMIN_TELEGRAM) {
+    todo.push({ title: "Telegram username kiritilmagan", hint: "Vercel'da NEXT_PUBLIC_ADMIN_TELEGRAM = username (@siz). Shundan keyin «Adminga yozish» tugmalari ishlaydi." });
+  }
+
   const stats = [
     { label: "Umumiy daromad", value: formatPrice(revenue._sum.amount ?? 0) },
     { label: "Oxirgi 30 kun", value: formatPrice(revenue30._sum.amount ?? 0) },
@@ -37,6 +51,19 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold">Dashboard</h1>
+      {todo.length > 0 && (
+        <div className="rounded-2xl border border-amber-300/40 bg-amber-400/10 p-5 text-amber-100">
+          <h2 className="font-semibold">Sozlanishi kerak</h2>
+          <ul className="mt-3 space-y-3 text-sm">
+            {todo.map((t) => (
+              <li key={t.title}>
+                <p className="font-medium">{t.title}</p>
+                <p className="text-amber-100/75">{t.hint}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {stats.map((s) => (
           <div key={s.label} className="card">
