@@ -22,8 +22,8 @@ async function main() {
   await prisma.course.create({
     data: {
       slug: "demo-kurs",
-      title: "Instagram orqali sotuvlar",
-      subtitle: "30 kunda birinchi mijozlaringizni toping",
+      title: "Bolajak LORlar uchun",
+      subtitle: "Bu ko'nikmalarni bilmasdan Prof.LOR bo'la olmaysiz",
       description:
         "Kurs davomida profilni to'g'ri qadoqlash, kontent-reja tuzish va obunachilarni mijozga aylantirishni o'rganasiz.",
       published: true,
