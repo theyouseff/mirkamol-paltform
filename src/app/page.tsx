@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
+import { AuthForm } from "@/components/AuthForm";
 
 export const dynamic = "force-dynamic";
 
-// Kirgan foydalanuvchi to'g'ridan-to'g'ri kabinetga o'tadi; mehmonga "Xush kelibsiz" oynasi chiqadi.
+// Kirgan foydalanuvchi to'g'ridan-to'g'ri kabinetga o'tadi; mehmonga ro'yxatdan o'tish formasi chiqadi.
 export default async function WelcomePage() {
   const user = await getCurrentUser();
   if (user) redirect(user.role === "ADMIN" ? "/admin" : "/cabinet");
@@ -14,9 +14,7 @@ export default async function WelcomePage() {
       className="flex min-h-screen items-center justify-center bg-cover bg-center px-4 py-10"
       style={{ backgroundImage: "url(/welcome-bg.webp)" }}
     >
-      <div className="w-full max-w-md space-y-3">
-        <Link href="/login" className="btn w-full bg-slate-500 py-4 text-base text-white hover:bg-slate-600">Kirish</Link>
-      </div>
+      <AuthForm mode="register" />
     </div>
   );
 }
