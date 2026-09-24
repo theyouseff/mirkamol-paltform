@@ -125,7 +125,7 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
               </div>
               <div>
                 <label className="label">Asosiy rang</label>
-                <input name="brandColor" type="color" className="h-[42px] w-full cursor-pointer rounded-xl border border-zinc-300 bg-white p-1" defaultValue={course.brandColor || "#6d28d9"} />
+                <input name="brandColor" type="color" className="h-[42px] w-full cursor-pointer rounded-xl border border-zinc-300 bg-white p-1" defaultValue={course.brandColor || "#0d5c46"} />
               </div>
             </div>
           </div>

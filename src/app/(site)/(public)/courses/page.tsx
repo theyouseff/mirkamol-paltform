@@ -17,12 +17,12 @@ export default async function HomePage() {
       <p className="mt-2 text-zinc-500">O&apos;zingizga mos kursni tanlang</p>
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {courses.map((c) => (
-          <Link key={c.id} href={`/courses/${c.slug}`} className="card flex flex-col transition hover:border-brand hover:shadow-lg">
+          <Link key={c.id} href={`/courses/${c.slug}`} className="card-gold flex flex-col">
             {c.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={c.coverUrl} alt="" className="mb-4 aspect-video w-full rounded-xl object-cover" />
             ) : (
-              <div className="mb-4 aspect-video w-full rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500" />
+              <div className="mb-4 aspect-video w-full rounded-xl bg-gradient-to-br from-emerald-800 to-emerald-500" />
             )}
             <h2 className="text-lg font-semibold">{c.title}</h2>
             <p className="mt-1 flex-1 text-sm text-zinc-500">{c.subtitle}</p>

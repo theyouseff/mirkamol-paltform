@@ -64,7 +64,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
                 <td>{u.email}</td>
                 <td>
                   <div className="flex flex-wrap gap-1">
-                    {u.enrollments.map((e) => <span key={e.id} className="badge bg-violet-50 text-violet-700">{e.course.title} · {e.tariff.name}</span>)}
+                    {u.enrollments.map((e) => <span key={e.id} className="badge bg-brand-soft text-brand">{e.course.title} · {e.tariff.name}</span>)}
                     {u.enrollments.length === 0 && <span className="text-zinc-400">—</span>}
                   </div>
                 </td>

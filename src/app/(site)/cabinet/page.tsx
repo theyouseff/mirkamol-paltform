@@ -28,7 +28,7 @@ export default async function CabinetPage() {
           const pct = lessons.length ? (completed / lessons.length) * 100 : 0;
           return (
             <BrandScope key={e.id} color={e.course.brandColor}>
-              <Link href={`/cabinet/courses/${e.course.slug}`} className="card space-y-3 transition hover:border-brand">
+              <Link href={`/cabinet/courses/${e.course.slug}`} className="card-gold block space-y-3">
                 <CourseBrand course={e.course} />
                 <span className="badge bg-brand-soft text-brand">{e.tariff.name}</span>
                 <h2 className="text-lg font-semibold">{e.course.title}</h2>

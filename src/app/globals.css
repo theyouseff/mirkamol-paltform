@@ -2,9 +2,9 @@
 
 /* Kurs brendi (rang) shu o'zgaruvchilarni qayta yozadi — qarang: lib/brand.ts */
 :root {
-  --brand: #6d28d9;
-  --brand-dark: #5b21b6;
-  --brand-soft: #f3efff;
+  --brand: #0d5c46;
+  --brand-dark: #094836;
+  --brand-soft: #e6f2ec;
 }
 
 @theme inline {
@@ -13,10 +13,11 @@
   --color-brand: var(--brand);
   --color-brand-dark: var(--brand-dark);
   --color-brand-soft: var(--brand-soft);
+  --color-gold: #c9a227;
 }
 
 body {
-  background: #f7f7fb;
+  background: #f3f7f4;
   color: #18181b;
 }
 
@@ -46,6 +47,18 @@ body {
 
 @utility card {
   @apply rounded-2xl border border-zinc-200 bg-white p-6;
+}
+
+/* Kurs bloklari: oltin hoshiya */
+@utility card-gold {
+  @apply card border-2 border-gold;
+  box-shadow: 0 10px 26px -14px rgb(212 175 55 / 0.6);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  &:hover {
+    @apply border-gold;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px -14px rgb(212 175 55 / 0.8);
+  }
 }
 
 @utility badge {
