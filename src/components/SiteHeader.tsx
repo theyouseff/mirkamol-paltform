@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { logout } from "@/lib/actions/auth";
+import { callCenterUrl } from "@/lib/config";
 import { HeaderNav } from "./HeaderNav";
+
+// Bosilganda telefon qo'ng'irog'i boshlanadi (tel:). Raqam kiritilmagan bo'lsa — ko'rinmaydi.
+const CallCentre = () =>
+  callCenterUrl ? <a href={callCenterUrl} className="btn text-gold-text/85 hover:text-gold-text">Call - Centre</a> : null;
 
 export async function SiteHeader() {
   const user = await getSession(); // bazaga bormaydi — rol sessiyaning o'zida
@@ -14,11 +19,13 @@ export async function SiteHeader() {
             <>
               <HeaderNav isAdmin={user.role === "ADMIN"} />
               <form action={logout}><button className="btn text-gold-text/70 hover:text-gold-text">Chiqish</button></form>
+              <CallCentre />
             </>
           ) : (
             <>
               <Link href="/courses" className="btn text-gold-text/85 hover:text-gold-text">Kurslar</Link>
               <Link href="/login" className="btn-gold">Kirish</Link>
+              <CallCentre />
             </>
           )}
         </nav>
