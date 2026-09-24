@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
@@ -19,15 +20,19 @@ function isActive(href: string, path: string) {
 // Faol tugma orqasidagi belgi (layoutId) bir tugmadan ikkinchisiga silliq siljib o'tadi.
 export function HeaderNav({ isAdmin }: { isAdmin: boolean }) {
   const path = usePathname();
+  // Bosilgan tugma darhol faol bo'ladi — server sahifani yuklab bo'lishini kutmaymiz
+  const [target, setTarget] = useState<string | null>(null);
+  useEffect(() => setTarget(null), [path]);
   return (
     <>
       {isAdmin && <Link href="/admin" className="btn-outline">Admin panel</Link>}
       {links.map((l) => {
-        const active = isActive(l.href, path);
+        const active = target ? target === l.href : isActive(l.href, path);
         return (
           <Link
             key={l.href}
             href={l.href}
+            onClick={() => setTarget(l.href)}
             className={`relative rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${active ? "text-white" : "text-zinc-600 hover:text-zinc-900"}`}
           >
             {active && (

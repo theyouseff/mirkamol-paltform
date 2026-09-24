@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "./db";
@@ -22,11 +23,12 @@ export async function getSession() {
   return verifySession((await cookies()).get(SESSION_COOKIE)?.value);
 }
 
-export async function getCurrentUser() {
+// cache(): bir so'rov ichida (layout + sahifa) bazaga faqat bir marta murojaat qilinadi
+export const getCurrentUser = cache(async () => {
   const session = await getSession();
   if (!session) return null;
   return prisma.user.findUnique({ where: { id: session.userId } });
-}
+});
 
 export async function requireUser() {
   const user = await getCurrentUser();

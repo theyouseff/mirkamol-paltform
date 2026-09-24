@@ -5,6 +5,12 @@ export async function middleware(req: NextRequest) {
   const session = await verifySession(req.cookies.get(SESSION_COOKIE)?.value);
   const { pathname, search } = req.nextUrl;
 
+  // "/" va "/login" statik sahifalar (tezkor). Kirgan foydalanuvchi bu yerda turmaydi.
+  if (pathname === "/" || pathname === "/login") {
+    if (session) return NextResponse.redirect(new URL(session.role === "ADMIN" ? "/admin" : "/cabinet", req.url));
+    return NextResponse.next();
+  }
+
   if (!session) {
     const url = new URL("/login", req.url);
     url.searchParams.set("next", pathname + search);
@@ -16,4 +22,4 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = { matcher: ["/cabinet/:path*", "/admin/:path*"] };
+export const config = { matcher: ["/", "/login", "/cabinet/:path*", "/admin/:path*"] };

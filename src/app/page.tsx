@@ -1,14 +1,9 @@
-import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
+import { preload } from "react-dom";
 import { AuthForm } from "@/components/AuthForm";
 
-export const dynamic = "force-dynamic";
-
-// Kirgan foydalanuvchi to'g'ridan-to'g'ri kabinetga o'tadi; mehmonga kirish formasi chiqadi.
-export default async function WelcomePage() {
-  const user = await getCurrentUser();
-  if (user) redirect(user.role === "ADMIN" ? "/admin" : "/cabinet");
-
+// Statik sahifa: serverda emas, tarmoq chetidan tayyor holda beriladi. Kirgan foydalanuvchini middleware yo'naltiradi.
+export default function WelcomePage() {
+  preload("/welcome-bg.webp", { as: "image" });
   return (
     <div
       className="flex min-h-screen items-center justify-center bg-cover bg-center px-4 py-10"

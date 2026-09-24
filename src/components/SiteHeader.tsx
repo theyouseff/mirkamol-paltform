@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { logout } from "@/lib/actions/auth";
 import { HeaderNav } from "./HeaderNav";
 
 export async function SiteHeader() {
-  const user = await getCurrentUser();
+  const user = await getSession(); // bazaga bormaydi — rol sessiyaning o'zida
   return (
     <header className="border-b border-zinc-200 bg-white">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">

@@ -1,6 +1,6 @@
 import { AuthForm } from "@/components/AuthForm";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
-  const { next } = await searchParams;
-  return <AuthForm next={next} />;
+// Statik sahifa; "next" parametrini AuthForm brauzerda o'zi o'qiydi.
+export default function LoginPage() {
+  return <AuthForm />;
 }

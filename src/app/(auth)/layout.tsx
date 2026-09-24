@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { preload } from "react-dom";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  preload("/welcome-bg.webp", { as: "image" });
   return (
     <div
       className="flex min-h-screen flex-col items-center justify-center gap-6 bg-cover bg-center px-4"
