@@ -20,7 +20,7 @@ export async function sendMail(to: string, subject: string, text: string, html: 
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
     });
     await transporter.sendMail({
-      from: process.env.MAIL_FROM ?? `Akademiya <${process.env.SMTP_USER}>`,
+      from: process.env.MAIL_FROM ?? `TeachUmma <${process.env.SMTP_USER}>`,
       to,
       subject,
       text,

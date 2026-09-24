@@ -1,4 +1,4 @@
-# Kurs platformasi (GetCourse analogi)
+# TeachUmma — kurs platformasi (GetCourse analogi)
 
 Next.js 15 + Prisma + Tailwind. Bitta ekspert uchun onlayn kurslar platformasi.
 

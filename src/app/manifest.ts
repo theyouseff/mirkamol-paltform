@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 // Telefonda "Ilova sifatida o'rnatish" uchun.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Akademiya",
-    short_name: "Akademiya",
+    name: "TeachUmma",
+    short_name: "TeachUmma",
     description: "Onlayn kurslar platformasi",
     start_url: "/",
     display: "standalone",
