@@ -7,8 +7,9 @@ const WEEKDAYS = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-// O'quvchi platformaga kirgan kunlar oltin doirada belgilanadi. today — "2026-09-24" (Toshkent vaqti).
-export function VisitCalendar({ days, today, subject = "you" }: { days: string[]; today: string; subject?: "you" | "student" }) {
+// O'quvchi platformaga kirgan kunlar oltin doirada, kirmagan kunlar (from dan kechagacha) qizil rangda belgilanadi.
+// today — "2026-09-24" (Toshkent vaqti); bugun hali tugamagani uchun qizil emas.
+export function VisitCalendar({ days, today, from, subject = "you" }: { days: string[]; today: string; from?: string; subject?: "you" | "student" }) {
   const visited = new Set(days);
   const [ty, tm] = today.split("-").map(Number);
   const [view, setView] = useState({ year: ty, month: tm - 1 }); // month: 0..11
@@ -18,7 +19,10 @@ export function VisitCalendar({ days, today, subject = "you" }: { days: string[]
   const count = new Date(Date.UTC(view.year, view.month + 1, 0)).getUTCDate();
   const cells: (number | null)[] = [...Array(offset).fill(null), ...Array.from({ length: count }, (_, i) => i + 1)];
   const key = (d: number) => `${view.year}-${pad(view.month + 1)}-${pad(d)}`;
-  const monthCount = Array.from({ length: count }, (_, i) => key(i + 1)).filter((k) => visited.has(k)).length;
+  const isMissed = (k: string) => !!from && k >= from && k < today && !visited.has(k);
+  const keys = Array.from({ length: count }, (_, i) => key(i + 1));
+  const monthCount = keys.filter((k) => visited.has(k)).length;
+  const missedCount = keys.filter(isMissed).length;
 
   const move = (delta: number) =>
     setView(({ year, month }) => {
@@ -44,15 +48,26 @@ export function VisitCalendar({ days, today, subject = "you" }: { days: string[]
             <span key={`e${i}`} />
           ) : visited.has(key(d)) ? (
             <span key={d} title="Shu kuni kirgan" className="gold-gloss relative isolate mx-auto flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-sm before:rounded-none!">{d}</span>
+          ) : isMissed(key(d)) ? (
+            <span key={d} title="Shu kuni kirmagan" className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-red-500/20 text-sm font-medium text-red-300 ring-1 ring-red-400/50">{d}</span>
           ) : (
             <span key={d} className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full text-sm ${key(d) === today ? "ring-1 ring-gold text-gold-text" : "text-gold-text/60"}`}>{d}</span>
           ),
         )}
       </div>
 
-      <p className="mt-4 border-t border-white/10 pt-3 text-sm text-gold-text/80">
-        {isCurrent ? "Shu oyda" : `${MONTHS[view.month]} oyida`} <b className="text-gold-text">{monthCount}</b> kun {subject === "student" ? "kirgan" : "kirgansiz"}
-      </p>
+      <div className="mt-4 space-y-1.5 border-t border-white/10 pt-3 text-sm text-gold-text/80">
+        <p className="flex items-center gap-2">
+          <span className="h-3 w-3 rounded-full bg-gradient-to-b from-[#f8d27a] to-[#dba548]" aria-hidden />
+          {isCurrent ? "Shu oyda" : `${MONTHS[view.month]} oyida`} <b className="text-gold-text">{monthCount}</b> kun {subject === "student" ? "kirgan" : "kirgansiz"}
+        </p>
+        {!!from && (
+          <p className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-red-500/60 ring-1 ring-red-400/60" aria-hidden />
+            <b className="text-red-300">{missedCount}</b> kun {subject === "student" ? "kirmagan" : "kirmagansiz"}
+          </p>
+        )}
+      </div>
     </section>
   );
 }

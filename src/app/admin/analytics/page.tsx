@@ -4,6 +4,7 @@ import { formatClock, kinescopeId, tashkentDay, timeAgo, toEmbedUrl } from "@/li
 import { ProgressBar } from "@/components/ProgressBar";
 import { StudentVideo } from "@/components/admin/StudentVideo";
 import { VisitCalendar } from "@/components/VisitCalendar";
+import { missedFrom } from "@/lib/activity";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { StudentLink, SwitchProvider, TopPanel } from "@/components/admin/StudentSwitch";
 
@@ -106,7 +107,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
             )}
           </div>
           <div className="enter" style={step(1)}>
-            <VisitCalendar days={loginDays} today={tashkentDay()} subject="student" />
+            <VisitCalendar days={loginDays} today={tashkentDay()} from={missedFrom(selected.u.createdAt)} subject="student" />
           </div>
         </div>
           <div className="grid gap-4 sm:grid-cols-3">

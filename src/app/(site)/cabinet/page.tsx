@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { formatClock, kinescopeId, tashkentDay, toEmbedUrl } from "@/lib/format";
 import { ProgressBar } from "@/components/ProgressBar";
 import { LessonVideo } from "@/components/LessonVideo";
+import { missedFrom } from "@/lib/activity";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { VisitCalendar } from "@/components/VisitCalendar";
 
@@ -90,7 +91,7 @@ export default async function CabinetPage() {
         <Link href="/courses" className="btn-primary">Kurslarga o&apos;tish</Link>
       </section>
     )}
-    <VisitCalendar days={visitedDays} today={today} />
+    <VisitCalendar days={visitedDays} today={today} from={user.role === "ADMIN" ? undefined : missedFrom(user.createdAt)} />
     </div>
     </div>
   );
