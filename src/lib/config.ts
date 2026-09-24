@@ -9,3 +9,6 @@ export const adminContactUrl = ADMIN_TELEGRAM ? `https://t.me/${ADMIN_TELEGRAM}`
 export const CALL_CENTER_PHONE = process.env.NEXT_PUBLIC_CALL_CENTER_PHONE ?? "+998 77 119 9229";
 
 export const callCenterUrl = CALL_CENTER_PHONE ? `tel:${CALL_CENTER_PHONE.replace(/[^\d+]/g, "")}` : "";
+
+// Menyudagi Telegram belgisi: username bo'lsa — unga, bo'lmasa call-markaz raqamiga (Telegram raqam bo'yicha ham ochadi).
+export const telegramUrl = ADMIN_TELEGRAM ? `https://t.me/${ADMIN_TELEGRAM}` : CALL_CENTER_PHONE ? `https://t.me/${CALL_CENTER_PHONE.replace(/[^\d+]/g, "")}` : "";
