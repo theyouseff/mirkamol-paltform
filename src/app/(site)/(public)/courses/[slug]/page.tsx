@@ -2,12 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { BrandScope } from "@/components/BrandScope";
-import { DEMO_LESSON_COUNT, VideoLessonGrid } from "@/components/VideoLessonGrid";
+import { ModuleGrid } from "@/components/ModuleGrid";
+import { DEMO_MODULES } from "@/lib/demo-course";
 
 export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const course = await prisma.course.findUnique({ where: { slug } });
   if (!course || !course.published) notFound();
+  const lessonCount = DEMO_MODULES.reduce((n, m) => n + m.lessons.length, 0);
 
   return (
     <BrandScope color={course.brandColor}>
@@ -23,11 +25,13 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
           )}
           <h1 className="text-3xl font-bold sm:text-4xl">{course.title}</h1>
           {course.subtitle && <p className="mt-3 text-lg text-gold-text/85">{course.subtitle}</p>}
-          <p className="mt-6 text-sm font-medium uppercase tracking-widest text-gold-text/70">{DEMO_LESSON_COUNT} ta video dars</p>
+          <p className="mt-6 text-sm font-medium uppercase tracking-widest text-gold-text/70">
+            {DEMO_MODULES.length} ta modul · {lessonCount} ta video dars
+          </p>
         </div>
 
         <div className="mt-5">
-          <VideoLessonGrid />
+          <ModuleGrid courseSlug={course.slug} />
         </div>
       </div>
     </BrandScope>
