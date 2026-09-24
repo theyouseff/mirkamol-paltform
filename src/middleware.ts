@@ -7,7 +7,7 @@ export async function middleware(req: NextRequest) {
 
   // "/" va "/login" statik sahifalar (tezkor). Kirgan foydalanuvchi bu yerda turmaydi.
   if (pathname === "/" || pathname === "/login") {
-    if (session) return NextResponse.redirect(new URL(session.role === "ADMIN" ? "/admin" : "/cabinet", req.url));
+    if (session) return NextResponse.redirect(new URL(session.role === "ADMIN" ? "/admin" : "/courses", req.url));
     return NextResponse.next();
   }
 
@@ -17,7 +17,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
   if (pathname.startsWith("/admin") && session.role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/cabinet", req.url));
+    return NextResponse.redirect(new URL("/courses", req.url));
   }
   return NextResponse.next();
 }

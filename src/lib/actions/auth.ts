@@ -47,7 +47,7 @@ export async function login(_: AuthState, formData: FormData): Promise<AuthState
 
   await clearAttempts([keys[0]]);
   await createSession(user);
-  redirect(safeNext(formData.get("next")) ?? (user.role === "ADMIN" ? "/admin" : "/cabinet"));
+  redirect(safeNext(formData.get("next")) ?? (user.role === "ADMIN" ? "/admin" : "/courses"));
 }
 
 export async function logout() {
@@ -104,5 +104,5 @@ export async function activateWithCode(_: AuthState, formData: FormData): Promis
   await clearAttempts([...keys, `login:email:${email}`]);
   // Kod emailga kelgan — egasi ekani tasdiqlangan, shu zahoti kiritamiz
   await createSession(updated);
-  redirect(updated.role === "ADMIN" ? "/admin" : "/cabinet");
+  redirect(updated.role === "ADMIN" ? "/admin" : "/courses");
 }

@@ -21,7 +21,7 @@ Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 | `/` , `/login` | Kirish (email + parol). O'zi ro'yxatdan o'tish yo'q — akkauntni admin ochadi |
 | `/activate`, `/forgot` | Emailga kelgan bir martalik kod bilan parol o'rnatish (yangi o'quvchi) va tiklash (SMTP kerak) |
 | `/courses`, `/courses/[slug]` | Kurslar katalogi va sotuv sahifasi: faqat dastur (modul/dars nomlari), video va matn yo'q |
-| `/cabinet` | O'quvchi kabineti: kurs → modul → dars (video). Faqat o'zi to'lagan kurslar, progress |
+| `/courses` → `/cabinet/courses/[slug]` | Kirgach o'quvchi «Kurslar» sahifasiga tushadi; o'zi to'lagan kurs blokini bossa kurs ochiladi: modul → video dars, progress |
 | `/cabinet/settings` | Parolni o'zgartirish |
 | `/admin` | Dashboard, kurslar, mualliflar, to'lovlar, o'quvchilar |
 

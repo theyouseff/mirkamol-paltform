@@ -28,7 +28,6 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
     );
   }
 
-  const courseCount = await prisma.enrollment.count({ where: { userId: user.id } });
   const available = flatLessons.filter((l) => l.state !== "locked");
   const completed = available.filter((l) => done.has(l.id)).length;
   const next = flatLessons.find((l) => l.state === "open" && !done.has(l.id));
@@ -47,8 +46,8 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
 
   return (
     <BrandScope color={course.brandColor}>
-      {courseCount > 1 && <Link href="/cabinet" className="text-sm font-medium text-gold-text/80 hover:text-gold-text">← Mening kurslarim</Link>}
-      <div className={`${courseCount > 1 ? "mt-5 " : ""}max-w-3xl space-y-4`}>
+      <Link href="/courses" className="text-sm font-medium text-gold-text/80 hover:text-gold-text">← Kurslar</Link>
+      <div className="mt-5 max-w-3xl space-y-4">
         <CourseBrand course={course} className="block" />
         <h1 className="text-3xl font-bold sm:text-4xl">{course.title}</h1>
         {course.subtitle && <p className="text-lg text-gold-text/85">{course.subtitle}</p>}
