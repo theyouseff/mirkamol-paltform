@@ -3,12 +3,10 @@ import { AuthForm } from "@/components/AuthForm";
 
 // Statik sahifa: serverda emas, tarmoq chetidan tayyor holda beriladi. Kirgan foydalanuvchini middleware yo'naltiradi.
 export default function WelcomePage() {
-  preload("/welcome-bg.webp", { as: "image" });
+  preload("/auth-bg-wide.webp", { as: "image", media: "(min-aspect-ratio: 1/1)" });
+  preload("/auth-bg-tall.webp", { as: "image", media: "(max-aspect-ratio: 1/1)" });
   return (
-    <div
-      className="flex min-h-screen items-center justify-center bg-cover bg-center px-4 py-10"
-      style={{ backgroundImage: "url(/welcome-bg.webp)" }}
-    >
+    <div className="auth-bg flex min-h-screen items-center justify-center px-4 py-10">
       <AuthForm />
     </div>
   );

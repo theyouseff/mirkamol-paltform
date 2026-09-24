@@ -66,3 +66,12 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .enter { animation: none; }
 }
+
+/* Kirish sahifalari fonu: telefonda tik, kompyuterda keng rasm (oltin-yashil oblojka) */
+.auth-bg {
+  background: #134b36 url(/auth-bg-tall.webp) center / cover no-repeat;
+}
+
+@media (min-aspect-ratio: 1/1) {
+  .auth-bg { background-image: url(/auth-bg-wide.webp); }
+}
