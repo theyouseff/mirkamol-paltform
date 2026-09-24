@@ -21,22 +21,21 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
     }),
   };
 
-  const [users, tariffs, authors, courses] = await Promise.all([
+  const [users, authors, courses] = await Promise.all([
     prisma.user.findMany({
       where,
       orderBy: { createdAt: "desc" },
       take: 200,
-      include: { enrollments: { include: { course: true, tariff: true } }, _count: { select: { progress: true } } },
+      include: { enrollments: { include: { course: true } }, _count: { select: { progress: true } } },
     }),
-    prisma.tariff.findMany({ where: { active: true }, include: { course: true }, orderBy: [{ courseId: "asc" }, { level: "asc" }] }),
     prisma.author.findMany({ orderBy: { name: "asc" } }),
-    prisma.course.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
+    prisma.course.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true, price: true } }),
   ]);
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">O&apos;quvchilar</h1>
-      <AddStudentForm tariffs={tariffs.map((t) => ({ id: t.id, label: `${t.course.title} — ${t.name}`, price: t.price }))} />
+      <AddStudentForm courses={courses.map((c) => ({ id: c.id, label: c.title, price: c.price }))} />
 
       <form className="flex flex-wrap gap-2">
         <input name="q" defaultValue={q} className="input max-w-xs" placeholder="Ism yoki email bo'yicha qidirish" />
@@ -64,7 +63,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
                 <td>{u.email}</td>
                 <td>
                   <div className="flex flex-wrap gap-1">
-                    {u.enrollments.map((e) => <span key={e.id} className="badge bg-brand-soft text-brand">{e.course.title} · {e.tariff.name}</span>)}
+                    {u.enrollments.map((e) => <span key={e.id} className="badge bg-brand-soft text-brand">{e.course.title}</span>)}
                     {u.enrollments.length === 0 && <span className="text-zinc-400">—</span>}
                   </div>
                 </td>

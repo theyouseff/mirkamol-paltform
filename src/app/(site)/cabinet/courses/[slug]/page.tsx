@@ -15,7 +15,7 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
   const found = await prisma.course.findUnique({ where: { slug }, select: { id: true } });
   if (!found) notFound();
 
-  const { course, enrollment, modules, hasAccess, done, flatLessons } = await loadCourseForStudent(found.id, user);
+  const { course, modules, hasAccess, done, flatLessons } = await loadCourseForStudent(found.id, user);
   if (!hasAccess) {
     return (
       <div className="glass mx-auto max-w-md space-y-4 p-7 text-center">
@@ -28,12 +28,13 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
     );
   }
 
-  const available = flatLessons.filter((l) => l.state !== "tariff");
+  const courseCount = await prisma.enrollment.count({ where: { userId: user.id } });
+  const available = flatLessons.filter((l) => l.state !== "locked");
   const completed = available.filter((l) => done.has(l.id)).length;
   const next = flatLessons.find((l) => l.state === "open" && !done.has(l.id));
 
   const cards = modules.map((m) => {
-    const open = m.lessons.filter((l) => l.state !== "tariff");
+    const open = m.lessons.filter((l) => l.state !== "locked");
     return {
       id: m.id,
       title: m.title,
@@ -46,13 +47,10 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
 
   return (
     <BrandScope color={course.brandColor}>
-      <Link href="/cabinet" className="text-sm font-medium text-gold-text/80 hover:text-gold-text">← Mening kurslarim</Link>
-      <div className="mt-5 max-w-3xl space-y-4">
+      {courseCount > 1 && <Link href="/cabinet" className="text-sm font-medium text-gold-text/80 hover:text-gold-text">← Mening kurslarim</Link>}
+      <div className={`${courseCount > 1 ? "mt-5 " : ""}max-w-3xl space-y-4`}>
         <CourseBrand course={course} className="block" />
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-3xl font-bold sm:text-4xl">{course.title}</h1>
-          {enrollment && <span className="badge bg-gold/20 text-gold-text ring-1 ring-gold/40">{enrollment.tariff.name}</span>}
-        </div>
+        <h1 className="text-3xl font-bold sm:text-4xl">{course.title}</h1>
         {course.subtitle && <p className="text-lg text-gold-text/85">{course.subtitle}</p>}
         <div className="space-y-2 pt-2">
           <ProgressBar dark value={available.length ? (completed / available.length) * 100 : 0} />

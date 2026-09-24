@@ -1,7 +1,7 @@
 import { prisma } from "./db";
 import { getEnrollment, lessonState } from "./access";
 
-// Kurs dasturi + har bir darsning o'quvchi uchun holati (ochiq / tarif / sana).
+// Kurs dasturi + har bir darsning o'quvchi uchun holati (ochiq / sana / yopiq).
 export async function loadCourseForStudent(courseId: string, user: { id: string; role: string }) {
   const [course, enrollment, progress] = await Promise.all([
     prisma.course.findUniqueOrThrow({
@@ -14,7 +14,7 @@ export async function loadCourseForStudent(courseId: string, user: { id: string;
   const isAdmin = user.role === "ADMIN";
   const modules = course.modules.map((m) => ({
     ...m,
-    lessons: m.lessons.map((l) => ({ ...l, state: lessonState(l, enrollment?.tariff ?? null, isAdmin) })),
+    lessons: m.lessons.map((l) => ({ ...l, state: lessonState(l, !!enrollment, isAdmin) })),
   }));
   return {
     course,

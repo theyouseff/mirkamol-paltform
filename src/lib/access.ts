@@ -1,35 +1,32 @@
-import type { Lesson, Tariff } from "@prisma/client";
+import type { Lesson } from "@prisma/client";
 import { prisma } from "./db";
 import { formatDate } from "./format";
 
-export type LessonState = "open" | "tariff" | "scheduled";
+// open — ko'rish mumkin; scheduled — ochilish sanasi hali kelmagan; locked — kursga yozilmagan
+export type LessonState = "open" | "scheduled" | "locked";
 
-export function lessonState(lesson: Pick<Lesson, "minLevel" | "openAt">, tariff: Pick<Tariff, "level"> | null, isAdmin = false): LessonState {
+export function lessonState(lesson: Pick<Lesson, "openAt">, hasAccess: boolean, isAdmin = false): LessonState {
   if (isAdmin) return "open";
-  if (!tariff || tariff.level < lesson.minLevel) return "tariff";
+  if (!hasAccess) return "locked";
   if (lesson.openAt && lesson.openAt > new Date()) return "scheduled";
   return "open";
 }
 
 // Yopiq dars ustidagi izoh
 export function lessonHint(lesson: Pick<Lesson, "openAt">, state: LessonState) {
-  if (state === "tariff") return "Yuqori tarifda ochiladi";
+  if (state === "locked") return "Yopiq dars";
   if (state === "scheduled" && lesson.openAt) return `${formatDate(lesson.openAt)} da ochiladi`;
   return null;
 }
 
 export function getEnrollment(userId: string, courseId: string) {
-  return prisma.enrollment.findUnique({
-    where: { userId_courseId: { userId, courseId } },
-    include: { tariff: true },
-  });
+  return prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId } } });
 }
 
 // To'lov tasdiqlanganda chaqiriladi: buyurtmani PAID qiladi va kursga kirish ochadi.
-// Agar o'quvchida past tarif bo'lsa — yuqorisiga ko'taradi.
 export async function fulfillOrder(orderId: string, provider: string) {
   return prisma.$transaction(async (tx) => {
-    const order = await tx.order.findUniqueOrThrow({ where: { id: orderId }, include: { tariff: true } });
+    const order = await tx.order.findUniqueOrThrow({ where: { id: orderId } });
     if (order.status === "PAID") return order;
 
     const paid = await tx.order.update({
@@ -38,16 +35,9 @@ export async function fulfillOrder(orderId: string, provider: string) {
     });
 
     const existing = await tx.enrollment.findUnique({
-      where: { userId_courseId: { userId: order.userId, courseId: order.tariff.courseId } },
-      include: { tariff: true },
+      where: { userId_courseId: { userId: order.userId, courseId: order.courseId } },
     });
-    if (!existing) {
-      await tx.enrollment.create({
-        data: { userId: order.userId, courseId: order.tariff.courseId, tariffId: order.tariffId },
-      });
-    } else if (existing.tariff.level < order.tariff.level) {
-      await tx.enrollment.update({ where: { id: existing.id }, data: { tariffId: order.tariffId } });
-    }
+    if (!existing) await tx.enrollment.create({ data: { userId: order.userId, courseId: order.courseId } });
     return paid;
   });
 }

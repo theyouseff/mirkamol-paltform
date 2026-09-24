@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { addStudent, type AddStudentState } from "@/lib/actions/admin";
 import { SubmitButton } from "../SubmitButton";
 
-type TariffOption = { id: string; label: string; price: number };
+type CourseOption = { id: string; label: string; price: number };
 
 const MAIL_TEXT = {
   sent: "✓ Bir martalik kod emailga yuborildi",
@@ -12,9 +12,9 @@ const MAIL_TEXT = {
   skipped: "Email yuborilmadi (tanlanmagan)",
 } as const;
 
-export function AddStudentForm({ tariffs }: { tariffs: TariffOption[] }) {
+export function AddStudentForm({ courses }: { courses: CourseOption[] }) {
   const [state, action] = useActionState<AddStudentState, FormData>(addStudent, {});
-  const [amount, setAmount] = useState(tariffs[0]?.price ?? 0);
+  const [amount, setAmount] = useState(courses[0]?.price ?? 0);
   const r = state.result;
 
   return (
@@ -38,14 +38,14 @@ export function AddStudentForm({ tariffs }: { tariffs: TariffOption[] }) {
         </div>
         <div className="grid gap-3 sm:grid-cols-[2fr_1fr_1fr]">
           <div>
-            <label className="label">Kurs va tarif</label>
+            <label className="label">Kurs</label>
             <select
-              name="tariffId"
+              name="courseId"
               className="input"
               required
-              onChange={(e) => setAmount(tariffs.find((t) => t.id === e.target.value)?.price ?? 0)}
+              onChange={(e) => setAmount(courses.find((c) => c.id === e.target.value)?.price ?? 0)}
             >
-              {tariffs.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+              {courses.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
             </select>
           </div>
           <div>
@@ -75,7 +75,7 @@ export function AddStudentForm({ tariffs }: { tariffs: TariffOption[] }) {
       {r && (
         <div className="space-y-2 rounded-xl border border-green-200 bg-green-50 p-4 text-sm">
           <p className="font-medium text-green-800">
-            {r.isNew ? "Yangi akkaunt ochildi" : "Mavjud akkauntga kurs qo'shildi"}: {r.name} → «{r.course}» ({r.tariff})
+            {r.isNew ? "Yangi akkaunt ochildi" : "Mavjud akkauntga kurs qo'shildi"}: {r.name} → «{r.course}»
           </p>
           {r.activationCode && (
             <div className="rounded-lg bg-white p-3">

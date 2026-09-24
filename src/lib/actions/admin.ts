@@ -63,6 +63,7 @@ export async function updateCourse(formData: FormData) {
       brandColor: isHexColor(str(formData, "brandColor")) ? str(formData, "brandColor") : "",
       authorId: str(formData, "authorId") || null,
       published: formData.get("published") === "on",
+      price: Math.max(0, int(formData, "price")),
       ...(clash ? {} : { slug }),
     },
   });
@@ -72,42 +73,13 @@ export async function updateCourse(formData: FormData) {
 export async function deleteCourse(formData: FormData) {
   await requireAdmin();
   const id = str(formData, "id");
-  if (await prisma.order.count({ where: { tariff: { courseId: id }, status: "PAID" } })) {
+  if (await prisma.order.count({ where: { courseId: id, status: "PAID" } })) {
     throw new Error("Bu kursda to'langan buyurtmalar bor — o'chirish o'rniga nashrdan oling.");
   }
-  await prisma.order.deleteMany({ where: { tariff: { courseId: id } } });
+  await prisma.order.deleteMany({ where: { courseId: id } });
   await prisma.enrollment.deleteMany({ where: { courseId: id } });
   await prisma.course.delete({ where: { id } });
   redirect("/admin/courses");
-}
-
-// ---------- Tariflar ----------
-
-export async function saveTariff(formData: FormData) {
-  await requireAdmin();
-  const id = str(formData, "id");
-  const oldPrice = int(formData, "oldPrice");
-  const data = {
-    name: str(formData, "name") || "Tarif",
-    price: int(formData, "price"),
-    oldPrice: oldPrice > 0 ? oldPrice : null,
-    level: Math.max(1, int(formData, "level", 1)),
-    features: str(formData, "features"),
-    active: formData.get("active") === "on",
-  };
-  if (id) await prisma.tariff.update({ where: { id }, data });
-  else await prisma.tariff.create({ data: { ...data, courseId: str(formData, "courseId") } });
-  revalidatePath("/", "layout");
-}
-
-export async function deleteTariff(formData: FormData) {
-  await requireAdmin();
-  const id = str(formData, "id");
-  const used = (await prisma.order.count({ where: { tariffId: id } })) + (await prisma.enrollment.count({ where: { tariffId: id } }));
-  // Buyurtmalar bog'langan tarifni o'chirmaymiz — faqat o'chirib qo'yamiz
-  if (used) await prisma.tariff.update({ where: { id }, data: { active: false } });
-  else await prisma.tariff.delete({ where: { id } });
-  revalidatePath("/", "layout");
 }
 
 // ---------- Modullar ----------
@@ -182,7 +154,6 @@ export async function updateLesson(formData: FormData) {
       videoUrl: str(formData, "videoUrl"),
       duration: str(formData, "duration"),
       order: int(formData, "order"),
-      minLevel: Math.max(1, int(formData, "minLevel", 1)),
       openAt: parseTashkent(str(formData, "openAt")),
     },
     include: { module: true },
@@ -214,7 +185,7 @@ export async function cancelOrder(formData: FormData) {
 export type MailStatus = "sent" | "failed" | "skipped";
 export type AddStudentState = {
   error?: string;
-  result?: { name: string; email: string; course: string; tariff: string; isNew: boolean; activationCode: string | null; mail: MailStatus; mailReason?: string };
+  result?: { name: string; email: string; course: string; isNew: boolean; activationCode: string | null; mail: MailStatus; mailReason?: string };
 };
 
 function mailStatus(r: MailResult | null): { mail: MailStatus; mailReason?: string } {
@@ -228,8 +199,8 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
   await requireAdmin();
   const email = normalizeEmail(str(formData, "email"));
   if (!email) return { error: "Email noto'g'ri" };
-  const tariff = await prisma.tariff.findUnique({ where: { id: str(formData, "tariffId") }, include: { course: true } });
-  if (!tariff) return { error: "Kurs va tarifni tanlang" };
+  const course = await prisma.course.findUnique({ where: { id: str(formData, "courseId") } });
+  if (!course) return { error: "Kursni tanlang" };
 
   let user = await prisma.user.findUnique({ where: { email } });
   const isNew = !user;
@@ -237,12 +208,9 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
 
   if (user) {
     const enrollment = await prisma.enrollment.findUnique({
-      where: { userId_courseId: { userId: user.id, courseId: tariff.courseId } },
-      include: { tariff: true },
+      where: { userId_courseId: { userId: user.id, courseId: course.id } },
     });
-    if (enrollment && enrollment.tariff.level >= tariff.level) {
-      return { error: `${user.name} ga «${tariff.course.title}» allaqachon ochiq (${enrollment.tariff.name} tarifi).` };
-    }
+    if (enrollment) return { error: `${user.name} ga «${course.title}» allaqachon ochiq.` };
   } else {
     const name = str(formData, "name");
     if (name.length < 2) return { error: "Yangi o'quvchi uchun ism va familiyani yozing" };
@@ -257,7 +225,7 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
       data: {
         number: (last?.number ?? 1000) + 1,
         userId: user!.id,
-        tariffId: tariff.id,
+        courseId: course.id,
         amount: int(formData, "amount"),
         utmSource: str(formData, "source"),
         note: str(formData, "note"),
@@ -269,14 +237,14 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
   let mail: MailResult | null = null;
   if (formData.get("sendMail") === "on") {
     mail = activationCode
-      ? await sendActivation(email, user.name, tariff.course.title, activationCode)
-      : await sendCourseOpened(email, user.name, tariff.course.title);
+      ? await sendActivation(email, user.name, course.title, activationCode)
+      : await sendCourseOpened(email, user.name, course.title);
   }
   revalidatePath("/admin", "layout");
   const status = mailStatus(mail);
   return {
     result: {
-      name: user.name, email, course: tariff.course.title, tariff: tariff.name, isNew,
+      name: user.name, email, course: course.title, isNew,
       // Xat ketgan bo'lsa kodni ko'rsatmaymiz; ketmasa admin uni Telegramda o'zi yuboradi
       activationCode: status.mail === "sent" ? null : activationCode,
       ...status,

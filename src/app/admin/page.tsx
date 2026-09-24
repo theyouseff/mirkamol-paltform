@@ -13,16 +13,16 @@ export default async function AdminDashboard() {
     prisma.order.count({ where: { status: "PAID" } }),
     prisma.order.count({ where: { status: "PENDING" } }),
     prisma.user.count({ where: { role: "STUDENT" } }),
-    prisma.order.findMany({ take: 8, orderBy: { createdAt: "desc" }, include: { user: true, tariff: { include: { course: true } } } }),
+    prisma.order.findMany({ take: 8, orderBy: { createdAt: "desc" }, include: { user: true, course: true } }),
     prisma.order.groupBy({ by: ["utmSource"], where: { status: "PAID" }, _sum: { amount: true }, _count: true }),
     prisma.order.findMany({
       where: { status: "PAID" },
-      select: { amount: true, tariff: { select: { course: { select: { author: { select: { name: true } } } } } } },
+      select: { amount: true, course: { select: { author: { select: { name: true } } } } },
     }),
   ]);
   const byAuthor = new Map<string, { count: number; sum: number }>();
   for (const o of paidOrders) {
-    const name = o.tariff.course.author?.name ?? "Muallifsiz";
+    const name = o.course.author?.name ?? "Muallifsiz";
     const cur = byAuthor.get(name) ?? { count: 0, sum: 0 };
     byAuthor.set(name, { count: cur.count + 1, sum: cur.sum + o.amount });
   }
@@ -85,7 +85,7 @@ export default async function AdminDashboard() {
                 <tr key={o.id} className="border-t border-zinc-100">
                   <td className="py-2.5">№{o.number}</td>
                   <td>{o.user.name}</td>
-                  <td className="text-zinc-500">{o.tariff.course.title} · {o.tariff.name}</td>
+                  <td className="text-zinc-500">{o.course.title}</td>
                   <td>{formatPrice(o.amount)}</td>
                   <td><StatusBadge status={o.status} /></td>
                   <td className="text-zinc-400">{formatDate(o.createdAt)}</td>

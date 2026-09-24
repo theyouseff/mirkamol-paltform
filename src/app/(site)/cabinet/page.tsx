@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { ProgressBar } from "@/components/ProgressBar";
@@ -10,11 +11,12 @@ export default async function CabinetPage() {
   const enrollments = await prisma.enrollment.findMany({
     where: { userId: user.id },
     include: {
-      tariff: true,
-      course: { include: { modules: { include: { lessons: { select: { id: true, minLevel: true } } } } } },
+      course: { include: { modules: { include: { lessons: { select: { id: true } } } } } },
     },
     orderBy: { createdAt: "desc" },
   });
+  // Bitta kursi bor o'quvchi kirgach to'g'ri kursning o'ziga tushadi (modul va video darslar)
+  if (enrollments.length === 1) redirect(`/cabinet/courses/${enrollments[0].course.slug}`);
   const done = new Set((await prisma.lessonProgress.findMany({ where: { userId: user.id }, select: { lessonId: true } })).map((p) => p.lessonId));
 
   return (
@@ -23,14 +25,13 @@ export default async function CabinetPage() {
       <p className="mt-1 text-gold-text/80">Sizning kurslaringiz</p>
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {enrollments.map((e) => {
-          const lessons = e.course.modules.flatMap((m) => m.lessons).filter((l) => l.minLevel <= e.tariff.level);
+          const lessons = e.course.modules.flatMap((m) => m.lessons);
           const completed = lessons.filter((l) => done.has(l.id)).length;
           const pct = lessons.length ? (completed / lessons.length) * 100 : 0;
           return (
             <BrandScope key={e.id} color={e.course.brandColor}>
               <Link href={`/cabinet/courses/${e.course.slug}`} className="card-gold block space-y-3">
                 <CourseBrand course={e.course} />
-                <span className="badge bg-brand-soft text-brand">{e.tariff.name}</span>
                 <h2 className="text-lg font-semibold">{e.course.title}</h2>
                 <ProgressBar value={pct} />
                 <p className="text-sm text-zinc-500">{completed} / {lessons.length} dars · {Math.round(pct)}%</p>

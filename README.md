@@ -27,7 +27,7 @@ Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 
 ## Ish tartibi
 1. Mijoz Telegramda kelishadi va kartaga to'laydi (skrinshot yuboradi).
-2. Admin: **O'quvchilar → O'quvchi qo'shish** — email, kurs/tarif, summa. Yangi o'quvchiga akkaunt ochiladi va emailga bir martalik kod yuboriladi; u saytda `/activate` sahifasida email + kodni kiritib, parolni o'zi qo'yadi. Xat ketmasa, kod panelda ko'rinadi (Telegramda yuborasiz).
+2. Admin: **O'quvchilar → O'quvchi qo'shish** — email, kurs, summa. Yangi o'quvchiga akkaunt ochiladi va emailga bir martalik kod yuboriladi; u saytda `/activate` sahifasida email + kodni kiritib, parolni o'zi qo'yadi. Xat ketmasa, kod panelda ko'rinadi (Telegramda yuborasiz).
 3. O'quvchi kirib faqat o'zi to'lagan kursni ko'radi. Boshqa kurslar (boshqa mualliflarniki ham) yopiq.
 
 ## Mualliflar va brend
@@ -43,8 +43,9 @@ Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 - Demo kursga namuna modul/darslarni yuklash: `npx tsx prisma/import-demo.ts` (o'quvchisi bo'lgan kursga tegmaydi).
 
 ## Kirish qoidalari
-- Har bir tarifda **daraja** bor (Standart = 1, VIP = 2 ...). Darsda "minimal daraja" belgilanadi.
+- Tarif yo'q: kursga yozilgan o'quvchi kursning hamma darsini ko'radi.
 - Darsga **ochilish vaqti** qo'yish mumkin (zapusk uchun).
+- Kursda «narx» faqat admin formasidagi summani avtomatik to'ldirish uchun; saytda ko'rinmaydi.
 
 ## Baza va deploy (Vercel + Neon)
 Baza — PostgreSQL (Neon). SQLite Vercel'da ishlamaydi.

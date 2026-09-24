@@ -19,7 +19,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
   const { course, modules, done, flatLessons } = await loadCourseForStudent(found.module.courseId, user);
   const index = flatLessons.findIndex((l) => l.id === id);
   const lesson = flatLessons[index];
-  // Video va matn faqat dars ochiq bo'lsagina serverdan chiqadi (yozilmagan yoki past tarif — 404)
+  // Video va matn faqat dars ochiq bo'lsagina serverdan chiqadi (yozilmagan yoki hali ochilmagan — 404)
   if (!lesson || lesson.state !== "open") notFound();
 
   const moduleIndex = modules.findIndex((m) => m.lessons.some((l) => l.id === id));

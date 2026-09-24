@@ -38,6 +38,7 @@ model Course {
   description String   @default("")
   coverUrl    String   @default("")
   published   Boolean  @default(false)
+  price       Int      @default(0) // so'mda; "O'quvchi qo'shish" formasida summa shundan to'ldiriladi
   createdAt   DateTime @default(now())
 
   authorId   String?
@@ -47,25 +48,9 @@ model Course {
   logoUrl    String  @default("")
   brandColor String  @default("")
 
-  tariffs     Tariff[]
   modules     Module[]
   enrollments Enrollment[]
-}
-
-// Tarif darajasi (level) yuqori bo'lsa, ko'proq dars ochiladi.
-model Tariff {
-  id          String  @id @default(cuid())
-  courseId    String
-  name        String
-  price       Int // so'mda
-  oldPrice    Int? // chizilgan eski narx
-  level       Int     @default(1)
-  features    String  @default("") // har bir qator — alohida punkt
-  active      Boolean @default(true)
-  course      Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
   orders      Order[]
-  enrollments Enrollment[]
 }
 
 model Module {
@@ -86,7 +71,6 @@ model Lesson {
   videoUrl String    @default("")
   duration String    @default("") // masalan: "12:40" (ixtiyoriy)
   order    Int       @default(0)
-  minLevel Int       @default(1) // shu darajadagi va undan yuqori tariflar ko'radi
   openAt   DateTime? // zapusk uchun: shu sanagacha yopiq
   module   Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
@@ -97,11 +81,9 @@ model Enrollment {
   id        String   @id @default(cuid())
   userId    String
   courseId  String
-  tariffId  String
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  tariff    Tariff   @relation(fields: [tariffId], references: [id])
 
   @@unique([userId, courseId])
 }
@@ -110,7 +92,7 @@ model Order {
   id          String    @id @default(cuid())
   number      Int       @unique // Payme/Click uchun qisqa raqam
   userId      String
-  tariffId    String
+  courseId    String
   amount      Int
   status      String    @default("PENDING") // PENDING | PAID | CANCELED
   provider    String    @default("") // payme | click | manual | test
@@ -120,7 +102,7 @@ model Order {
   createdAt   DateTime  @default(now())
   paidAt      DateTime?
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tariff      Tariff    @relation(fields: [tariffId], references: [id])
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Restrict) // to'lov yozuvlari kurs bilan birga o'chib ketmasin
 }
 
 model LessonProgress {

@@ -7,11 +7,11 @@ import { ConfirmButton } from "@/components/ConfirmButton";
 export default async function AdminAuthorsPage() {
   const [authors, paid] = await Promise.all([
     prisma.author.findMany({ orderBy: { name: "asc" }, include: { courses: { select: { id: true, title: true } } } }),
-    prisma.order.findMany({ where: { status: "PAID" }, select: { amount: true, tariff: { select: { course: { select: { authorId: true } } } } } }),
+    prisma.order.findMany({ where: { status: "PAID" }, select: { amount: true, course: { select: { authorId: true } } } }),
   ]);
   const sales = new Map<string, { count: number; sum: number }>();
   for (const o of paid) {
-    const id = o.tariff.course.authorId ?? "";
+    const id = o.course.authorId ?? "";
     const cur = sales.get(id) ?? { count: 0, sum: 0 };
     sales.set(id, { count: cur.count + 1, sum: cur.sum + o.amount });
   }

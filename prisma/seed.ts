@@ -28,12 +28,7 @@ async function main() {
       description:
         "Kurs davomida profilni to'g'ri qadoqlash, kontent-reja tuzish va obunachilarni mijozga aylantirishni o'rganasiz.",
       published: true,
-      tariffs: {
-        create: [
-          { name: "Standart", price: 490000, oldPrice: 790000, level: 1, features: "Barcha video darslar\nUy vazifalari\nYopiq chat" },
-          { name: "VIP", price: 1490000, oldPrice: 1990000, level: 2, features: "Standart tarifdagi hammasi\nBonus darslar\nKurator bilan ishlash\nEkspert bilan jonli efir" },
-        ],
-      },
+      price: 490000,
       modules: {
         create: DEMO_MODULES.map((m, mi) => ({
           title: m.title,

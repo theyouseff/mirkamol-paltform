@@ -17,7 +17,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const { status = "", q = "", author = "" } = await searchParams;
   const where: Prisma.OrderWhereInput = {
     ...(status && { status }),
-    ...(author && { tariff: { course: { authorId: author } } }),
+    ...(author && { course: { authorId: author } }),
     ...(q && { OR: [{ user: { name: { contains: q, mode: "insensitive" } } }, { user: { email: { contains: q, mode: "insensitive" } } }] }),
   };
   const [orders, authors] = await Promise.all([
@@ -25,7 +25,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       where,
       orderBy: { createdAt: "desc" },
       take: 200,
-      include: { user: true, tariff: { include: { course: { include: { author: true } } } } },
+      include: { user: true, course: { include: { author: true } } },
     }),
     prisma.author.findMany({ orderBy: { name: "asc" } }),
   ]);
@@ -64,7 +64,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         <table className="w-full min-w-[900px] text-sm">
           <thead className="bg-zinc-50 text-left text-zinc-500">
             <tr>
-              <th className="px-4 py-3">№</th><th>Mijoz</th><th>Kurs / tarif</th><th>Summa</th><th>Holat</th><th>Manba / izoh</th><th>Sana</th><th></th>
+              <th className="px-4 py-3">№</th><th>Mijoz</th><th>Kurs</th><th>Summa</th><th>Holat</th><th>Manba / izoh</th><th>Sana</th><th></th>
             </tr>
           </thead>
           <tbody>
@@ -73,8 +73,8 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                 <td className="px-4 py-3">{o.number}</td>
                 <td>{o.user.name}<div className="text-xs text-zinc-400">{o.user.email}</div></td>
                 <td>
-                  {o.tariff.course.title}
-                  <div className="text-xs text-zinc-400">{o.tariff.name}{o.tariff.course.author ? ` · ${o.tariff.course.author.name}` : ""}</div>
+                  {o.course.title}
+                  {o.course.author && <div className="text-xs text-zinc-400">{o.course.author.name}</div>}
                 </td>
                 <td>{formatPrice(o.amount)}</td>
                 <td><StatusBadge status={o.status} />{o.provider && <div className="text-xs text-zinc-400">{o.provider}</div>}</td>

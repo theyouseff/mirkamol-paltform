@@ -13,12 +13,10 @@ export default async function AdminLessonPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const lesson = await prisma.lesson.findUnique({
     where: { id },
-    include: { module: { include: { course: { include: { tariffs: { orderBy: { level: "asc" } } } } } } },
+    include: { module: { include: { course: true } } },
   });
   if (!lesson) notFound();
   const course = lesson.module.course;
-  const levels = [...new Map(course.tariffs.map((t) => [t.level, t.name])).entries()];
-  if (!levels.some(([lvl]) => lvl === 1)) levels.unshift([1, "Barcha tariflar"]);
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -54,20 +52,10 @@ export default async function AdminLessonPage({ params }: { params: Promise<{ id
           <textarea name="content" rows={10} className="input" defaultValue={lesson.content} />
           <p className="mt-1 text-xs text-zinc-400">Bo&apos;sh qator — yangi abzats. «- » bilan boshlangan qatorlar belgili ro&apos;yxat bo&apos;ladi; «Bu darsda:» kabi ikki nuqtali qator sarlavha bo&apos;ladi.</p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="label">Kim ko&apos;radi</label>
-            <select name="minLevel" className="input" defaultValue={lesson.minLevel}>
-              {levels.map(([lvl, name]) => (
-                <option key={lvl} value={lvl}>{name} va yuqori</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label">Ochilish vaqti (Toshkent)</label>
-            <input name="openAt" type="datetime-local" className="input" defaultValue={toTashkentInput(lesson.openAt)} />
-            <p className="mt-1 text-xs text-zinc-400">Bo&apos;sh qoldirsangiz — darhol ochiq.</p>
-          </div>
+        <div className="max-w-sm">
+          <label className="label">Ochilish vaqti (Toshkent)</label>
+          <input name="openAt" type="datetime-local" className="input" defaultValue={toTashkentInput(lesson.openAt)} />
+          <p className="mt-1 text-xs text-zinc-400">Bo&apos;sh qoldirsangiz — darhol ochiq.</p>
         </div>
         <div className="flex justify-between">
           <SubmitButton>Saqlash</SubmitButton>

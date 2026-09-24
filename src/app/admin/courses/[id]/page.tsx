@@ -1,57 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { Tariff } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { formatDate, formatPrice } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import {
-  createLesson, createModule, deleteCourse, deleteModule, deleteTariff, moveLesson, moveModule, saveTariff, updateCourse, updateModule,
+  createLesson, createModule, deleteCourse, deleteModule, moveLesson, moveModule, updateCourse, updateModule,
 } from "@/lib/actions/admin";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ConfirmButton } from "@/components/ConfirmButton";
-
-function TariffForm({ courseId, tariff }: { courseId: string; tariff?: Tariff }) {
-  return (
-    <form action={saveTariff} className="space-y-3 rounded-xl border border-zinc-200 p-4">
-      <input type="hidden" name="id" value={tariff?.id ?? ""} />
-      <input type="hidden" name="courseId" value={courseId} />
-      <div className="grid gap-3 sm:grid-cols-4">
-        <div className="sm:col-span-2">
-          <label className="label">Nomi</label>
-          <input name="name" className="input" defaultValue={tariff?.name} placeholder="Standart" required />
-        </div>
-        <div>
-          <label className="label">Narx (so&apos;m)</label>
-          <input name="price" type="number" min={0} className="input" defaultValue={tariff?.price} required />
-        </div>
-        <div>
-          <label className="label">Eski narx</label>
-          <input name="oldPrice" type="number" min={0} className="input" defaultValue={tariff?.oldPrice ?? ""} />
-        </div>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-4">
-        <div className="sm:col-span-3">
-          <label className="label">Afzalliklar (har biri yangi qatorda)</label>
-          <textarea name="features" rows={3} className="input" defaultValue={tariff?.features} />
-        </div>
-        <div className="space-y-3">
-          <div>
-            <label className="label">Daraja</label>
-            <input name="level" type="number" min={1} className="input" defaultValue={tariff?.level ?? 1} />
-          </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="active" defaultChecked={tariff?.active ?? true} /> Sotuvda
-          </label>
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <SubmitButton>{tariff ? "Saqlash" : "+ Tarif qo'shish"}</SubmitButton>
-        {tariff && (
-          <ConfirmButton formAction={deleteTariff} message="Tarifni o'chirasizmi? (buyurtmalari bo'lsa, faqat sotuvdan olinadi)">O&apos;chirish</ConfirmButton>
-        )}
-      </div>
-    </form>
-  );
-}
 
 export default async function AdminCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -59,12 +14,10 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
   const course = await prisma.course.findUnique({
     where: { id },
     include: {
-      tariffs: { orderBy: { level: "asc" } },
       modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
     },
   });
   if (!course) notFound();
-  const tariffName = (level: number) => course.tariffs.find((t) => t.level >= level)?.name ?? `${level}-daraja`;
 
   return (
     <div className="max-w-4xl space-y-8">
@@ -101,6 +54,13 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
             <label className="label">To&apos;liq tavsif (sotuv sahifasi uchun)</label>
             <textarea name="description" rows={5} className="input" defaultValue={course.description} />
           </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="label">Kurs narxi (so&apos;m)</label>
+              <input name="price" type="number" min={0} className="input" defaultValue={course.price} />
+              <p className="mt-1 text-xs text-zinc-400">Saytda ko&apos;rinmaydi. Faqat «O&apos;quvchi qo&apos;shish» formasida summa avtomatik to&apos;ladi.</p>
+            </div>
+          </div>
           <div>
             <label className="label">Muqova rasmi (URL)</label>
             <input name="coverUrl" className="input" defaultValue={course.coverUrl} placeholder="https://..." />
@@ -136,25 +96,6 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
         </form>
       </section>
 
-      <section className="card space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold">Tariflar</h2>
-          <p className="text-sm text-zinc-500">Daraja: darsda &quot;minimal daraja&quot; qo&apos;yiladi — undan past tarif u darsni ko&apos;rmaydi.</p>
-        </div>
-        {course.tariffs.map((t) => (
-          <div key={t.id}>
-            <p className="mb-1 text-sm text-zinc-500">
-              {t.name} · {formatPrice(t.price)} {!t.active && <span className="badge bg-zinc-100">sotuvda emas</span>}
-            </p>
-            <TariffForm courseId={course.id} tariff={t} />
-          </div>
-        ))}
-        <details className="rounded-xl bg-zinc-50 p-4">
-          <summary className="cursor-pointer text-sm font-medium text-brand">+ Yangi tarif</summary>
-          <div className="mt-3"><TariffForm courseId={course.id} /></div>
-        </details>
-      </section>
-
       <section className="card space-y-6">
         <h2 className="text-lg font-semibold">Dastur: modullar va darslar</h2>
         {course.modules.map((m, mi) => (
@@ -181,7 +122,6 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
                   <Link href={`/admin/lessons/${l.id}`} className="flex flex-1 items-center justify-between gap-2 px-4 py-2.5 text-sm">
                     <span>{li + 1}. {l.title} {l.videoUrl && "🎬"}</span>
                     <span className="flex gap-1">
-                      {l.minLevel > 1 && <span className="badge bg-amber-100 text-amber-700">{tariffName(l.minLevel)}+</span>}
                       {l.openAt && <span className="badge bg-sky-100 text-sky-700">🕒 {formatDate(l.openAt)}</span>}
                     </span>
                   </Link>

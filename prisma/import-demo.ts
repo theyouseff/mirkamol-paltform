@@ -1,5 +1,6 @@
 // Demo kursning modul/darslarini demo-content.ts dagi 3 modul x 5 dars bilan almashtiradi.
-// Xavfsizlik: kursda yozilgan o'quvchi yoki darsni tugatgan progress bo'lsa — hech narsa o'zgartirilmaydi.
+// Xavfsizlik: birorta o'quvchi dars tugatgan (progress) bo'lsa — hech narsa o'zgartirilmaydi.
+// (Kursga yozilish modullarga bog'liq emas, shuning uchun yozilgan o'quvchilar saqlanadi.)
 // Ishga tushirish: npx tsx prisma/import-demo.ts
 import { PrismaClient } from "@prisma/client";
 import { DEMO_MODULES, lessonContent } from "./demo-content";
@@ -10,9 +11,8 @@ async function main() {
   const course = await prisma.course.findUnique({ where: { slug: "demo-kurs" } });
   if (!course) return console.log("demo-kurs topilmadi — seed ishga tushirilmagan.");
 
-  const enrollments = await prisma.enrollment.count({ where: { courseId: course.id } });
   const progress = await prisma.lessonProgress.count({ where: { lesson: { module: { courseId: course.id } } } });
-  if (enrollments || progress) return console.log(`To'xtatildi: kursda ${enrollments} ta o'quvchi va ${progress} ta progress bor.`);
+  if (progress) return console.log(`To'xtatildi: ${progress} ta dars tugatilgan (progress) bor — o'chirilsa yo'qoladi.`);
 
   await prisma.$transaction(async (tx) => {
     await tx.module.deleteMany({ where: { courseId: course.id } });
