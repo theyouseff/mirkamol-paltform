@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-export const SITE_URL = process.env.SITE_URL ?? "https://teachumma.vercel.app";
+export const SITE_URL = process.env.SITE_URL ?? "https://ilmaviya.vercel.app";
 
 export type MailResult = { sent: boolean; reason?: string };
 
