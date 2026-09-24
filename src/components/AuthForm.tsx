@@ -11,10 +11,10 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
   const q = next ? `?next=${encodeURIComponent(next)}` : "";
 
   return (
-    <form action={action} className="card w-full max-w-md space-y-5 border-transparent p-7 shadow-xl">
+    <form action={action} className="w-full max-w-md space-y-5 rounded-2xl bg-white/40 p-7 shadow-xl backdrop-blur-md">
       <div>
         <h1 className="text-2xl font-bold">{isLogin ? "Kirish" : "Ro'yxatdan o'tish"}</h1>
-        <p className="mt-2 text-sm text-zinc-500">
+        <p className="mt-2 text-sm text-zinc-700">
           {isLogin ? "Kabinetingizga kiring" : "Ma'lumotlaringizni kiriting, akkaunt shu zahoti ochiladi."}
         </p>
       </div>
@@ -22,12 +22,12 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
       {!isLogin && (
         <div>
           <label className="label">Ism va familiya</label>
-          <input name="name" className="input" placeholder="Masalan, Aziz Karimov" required />
+          <input name="name" className="input bg-white/60!" placeholder="Masalan, Aziz Karimov" required />
         </div>
       )}
       <div>
         <label className="label">Email (Gmail)</label>
-        <input name="email" type="email" autoComplete="email" className="input" placeholder="ism@gmail.com" required />
+        <input name="email" type="email" autoComplete="email" className="input bg-white/60!" placeholder="ism@gmail.com" required />
       </div>
       <div>
         <label className="label">Parol</label>
@@ -35,7 +35,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
           name="password"
           type="password"
           autoComplete={isLogin ? "current-password" : "new-password"}
-          className="input"
+          className="input bg-white/60!"
           placeholder={isLogin ? "Parolingiz" : "Kamida 6 ta belgi"}
           required
           minLength={isLogin ? 1 : 6}
@@ -45,7 +45,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
       <SubmitButton className="btn w-full bg-slate-700 py-3.5 text-base text-white hover:bg-slate-800">
         {isLogin ? "Kirish" : "Ro'yxatdan o'tish"}
       </SubmitButton>
-      <p className="text-center text-sm text-zinc-500">
+      <p className="text-center text-sm text-zinc-700">
         {isLogin ? (
           <>Akkauntingiz yo&apos;qmi? <Link href={`/register${q}`} className="text-brand">Ro&apos;yxatdan o&apos;ting</Link></>
         ) : (
