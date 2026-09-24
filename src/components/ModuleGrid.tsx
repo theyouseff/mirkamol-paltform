@@ -17,9 +17,6 @@ export function ModuleGrid({ courseSlug }: { courseSlug: string }) {
         >
           <div className="relative flex aspect-[16/8] items-center justify-center bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-600">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_22%,rgba(241,198,87,0.28),transparent_58%)]" />
-            <span className="gold-gloss relative isolate flex h-16 w-16 items-center justify-center overflow-hidden rounded-full text-2xl font-extrabold transition-transform duration-300 before:rounded-none! group-hover:scale-110">
-              {i + 1}
-            </span>
           </div>
           <div className="p-5">
             <p className="text-xs font-medium uppercase tracking-wider text-gold-text/60">{i + 1}-modul</p>
