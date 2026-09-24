@@ -1,12 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { ADMIN_TELEGRAM, adminContactUrl } from "@/lib/config";
-import { formatPrice, formatPriceRange } from "@/lib/format";
+import { formatPriceRange } from "@/lib/format";
 
-type Tariff = { id: string; name: string; price: number; oldPrice: number | null; features: string };
 type Course = { slug: string; title: string; subtitle: string; coverUrl: string };
 
 const step = (i: number) => ({ "--i": i }) as CSSProperties;
@@ -30,30 +28,14 @@ function Play() {
   );
 }
 
-function Check() {
-  return (
-    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#f1c657] to-[#c9962a] text-emerald-950">
-      <svg viewBox="0 0 20 20" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-        <path d="M4 10.5l4 4 8-9" />
-      </svg>
-    </span>
-  );
-}
-
-// Katalogdagi kurs bloki. Bosilganda tarif tanlash oynasi ochiladi (native <dialog>: Esc, fokus, orqa fon tayyor).
-export function CourseTariffsCard({ course, tariffs }: { course: Course; tariffs: Tariff[] }) {
+// Katalogdagi kurs bloki. Bosilganda video darslar oynasi ochiladi (native <dialog>: Esc, fokus, orqa fon tayyor).
+export function CourseTariffsCard({ course, prices }: { course: Course; prices: number[] }) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const [tab, setTab] = useState<"videos" | "tariffs">("videos");
   const close = () => dialog.current?.close();
-  const open = () => {
-    setTab("videos"); // har safar video darslardan boshlanadi
-    dialog.current?.showModal();
-  };
-  const cols = tariffs.length >= 3 ? "lg:grid-cols-3" : tariffs.length === 2 ? "sm:grid-cols-2" : "";
 
   return (
     <>
-      <button type="button" onClick={open} className="card-gold flex w-full cursor-pointer flex-col text-left">
+      <button type="button" onClick={() => dialog.current?.showModal()} className="card-gold flex w-full cursor-pointer flex-col text-left">
         {course.coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={course.coverUrl} alt="" className="mb-4 aspect-video w-full rounded-xl object-cover" />
@@ -62,10 +44,10 @@ export function CourseTariffsCard({ course, tariffs }: { course: Course; tariffs
         )}
         <h2 className="text-lg font-semibold">{course.title}</h2>
         <p className="mt-1 flex-1 text-sm text-zinc-500">{course.subtitle}</p>
-        {tariffs.length > 0 && <p className="gold-text-gloss mt-4 text-lg font-extrabold">{formatPriceRange(tariffs.map((t) => t.price))}</p>}
+        {prices.length > 0 && <p className="gold-text-gloss mt-4 text-lg font-extrabold">{formatPriceRange(prices)}</p>}
       </button>
 
-      <dialog ref={dialog} className="tariff-dialog" aria-label={`${course.title}: tarif tanlash`}>
+      <dialog ref={dialog} className="tariff-dialog" aria-label={`${course.title}: video darslar`}>
         <div className="flex min-h-full items-center justify-center p-4 sm:p-8" onClick={(e) => { if (e.target === e.currentTarget) close(); }}>
           <div className="modal-in relative w-full max-w-4xl rounded-3xl border border-gold/40 bg-emerald-950/85 p-6 shadow-2xl backdrop-blur-xl sm:p-9">
             <button
@@ -78,75 +60,27 @@ export function CourseTariffsCard({ course, tariffs }: { course: Course; tariffs
             </button>
 
             <div className="enter pr-10" style={step(0)}>
-              <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">Kurs mazmuni</p>
+              <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">Kurs mazmuni · {DEMO_LESSONS.length} ta video dars</p>
               <h2 className="mt-1 text-2xl font-bold text-gold-text sm:text-3xl">{course.title}</h2>
             </div>
 
-            <div className="enter mt-6 inline-flex rounded-full border border-gold/40 bg-black/20 p-1" style={step(1)} role="tablist">
-              {([
-                ["videos", `Video darslar · ${DEMO_LESSONS.length}`],
-                ["tariffs", `Tariflar · ${tariffs.length}`],
-              ] as const).map(([key, label]) => (
-                <button
-                  key={key}
-                  type="button"
-                  role="tab"
-                  aria-selected={tab === key}
-                  onClick={() => setTab(key)}
-                  className={`relative isolate cursor-pointer rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-300 ${tab === key ? "gold-gloss" : "text-gold-text/80 hover:text-gold-text"}`}
-                >
-                  {label}
-                </button>
+            <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {DEMO_LESSONS.map((l, i) => (
+                <div key={l.title} className="enter group cursor-pointer overflow-hidden rounded-2xl border border-gold/30 bg-white/5 transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-white/10" style={step(i + 1)}>
+                  <div className="relative flex aspect-video items-center justify-center bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-600">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_22%,rgba(241,198,87,0.28),transparent_58%)]" />
+                    <Play />
+                    <span className="absolute bottom-2 right-2 rounded-md bg-black/55 px-2 py-0.5 text-xs font-medium text-white">{l.duration}</span>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs font-medium uppercase tracking-wider text-gold-text/60">{i + 1}-dars</p>
+                    <h3 className="mt-1 font-semibold leading-snug text-gold-text">{l.title}</h3>
+                  </div>
+                </div>
               ))}
             </div>
 
-            {tab === "videos" ? (
-              <div key="videos">
-                <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {DEMO_LESSONS.map((l, i) => (
-                    <div key={l.title} className="enter group cursor-pointer overflow-hidden rounded-2xl border border-gold/30 bg-white/5 transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-white/10" style={step(i)}>
-                      <div className="relative flex aspect-video items-center justify-center bg-gradient-to-br from-emerald-800 via-emerald-700 to-teal-600">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_22%,rgba(241,198,87,0.28),transparent_58%)]" />
-                        <Play />
-                        <span className="absolute bottom-2 right-2 rounded-md bg-black/55 px-2 py-0.5 text-xs font-medium text-white">{l.duration}</span>
-                      </div>
-                      <div className="p-4">
-                        <p className="text-xs font-medium uppercase tracking-wider text-gold-text/60">{i + 1}-dars</p>
-                        <h3 className="mt-1 font-semibold leading-snug text-gold-text">{l.title}</h3>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="enter mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/30 bg-white/5 px-5 py-4" style={step(DEMO_LESSONS.length)}>
-                  <p className="text-sm text-gold-text/85">Darslarni ko&apos;rish uchun tarifni tanlang</p>
-                  <button type="button" onClick={() => setTab("tariffs")} className="btn-primary px-5">Tarifni tanlash</button>
-                </div>
-              </div>
-            ) : (
-              <div key="tariffs" className={`mt-6 grid gap-5 ${cols} ${tariffs.length === 1 ? "mx-auto max-w-sm" : ""}`}>
-              {tariffs.map((t, i) => (
-                <div key={t.id} className="enter card-gold flex flex-col" style={step(i + 1)}>
-                  <h3 className="text-xl font-semibold">{t.name}</h3>
-                  <div className="mt-3">
-                    {t.oldPrice && <p className="text-sm text-zinc-400 line-through">{formatPrice(t.oldPrice)}</p>}
-                    <p className="gold-text-gloss text-3xl font-extrabold">{formatPrice(t.price)}</p>
-                  </div>
-                  <ul className="mt-5 flex-1 space-y-2.5 text-sm text-zinc-700">
-                    {t.features.split("\n").filter(Boolean).map((f, k) => (
-                      <li key={k} className="flex items-start gap-2.5"><Check />{f}</li>
-                    ))}
-                  </ul>
-                  {ADMIN_TELEGRAM ? (
-                    <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className="btn-primary mt-6 w-full py-3">Sotib olish uchun yozing</a>
-                  ) : (
-                    <p className="mt-6 rounded-xl bg-emerald-50 px-3 py-3 text-center text-sm text-emerald-900">Sotib olish uchun adminga yozing</p>
-                  )}
-                </div>
-              ))}
-              </div>
-            )}
-
-            <div className="enter mt-7 text-center" style={step(tariffs.length + 1)}>
+            <div className="enter mt-7 text-center" style={step(DEMO_LESSONS.length + 1)}>
               <Link href={`/courses/${course.slug}`} className="text-sm font-medium text-gold-text underline-offset-4 hover:underline">
                 Kurs dasturi bilan tanishish →
               </Link>

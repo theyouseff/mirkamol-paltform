@@ -9,8 +9,7 @@ export default async function HomePage() {
     include: {
       tariffs: {
         where: { active: true },
-        orderBy: { level: "asc" },
-        select: { id: true, name: true, price: true, oldPrice: true, features: true },
+        select: { price: true },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -25,7 +24,7 @@ export default async function HomePage() {
           <CourseTariffsCard
             key={c.id}
             course={{ slug: c.slug, title: c.title, subtitle: c.subtitle, coverUrl: c.coverUrl }}
-            tariffs={c.tariffs}
+            prices={c.tariffs.map((t) => t.price)}
           />
         ))}
         {courses.length === 0 && <p className="text-gold-text/80">Hozircha kurslar yo&apos;q.</p>}
