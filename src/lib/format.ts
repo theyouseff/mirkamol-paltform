@@ -2,6 +2,15 @@ export function formatPrice(amount: number) {
   return amount.toLocaleString("ru-RU").replace(/,/g, " ") + " so'm";
 }
 
+// Bitta narx yoki "min – max" oralig'i: "4 000 000 – 5 000 000 so'm"
+export function formatPriceRange(prices: number[]) {
+  if (!prices.length) return "";
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const spaced = (n: number) => n.toLocaleString("ru-RU").replace(/,/g, " ");
+  return min === max ? formatPrice(min) : `${spaced(min)} – ${formatPrice(max)}`;
+}
+
 export function formatDate(date: Date) {
   return date.toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Tashkent" });
 }

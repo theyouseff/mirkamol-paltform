@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { formatPrice } from "@/lib/format";
+import { formatPriceRange } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const courses = await prisma.course.findMany({
     where: { published: true },
-    include: { tariffs: { where: { active: true }, orderBy: { price: "asc" }, take: 1 } },
+    include: { tariffs: { where: { active: true }, select: { price: true } } },
     orderBy: { createdAt: "desc" },
   });
 
@@ -26,7 +26,7 @@ export default async function HomePage() {
             )}
             <h2 className="text-lg font-semibold">{c.title}</h2>
             <p className="mt-1 flex-1 text-sm text-zinc-500">{c.subtitle}</p>
-            {c.tariffs[0] && <p className="mt-4 font-semibold text-brand">{formatPrice(c.tariffs[0].price)} dan</p>}
+            {c.tariffs.length > 0 && <p className="gold-text-gloss mt-4 text-lg font-extrabold">{formatPriceRange(c.tariffs.map((t) => t.price))}</p>}
           </Link>
         ))}
         {courses.length === 0 && <p className="text-gold-text/80">Hozircha kurslar yo&apos;q.</p>}

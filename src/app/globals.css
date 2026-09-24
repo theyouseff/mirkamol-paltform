@@ -26,6 +26,16 @@ body {
   @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition disabled:opacity-50 cursor-pointer;
 }
 
+/* Yaltiroq oltin matn (narxlar): yuqorida nur, o'rtada chiziq, pastda iliq oltin */
+@utility gold-text-gloss {
+  background: linear-gradient(180deg, #f1c657 0%, #d29a2f 46%, #a97514 54%, #dba93f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 1px 0 rgb(120 75 5 / 0.25));
+}
+
 /* Yaltiroq oltin: ranglar oblojkadagi oltin tasmadan olingan */
 @utility gold-gloss {
   color: #0b3d2e;
