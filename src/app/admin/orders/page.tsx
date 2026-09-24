@@ -49,18 +49,18 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             {f.label}
           </Link>
         ))}
-        <form className="ml-auto flex gap-2">
+        <form className="ml-auto flex gap-2 max-sm:ml-0 max-sm:w-full max-sm:flex-wrap">
           {status && <input type="hidden" name="status" value={status} />}
-          <select name="author" defaultValue={author} className="input w-48">
+          <select name="author" defaultValue={author} className="input w-48 max-sm:w-full">
             <option value="">Barcha mualliflar</option>
             {authors.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
-          <input name="q" defaultValue={q} className="input w-56" placeholder="Ism yoki email" />
+          <input name="q" defaultValue={q} className="input w-56 max-sm:w-full" placeholder="Ism yoki email" />
           <button className="btn-outline">Filtr</button>
         </form>
       </div>
 
-      <div className="card overflow-x-auto p-0">
+      <div className="card overflow-x-auto p-0 max-lg:hidden">
         <table className="w-full min-w-[900px] text-sm">
           <thead className="bg-zinc-50 text-left text-zinc-500">
             <tr>
@@ -94,6 +94,40 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
           </tbody>
         </table>
         {orders.length === 0 && <p className="p-6 text-center text-zinc-500">To&apos;lovlar topilmadi</p>}
+      </div>
+
+      {/* Telefon va planshet: jadval o'rniga kartochkalar */}
+      <div className="space-y-3 lg:hidden">
+        {orders.map((o) => (
+          <div key={o.id} className="card space-y-2 p-4 text-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-medium">№{o.number} · {o.user.name}</p>
+                <p className="truncate text-xs text-zinc-400">{o.user.email}</p>
+              </div>
+              <StatusBadge status={o.status} />
+            </div>
+            <div className="flex items-end justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate">{o.course.title}</p>
+                {o.course.author && <p className="text-xs text-zinc-400">{o.course.author.name}</p>}
+              </div>
+              <p className="shrink-0 font-semibold">{formatPrice(o.amount)}</p>
+            </div>
+            <p className="text-xs text-zinc-500">
+              {formatDate(o.createdAt)}{o.provider && ` · ${o.provider}`}{o.utmSource && ` · ${o.utmSource}`}
+              {o.note && <span className="block text-zinc-400">{o.note}</span>}
+            </p>
+            {o.status === "PENDING" && (
+              <form className="flex gap-2 pt-1">
+                <input type="hidden" name="id" value={o.id} />
+                <ConfirmButton formAction={markOrderPaid} className="btn-outline flex-1 px-2 py-2 text-xs" message="Buyurtmani to'langan deb belgilab, kursni ochasizmi?">✓ To&apos;landi</ConfirmButton>
+                <ConfirmButton formAction={cancelOrder} className="btn-danger px-4 py-2 text-xs" message="Buyurtmani bekor qilasizmi?">✕</ConfirmButton>
+              </form>
+            )}
+          </div>
+        ))}
+        {orders.length === 0 && <p className="card text-center text-zinc-500">To&apos;lovlar topilmadi</p>}
       </div>
     </div>
   );

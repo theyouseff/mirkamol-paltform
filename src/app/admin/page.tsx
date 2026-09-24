@@ -79,7 +79,7 @@ export default async function AdminDashboard() {
             <h2 className="font-semibold">So&apos;nggi buyurtmalar</h2>
             <Link href="/admin/orders" className="text-sm text-brand">Hammasi →</Link>
           </div>
-          <table className="w-full text-sm">
+          <table className="hidden w-full text-sm sm:table">
             <tbody>
               {recent.map((o) => (
                 <tr key={o.id} className="border-t border-zinc-100">
@@ -93,6 +93,22 @@ export default async function AdminDashboard() {
               ))}
             </tbody>
           </table>
+          {/* Telefonda jadval o'rniga ixcham ro'yxat */}
+          <ul className="divide-y divide-zinc-100 sm:hidden">
+            {recent.map((o) => (
+              <li key={o.id} className="flex items-start justify-between gap-3 py-3 text-sm">
+                <div className="min-w-0">
+                  <p className="font-medium">№{o.number} · {o.user.name}</p>
+                  <p className="truncate text-xs text-zinc-500">{o.course.title}</p>
+                  <p className="text-xs text-zinc-400">{formatDate(o.createdAt)}</p>
+                </div>
+                <div className="shrink-0 space-y-1 text-right">
+                  <p className="font-medium">{formatPrice(o.amount)}</p>
+                  <StatusBadge status={o.status} />
+                </div>
+              </li>
+            ))}
+          </ul>
           {recent.length === 0 && <p className="text-sm text-zinc-500">Hali buyurtmalar yo&apos;q</p>}
         </div>
 

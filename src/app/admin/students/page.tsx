@@ -51,7 +51,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
         {(q || author || course) && <Link href="/admin/students" className="btn text-gold-text/80 hover:text-gold-text">Tozalash</Link>}
       </form>
 
-      <div className="card overflow-x-auto p-0">
+      <div className="card overflow-x-auto p-0 max-lg:hidden">
         <table className="w-full min-w-[900px] text-sm">
           <thead className="bg-zinc-50 text-left text-zinc-500">
             <tr><th className="px-4 py-3">Ism</th><th>Email</th><th>Kurslar</th><th>Darslar</th><th>Qo&apos;shilgan</th><th>Rol</th><th></th></tr>
@@ -88,6 +88,38 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
           </tbody>
         </table>
         {users.length === 0 && <p className="p-6 text-center text-zinc-500">Topilmadi</p>}
+      </div>
+
+      {/* Telefon va planshet: jadval o'rniga kartochkalar */}
+      <div className="space-y-3 lg:hidden">
+        {users.map((u) => (
+          <div key={u.id} className="card space-y-3 p-4 text-sm">
+            <div>
+              <p className="font-medium">{u.name}</p>
+              <p className="break-all text-xs text-zinc-400">{u.email}</p>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {u.enrollments.map((e) => <span key={e.id} className="badge bg-brand-soft text-brand">{e.course.title}</span>)}
+              {u.enrollments.length === 0 && <span className="text-zinc-400">Kursi yo&apos;q</span>}
+            </div>
+            <p className="text-xs text-zinc-500">Tugatgan darslari: {u._count.progress} · Qo&apos;shilgan: {formatDate(u.createdAt)}</p>
+            {u.id === admin.id ? (
+              <p className="text-xs text-zinc-500">{roles[u.role as keyof typeof roles]}</p>
+            ) : (
+              <div className="flex flex-wrap items-center gap-2">
+                <form action={setUserRole} className="flex gap-1">
+                  <input type="hidden" name="id" value={u.id} />
+                  <select name="role" defaultValue={u.role} className="input py-1.5">
+                    {Object.entries(roles).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  </select>
+                  <SubmitButton className="btn-outline px-3 py-1 text-xs">OK</SubmitButton>
+                </form>
+                <ResetPasswordButton userId={u.id} />
+              </div>
+            )}
+          </div>
+        ))}
+        {users.length === 0 && <p className="card text-center text-zinc-500">Topilmadi</p>}
       </div>
     </div>
   );

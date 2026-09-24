@@ -100,16 +100,16 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
         <h2 className="text-lg font-semibold">Dastur: modullar va darslar</h2>
         {course.modules.map((m, mi) => (
           <div key={m.id} className="rounded-xl border border-zinc-200">
-            <div className="flex items-start gap-2 border-b border-zinc-100 bg-zinc-50 p-3">
+            <div className="flex items-start gap-2 border-b border-zinc-100 bg-zinc-50 p-3 max-sm:flex-col">
               <form action={moveModule} className="flex gap-1">
                 <input type="hidden" name="id" value={m.id} />
                 <button name="dir" value="up" disabled={mi === 0} className="btn-outline px-2.5" title="Yuqoriga">↑</button>
                 <button name="dir" value="down" disabled={mi === course.modules.length - 1} className="btn-outline px-2.5" title="Pastga">↓</button>
               </form>
-              <form action={updateModule} className="min-w-0 flex-1 space-y-2">
+              <form action={updateModule} className="min-w-0 flex-1 space-y-2 max-sm:w-full">
                 <input type="hidden" name="id" value={m.id} />
                 <div className="flex flex-wrap items-center gap-2">
-                  <input name="title" className="input min-w-0 flex-1 font-medium" defaultValue={m.title} />
+                  <input name="title" className="input min-w-0 flex-1 font-medium max-sm:basis-full" defaultValue={m.title} />
                   <SubmitButton className="btn-outline">Saqlash</SubmitButton>
                   <ConfirmButton formAction={deleteModule} message="Modul va undagi barcha darslar o'chiriladi. Davom etasizmi?">✕</ConfirmButton>
                 </div>

@@ -145,7 +145,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
           </form>
         </div>
 
-        <div className="card overflow-x-auto p-0">
+        <div className="card overflow-x-auto p-0 max-lg:hidden">
           <table className="w-full min-w-[860px] text-sm">
             <thead className="bg-zinc-50 text-left text-zinc-500">
               <tr><th className="px-4 py-3">O&apos;quvchi</th><th>Progress</th><th>Oxirgi ko&apos;rgan dars</th><th>Oxirgi faollik</th><th></th></tr>
@@ -186,6 +186,38 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
             </tbody>
           </table>
           {rows.length === 0 && <p className="p-6 text-center text-zinc-500">O&apos;quvchilar topilmadi</p>}
+        </div>
+
+        {/* Telefon va planshet: jadval o'rniga kartochkalar */}
+        <div className="space-y-3 lg:hidden">
+          {rows.map(({ u, mine, completed, last }) => {
+            const lastLesson = last && lessonById.get(last.lessonId);
+            const active = u.id === student;
+            return (
+              <div key={u.id} className={`card space-y-3 p-4 text-sm transition-colors duration-300 ${active ? "bg-amber-50" : ""}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <StudentLink href={href({ student: u.id })} className="font-medium text-brand">{u.name}</StudentLink>
+                    <p className="truncate text-xs text-zinc-400">{u.email}</p>
+                  </div>
+                  <span className="shrink-0 text-xs text-zinc-500">{last ? timeAgo(last.updatedAt) : "—"}</span>
+                </div>
+                <div>
+                  <ProgressBar value={pct(completed, mine.length)} />
+                  <p className="mt-1 text-xs text-zinc-500">{completed} / {mine.length} dars tugatgan</p>
+                </div>
+                {last && lastLesson ? (
+                  <p className="text-xs text-zinc-500">
+                    <span className="font-medium text-zinc-700">{lastLesson.title}</span> · to&apos;xtagan joyi <b>{formatClock(last.position)}</b> / {formatClock(last.duration)}
+                  </p>
+                ) : (
+                  <p className="text-xs text-zinc-400">Hali video ko&apos;rmagan</p>
+                )}
+                <StudentLink href={href({ student: u.id })} className={active ? "text-xs font-medium text-zinc-400" : "btn-outline px-3 py-1.5 text-xs"}>{active ? "Tanlangan" : "Ko'rish →"}</StudentLink>
+              </div>
+            );
+          })}
+          {rows.length === 0 && <p className="card text-center text-zinc-500">O&apos;quvchilar topilmadi</p>}
         </div>
       </section>
     </div>
