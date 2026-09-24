@@ -37,7 +37,6 @@ Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 
 ## Xavfsizlik
 - Video va dars matni faqat kabinetda, faqat kursga yozilgan (yoki admin) foydalanuvchiga serverdan chiqadi. Sotuv sahifasida faqat nomlar.
-- Video ustida o'quvchi emaili xira ko'rinadi (tarqatilsa kimdan chiqqani bilinadi).
 - **Kinescope'da domen cheklovi**: Kinescope → loyiha sozlamalari → Xavfsizlik (Domain restriction) → `ilmaviya.vercel.app` ni qo'shing. Busiz embed havolasini istalgan saytga qo'yib ko'rsatish mumkin.
 - Kirishda urinishlar chegarasi (5 xato → 15 daqiqa kutish). Parol o'zgarsa yoki tiklansa, boshqa qurilmalardagi sessiyalar yopiladi.
 - Vercel'da **AUTH_SECRET** albatta sozlang; admin dashboardda sozlanmagan narsalar ko'rsatiladi.

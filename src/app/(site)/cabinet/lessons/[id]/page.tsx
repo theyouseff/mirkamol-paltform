@@ -46,9 +46,9 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="min-w-0 space-y-6">
           {lesson.videoUrl && (kinescopeId(lesson.videoUrl) ? (
-            <LessonVideo videoId={kinescopeId(lesson.videoUrl)!} lessonId={lesson.id} watermark={user.email} embedUrl={toEmbedUrl(lesson.videoUrl) ?? lesson.videoUrl} />
+            <LessonVideo videoId={kinescopeId(lesson.videoUrl)!} lessonId={lesson.id} embedUrl={toEmbedUrl(lesson.videoUrl) ?? lesson.videoUrl} />
           ) : (
-            <VideoPlayer url={lesson.videoUrl} watermark={user.email} />
+            <VideoPlayer url={lesson.videoUrl} />
           ))}
 
           {lesson.content && (

@@ -168,24 +168,6 @@ main > .contents > *,
   main > *, main > .contents > *, .page-in { animation: none; }
 }
 
-/* Video ustidagi o'quvchi belgisi: kamdan-kam joyini almashtiradi (yozib olingan video kimdan chiqqanini bilish uchun) */
-@keyframes wm-move {
-  0%, 100% { top: 8%; left: 5%; }
-  25% { top: 10%; right: auto; left: 58%; }
-  50% { top: 84%; left: 58%; }
-  75% { top: 82%; left: 5%; }
-}
-
-.video-wm {
-  position: absolute;
-  pointer-events: none;
-  user-select: none;
-  color: rgb(255 255 255 / 0.28);
-  text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
-  font-size: 12px;
-  animation: wm-move 48s steps(1, end) infinite;
-}
-
 /* Analitika: o'quvchi almashganda tepa panel yumshoq paydo bo'ladi */
 @keyframes panel-in {
   from { opacity: 0; transform: translateY(16px); }

@@ -27,7 +27,7 @@ const saveSeconds = (lessonId: string, seconds: Set<number>) => {
 // Kinescope pleyeri. O'quvchi videoni haqiqatan ijro etib oxiriga yetkazsa (≥80%), dars avtomatik "tugatilgan" bo'ladi.
 // Videoni surib oxiriga o'tkazish hisoblanmaydi: faqat ijro etilgan soniyalar sanaladi (ular brauzerda saqlanadi,
 // shuning uchun videoni bir necha marta bo'lib ko'rsa ham bo'ladi). Pleyer yuklanmasa, oddiy iframe ko'rsatiladi.
-export function LessonVideo({ videoId, lessonId, watermark, embedUrl }: { videoId: string; lessonId: string; watermark?: string; embedUrl: string }) {
+export function LessonVideo({ videoId, lessonId, embedUrl }: { videoId: string; lessonId: string; embedUrl: string }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [failed, setFailed] = useState(false);
   const [counted, setCounted] = useState(false);
@@ -110,7 +110,6 @@ export function LessonVideo({ videoId, lessonId, watermark, embedUrl }: { videoI
         allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock"
         allowFullScreen
       />
-      {watermark && <span aria-hidden className="video-wm">{watermark}</span>}
       {counted && <span className="absolute right-3 top-3 rounded-lg bg-gold px-3 py-1 text-sm font-semibold text-ink-950 shadow-lg">✓ Dars ko&apos;rildi</span>}
     </div>
   );
