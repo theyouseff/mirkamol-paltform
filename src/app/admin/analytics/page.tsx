@@ -61,8 +61,13 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
   const skippers = all
     .map((r) => {
       const from = missedFrom(r.u.createdAt); // akkaunt ochilishidan yoki yozuv boshlanishidan oldingi kunlar hisobga olinmaydi
-      const strip = dayRange(windowStart, yesterday).map((d) => ({ d, state: d < from ? "n/a" : visitedBy.get(r.u.id)?.has(d) ? "in" : "out" }));
-      return { r, strip, missed: strip.filter((s) => s.state === "out").length, counted: strip.filter((s) => s.state !== "n/a").length };
+      // O'quvchi qaytib video ko'rgan kun (va undan oldingi kunlar) hisobdan chiqadi: qaytgach ro'yxatdan chiqib ketadi
+      const lastWatchDay = r.last ? tashkentDay(r.last.updatedAt) : "";
+      const strip = dayRange(windowStart, yesterday).map((d) => ({
+        d,
+        state: d < from ? "n/a" : visitedBy.get(r.u.id)?.has(d) ? "in" : d <= lastWatchDay ? "cleared" : "out",
+      }));
+      return { r, strip, missed: strip.filter((s) => s.state === "out").length };
     })
     .filter((x) => x.missed > 0)
     .sort((a, b) => b.missed - a.missed || (a.r.last?.updatedAt.getTime() ?? 0) - (b.r.last?.updatedAt.getTime() ?? 0));
@@ -162,11 +167,11 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         <section className="card enter space-y-4" style={step(5)}>
           <div>
             <h2 className="font-semibold">Oxirgi 7 kunda eng ko&apos;p dars qoldirganlar</h2>
-            <p className="text-sm text-zinc-500">Platformaga kirmagan kunlari soni bo&apos;yicha (kechagacha). Doiralar: <span className="text-amber-500">●</span> kirgan, <span className="text-red-500">●</span> kirmagan.</p>
+            <p className="text-sm text-zinc-500">Platformaga kirmagan kunlari soni bo&apos;yicha (kechagacha). O&apos;quvchi qaytib video ko&apos;rsa, ro&apos;yxatdan chiqib ketadi. Doiralar: <span className="text-amber-500">●</span> kirgan, <span className="text-red-500">●</span> kirmagan, <span className="text-zinc-300">●</span> hisobga olinmaydi.</p>
           </div>
           {skippers.length > 0 ? (
             <ul className="divide-y divide-zinc-100">
-              {skippers.map(({ r, strip, missed, counted }) => (
+              {skippers.map(({ r, strip, missed }) => (
                 <li key={r.u.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
                   <div className="min-w-0">
                     <StudentLink href={href({ student: r.u.id })} className="font-medium text-brand hover:underline">{r.u.name}</StudentLink>
@@ -177,12 +182,12 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
                       {strip.map((s) => (
                         <span
                           key={s.d}
-                          title={`${s.d}: ${s.state === "in" ? "kirgan" : s.state === "out" ? "kirmagan" : "hisobga olinmaydi"}`}
+                          title={`${s.d}: ${s.state === "in" ? "kirgan" : s.state === "out" ? "kirmagan" : s.state === "cleared" ? "kirmagan, lekin keyin qaytib video ko'rgan" : "hisobga olinmaydi"}`}
                           className={`h-3.5 w-3.5 rounded-full ${s.state === "in" ? "bg-amber-400" : s.state === "out" ? "bg-red-500" : "bg-zinc-200"}`}
                         />
                       ))}
                     </div>
-                    <span className="badge shrink-0 bg-red-100 text-red-700">{missed} / {counted} kun kirmagan</span>
+                    <span className="badge shrink-0 bg-red-100 text-red-700">{missed} kun kirmagan</span>
                   </div>
                 </li>
               ))}
