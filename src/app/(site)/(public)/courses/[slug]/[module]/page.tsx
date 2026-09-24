@@ -25,7 +25,7 @@ export default async function ModulePage({ params }: { params: Promise<{ slug: s
         </div>
 
         <div className="mt-5">
-          <VideoLessonGrid lessons={mod.lessons} />
+          <VideoLessonGrid lessons={mod.lessons} basePath={`/courses/${course.slug}/${moduleSlug}`} />
         </div>
       </div>
     </BrandScope>
