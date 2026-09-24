@@ -6,14 +6,16 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/courses", label: "Kurslar" },
+  { href: "/cabinet", label: "Kabinet" },
   { href: "/cabinet/settings", label: "Parol" },
 ];
 
 const SLIDE = "0.75s cubic-bezier(0.45, 0.05, 0.2, 1)";
 
 function isActive(href: string, path: string) {
-  // O'quvchining kursi, moduli va darslari ("/cabinet/...") ham "Kurslar" bo'limi ichida; "Parol" sahifasi esa alohida
-  if (href === "/courses") return path === "/courses" || path.startsWith("/courses/") || (path.startsWith("/cabinet") && !path.startsWith("/cabinet/settings"));
+  // Kabinet — faqat shaxsiy sahifa. O'quvchining kursi, moduli va darslari "Kurslar" bo'limidan ochiladi.
+  if (href === "/cabinet") return path === "/cabinet";
+  if (href === "/courses") return path === "/courses" || path.startsWith("/courses/") || /^\/cabinet\/(courses|modules|lessons)\//.test(path);
   return path === href || path.startsWith(`${href}/`);
 }
 
