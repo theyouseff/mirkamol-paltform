@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { formatClock, kinescopeId, toEmbedUrl } from "@/lib/format";
+import { formatClock, kinescopeId, tashkentDay, toEmbedUrl } from "@/lib/format";
 import { ProgressBar } from "@/components/ProgressBar";
 import { LessonVideo } from "@/components/LessonVideo";
 import { VideoPlayer } from "@/components/VideoPlayer";
+import { VisitCalendar } from "@/components/VisitCalendar";
 
 // "Ali Valiyev" -> "AV"
 const initials = (name: string) =>
@@ -15,7 +16,7 @@ export default async function CabinetPage() {
   const user = await requireUser();
   // O'quvchi yozilgan barcha kurslardagi darslar (admin uchun — platformadagi hamma dars)
   const inMyCourses = user.role === "ADMIN" ? {} : { module: { course: { enrollments: { some: { userId: user.id } } } } };
-  const [total, done, last] = await Promise.all([
+  const [total, done, last, visits] = await Promise.all([
     prisma.lesson.count({ where: inMyCourses }),
     prisma.lessonProgress.count({ where: { userId: user.id, lesson: inMyCourses } }),
     prisma.lessonWatch.findFirst({
@@ -23,7 +24,11 @@ export default async function CabinetPage() {
       orderBy: { updatedAt: "desc" },
       include: { lesson: { select: { id: true, title: true, videoUrl: true, moduleId: true, module: { select: { title: true, courseId: true } } } } },
     }),
+    prisma.loginDay.findMany({ where: { userId: user.id }, select: { day: true } }),
   ]);
+  const today = tashkentDay();
+  // Bugun sahifani ko'rib turibdi, demak bugun ham kirgan (yozuv javobdan keyin saqlanadi)
+  const visitedDays = [...new Set([...visits.map((v) => v.day), ...(user.role === "ADMIN" ? [] : [today])])];
   // Dars raqami: kursdagi nechanchi modul va moduldagi nechanchi dars
   const modules = last
     ? await prisma.module.findMany({ where: { courseId: last.lesson.module.courseId }, orderBy: { order: "asc" }, select: { id: true, lessons: { orderBy: { order: "asc" }, select: { id: true } } } })
@@ -49,8 +54,9 @@ export default async function CabinetPage() {
       </div>
     </div>
 
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
     {last ? (
-      <section className="glass max-w-3xl space-y-4 p-5 sm:p-6">
+      <section className="glass space-y-4 p-5 sm:p-6">
         <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">Oxirgi ko&apos;rgan video</p>
         {videoId ? (
           <LessonVideo key={last.lesson.id} videoId={videoId} lessonId={last.lesson.id} embedUrl={toEmbedUrl(last.lesson.videoUrl) ?? last.lesson.videoUrl} startAt={finished ? 0 : last.position} />
@@ -79,11 +85,13 @@ export default async function CabinetPage() {
         </div>
       </section>
     ) : (
-      <section className="glass max-w-3xl space-y-3 p-5 sm:p-6">
+      <section className="glass space-y-3 p-5 sm:p-6">
         <p className="text-gold-text/85">Hali video ko&apos;rmagansiz. Kursni ochib, birinchi darsdan boshlang.</p>
         <Link href="/courses" className="btn-primary">Kurslarga o&apos;tish</Link>
       </section>
     )}
+    <VisitCalendar days={visitedDays} today={today} />
+    </div>
     </div>
   );
 }

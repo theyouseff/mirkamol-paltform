@@ -54,3 +54,8 @@ export function timeAgo(date: Date) {
   if (min < 7 * 24 * 60) return `${Math.floor(min / (24 * 60))} kun oldin`;
   return formatDate(date);
 }
+
+// Toshkent vaqti bo'yicha kun: "2026-09-24"
+export function tashkentDay(date: Date = new Date()) {
+  return date.toLocaleDateString("sv-SE", { timeZone: "Asia/Tashkent" });
+}

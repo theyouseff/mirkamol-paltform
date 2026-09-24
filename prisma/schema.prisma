@@ -20,6 +20,7 @@ model User {
   orders      Order[]
   progress    LessonProgress[]
   watches     LessonWatch[]
+  loginDays   LoginDay[]
   resets      PasswordReset[]
 }
 
@@ -130,6 +131,15 @@ model LessonWatch {
 
   @@id([userId, lessonId])
   @@index([updatedAt])
+}
+
+// O'quvchi platformaga kirgan kunlar (kabinetdagi kalendar uchun). day — Toshkent vaqti bo'yicha "2026-09-24".
+model LoginDay {
+  userId String
+  day    String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, day])
 }
 
 // Kirish va parol tiklash urinishlari (brute-force'dan himoya). key: "login:ip:email", "login:ip:1.2.3.4", "reset:email:a@b.c" ...
