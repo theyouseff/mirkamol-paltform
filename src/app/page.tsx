@@ -4,7 +4,7 @@ import { AuthForm } from "@/components/AuthForm";
 
 export const dynamic = "force-dynamic";
 
-// Kirgan foydalanuvchi to'g'ridan-to'g'ri kabinetga o'tadi; mehmonga ro'yxatdan o'tish formasi chiqadi.
+// Kirgan foydalanuvchi to'g'ridan-to'g'ri kabinetga o'tadi; mehmonga kirish formasi chiqadi.
 export default async function WelcomePage() {
   const user = await getCurrentUser();
   if (user) redirect(user.role === "ADMIN" ? "/admin" : "/cabinet");
@@ -14,7 +14,7 @@ export default async function WelcomePage() {
       className="flex min-h-screen items-center justify-center bg-cover bg-center px-4 py-10"
       style={{ backgroundImage: "url(/welcome-bg.webp)" }}
     >
-      <AuthForm mode="register" />
+      <AuthForm mode="login" />
     </div>
   );
 }
