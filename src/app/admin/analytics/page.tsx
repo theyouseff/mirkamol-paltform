@@ -1,9 +1,12 @@
-import Link from "next/link";
+import type { CSSProperties } from "react";
 import { prisma } from "@/lib/db";
 import { formatClock, kinescopeId, timeAgo, toEmbedUrl } from "@/lib/format";
 import { ProgressBar } from "@/components/ProgressBar";
 import { StudentVideo } from "@/components/admin/StudentVideo";
 import { VideoPlayer } from "@/components/VideoPlayer";
+import { StudentLink, SwitchProvider, TopPanel } from "@/components/admin/StudentSwitch";
+
+const step = (i: number) => ({ "--i": i }) as CSSProperties;
 
 const pct = (part: number, whole: number) => (whole > 0 ? Math.min(100, Math.round((part / whole) * 100)) : 0);
 const duration = (seconds: number) => {
@@ -67,18 +70,20 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
   const lastVideoId = lastLesson?.videoUrl ? kinescopeId(lastLesson.videoUrl) : null;
 
   return (
+    <SwitchProvider>
     <div className="space-y-8">
+      <TopPanel id={selected?.u.id ?? "all"}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold">Analitika</h1>
           <p className="mt-1 text-sm text-gold-text/70">{selected ? `${selected.u.name} · ${selected.u.email}` : "Barcha o'quvchilar bo'yicha umumiy ma'lumot"}</p>
         </div>
-        {selected && <Link href={href({ student: "" })} className="btn-outline">← Umumiy ko&apos;rinish</Link>}
+        {selected && <StudentLink href={href({ student: "" })} className="btn-outline">← Umumiy ko&apos;rinish</StudentLink>}
       </div>
 
       {selected ? (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <div className="card space-y-3">
+          <div className="card enter space-y-3" style={step(0)}>
             <p className="text-sm text-zinc-500">Oxirgi ko&apos;rgan video</p>
             {selected.last && lastLesson ? (
               <>
@@ -97,7 +102,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
             )}
           </div>
           <div className="grid content-start gap-4">
-            <div className="card">
+            <div className="card enter" style={step(1)}>
               <p className="text-sm text-zinc-500">To&apos;xtagan joyi</p>
               <p className="mt-2 text-2xl font-bold">{selected.last ? formatClock(selected.last.position) : "—"}</p>
               {selected.last && (
@@ -107,12 +112,12 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
                 </>
               )}
             </div>
-            <div className="card">
+            <div className="card enter" style={step(2)}>
               <p className="text-sm text-zinc-500">Ko&apos;rib tugatgan videolari</p>
               <p className="mt-2 text-2xl font-bold">{selected.completed} <span className="text-base font-normal text-zinc-400">/ {selected.mine.length}</span></p>
               <div className="mt-2"><ProgressBar value={pct(selected.completed, selected.mine.length)} /></div>
             </div>
-            <div className="card">
+            <div className="card enter" style={step(3)}>
               <p className="text-sm text-zinc-500">Oxirgi faollik</p>
               <p className="mt-2 text-2xl font-bold">{selected.last ? timeAgo(selected.last.updatedAt) : "—"}</p>
             </div>
@@ -120,14 +125,15 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          {metrics.map((m) => (
-            <div key={m.label} className="card">
+          {metrics.map((m, i) => (
+            <div key={m.label} className="card enter" style={step(i)}>
               <p className="text-sm text-zinc-500">{m.label}</p>
               <p className="mt-2 text-2xl font-bold">{m.value}</p>
             </div>
           ))}
         </div>
       )}
+      </TopPanel>
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-2">
@@ -149,9 +155,9 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
                 const lastLesson = last && lessonById.get(last.lessonId);
                 const active = u.id === student;
                 return (
-                  <tr key={u.id} className={`border-t border-zinc-100 align-top ${active ? "bg-amber-50" : "hover:bg-zinc-50"}`}>
+                  <tr key={u.id} className={`border-t border-zinc-100 align-top transition-colors duration-300 ${active ? "bg-amber-50" : "hover:bg-zinc-50"}`}>
                     <td className="px-4 py-3">
-                      <Link href={href({ student: u.id })} className="font-medium text-brand hover:underline">{u.name}</Link>
+                      <StudentLink href={href({ student: u.id })} className="font-medium text-brand hover:underline">{u.name}</StudentLink>
                       <p className="text-xs text-zinc-400">{u.email}</p>
                     </td>
                     <td className="w-48 py-3 pr-4">
@@ -172,7 +178,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
                     </td>
                     <td className="py-3 pr-4 text-zinc-500">{last ? timeAgo(last.updatedAt) : "—"}</td>
                     <td className="py-3 pr-4 text-right">
-                      <Link href={href({ student: u.id })} className={active ? "text-xs font-medium text-zinc-400" : "btn-outline px-2.5 py-1 text-xs"}>{active ? "Tanlangan" : "Ko'rish →"}</Link>
+                      <StudentLink href={href({ student: u.id })} className={active ? "text-xs font-medium text-zinc-400" : "btn-outline px-2.5 py-1 text-xs"}>{active ? "Tanlangan" : "Ko'rish →"}</StudentLink>
                     </td>
                   </tr>
                 );
@@ -183,5 +189,6 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         </div>
       </section>
     </div>
+    </SwitchProvider>
   );
 }
