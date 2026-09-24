@@ -6,16 +6,10 @@ export function formatDate(date: Date) {
   return date.toLocaleString("ru-RU", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Tashkent" });
 }
 
-// "+998 90 123-45-67" -> "998901234567". Noto'g'ri bo'lsa null.
-export function normalizePhone(input: string) {
-  let digits = input.replace(/\D/g, "");
-  if (digits.length === 9) digits = "998" + digits;
-  return /^998\d{9}$/.test(digits) ? digits : null;
-}
-
-export function formatPhone(phone: string) {
-  const m = phone.match(/^998(\d{2})(\d{3})(\d{2})(\d{2})$/);
-  return m ? `+998 ${m[1]} ${m[2]}-${m[3]}-${m[4]}` : phone;
+// " Ali@Gmail.com " -> "ali@gmail.com". Noto'g'ri bo'lsa null.
+export function normalizeEmail(input: string) {
+  const email = input.trim().toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) ? email : null;
 }
 
 // YouTube / Kinescope / Bunny havolasini iframe uchun embed ko'rinishiga keltiradi.

@@ -12,7 +12,7 @@ npm run db:seed           # admin + demo kurs
 npm run dev               # http://localhost:3000
 ```
 
-Admin: `+998 90 123 45 67` / `admin123` (serverga chiqarishdan oldin albatta o'zgartiring).
+Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 
 ## Tuzilma
 

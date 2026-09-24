@@ -4,13 +4,13 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  // Prod uchun: ADMIN_PHONE va ADMIN_PASSWORD ni env orqali bering
-  const phone = process.env.ADMIN_PHONE ?? "998901234567";
+  // Prod uchun: ADMIN_EMAIL va ADMIN_PASSWORD ni env orqali bering
+  const email = process.env.ADMIN_EMAIL ?? "admin@example.com";
   await prisma.user.upsert({
-    where: { phone },
+    where: { email },
     update: {},
     create: {
-      phone,
+      email,
       name: "Admin",
       role: "ADMIN",
       passwordHash: await bcrypt.hash(process.env.ADMIN_PASSWORD ?? "admin123", 10),

@@ -2,7 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { setUserRole } from "@/lib/actions/admin";
-import { formatDate, formatPhone } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { GrantAccessForm } from "@/components/admin/GrantAccessForm";
 import { SubmitButton } from "@/components/SubmitButton";
 
@@ -11,9 +11,8 @@ const roles = { STUDENT: "O'quvchi", CURATOR: "Kurator", ADMIN: "Admin" } as con
 export default async function AdminStudentsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const admin = await requireAdmin();
   const { q = "" } = await searchParams;
-  const digits = q.replace(/\D/g, "");
   const where: Prisma.UserWhereInput = q
-    ? { OR: [{ name: { contains: q, mode: "insensitive" } }, ...(digits ? [{ phone: { contains: digits } }] : [])] }
+    ? { OR: [{ name: { contains: q, mode: "insensitive" } }, { email: { contains: q, mode: "insensitive" } }] }
     : {};
 
   const [users, tariffs] = await Promise.all([
@@ -32,19 +31,19 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
       <GrantAccessForm tariffs={tariffs.map((t) => ({ id: t.id, label: `${t.course.title} — ${t.name}` }))} />
 
       <form>
-        <input name="q" defaultValue={q} className="input max-w-sm" placeholder="Ism yoki telefon bo'yicha qidirish" />
+        <input name="q" defaultValue={q} className="input max-w-sm" placeholder="Ism yoki email bo'yicha qidirish" />
       </form>
 
       <div className="card overflow-x-auto p-0">
         <table className="w-full min-w-[800px] text-sm">
           <thead className="bg-zinc-50 text-left text-zinc-500">
-            <tr><th className="px-4 py-3">Ism</th><th>Telefon</th><th>Kurslar</th><th>Tugatilgan darslar</th><th>Ro&apos;yxatdan o&apos;tgan</th><th>Rol</th></tr>
+            <tr><th className="px-4 py-3">Ism</th><th>Email</th><th>Kurslar</th><th>Tugatilgan darslar</th><th>Ro&apos;yxatdan o&apos;tgan</th><th>Rol</th></tr>
           </thead>
           <tbody>
             {users.map((u) => (
               <tr key={u.id} className="border-t border-zinc-100">
                 <td className="px-4 py-3 font-medium">{u.name}</td>
-                <td>{formatPhone(u.phone)}</td>
+                <td>{u.email}</td>
                 <td>
                   <div className="flex flex-wrap gap-1">
                     {u.enrollments.map((e) => <span key={e.id} className="badge bg-brand-soft text-brand">{e.course.title} · {e.tariff.name}</span>)}

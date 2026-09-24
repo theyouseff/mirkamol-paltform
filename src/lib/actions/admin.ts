@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { fulfillOrder } from "@/lib/access";
-import { normalizePhone } from "@/lib/format";
+import { normalizeEmail } from "@/lib/format";
 
 const str = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 const int = (fd: FormData, key: string, fallback = 0) => {
@@ -181,10 +181,10 @@ export type GrantState = { error?: string; ok?: string };
 // Qo'lda kirish berish (naqd to'lov, bonus, jamoa a'zosi va h.k.)
 export async function grantAccess(_: GrantState, formData: FormData): Promise<GrantState> {
   await requireAdmin();
-  const phone = normalizePhone(str(formData, "phone"));
-  if (!phone) return { error: "Telefon raqam noto'g'ri" };
-  const user = await prisma.user.findUnique({ where: { phone } });
-  if (!user) return { error: "Bu raqam bilan foydalanuvchi topilmadi. Avval u ro'yxatdan o'tishi kerak." };
+  const email = normalizeEmail(str(formData, "email"));
+  if (!email) return { error: "Email noto'g'ri" };
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) return { error: "Bu email bilan foydalanuvchi topilmadi. Avval u ro'yxatdan o'tishi kerak." };
   const tariff = await prisma.tariff.findUnique({ where: { id: str(formData, "tariffId") }, include: { course: true } });
   if (!tariff) return { error: "Tarifni tanlang" };
 

@@ -37,7 +37,7 @@ export default async function CabinetPage() {
       {enrollments.length === 0 && (
         <div className="card mt-8 text-center">
           <p className="text-zinc-500">Sizda hali kurslar yo&apos;q.</p>
-          <Link href="/" className="btn-primary mt-4">Kurslarni ko&apos;rish</Link>
+          <Link href="/courses" className="btn-primary mt-4">Kurslarni ko&apos;rish</Link>
         </div>
       )}
     </div>

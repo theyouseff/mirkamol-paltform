@@ -24,12 +24,12 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
         </div>
       )}
       <div>
-        <label className="label">Telefon</label>
-        <input name="phone" type="tel" className="input" placeholder="+998 90 123 45 67" required />
+        <label className="label">Email (Gmail)</label>
+        <input name="email" type="email" autoComplete="email" className="input" placeholder="ism@gmail.com" required />
       </div>
       <div>
         <label className="label">Parol</label>
-        <input name="password" type="password" className="input" required minLength={isLogin ? 1 : 6} />
+        <input name="password" type="password" autoComplete={isLogin ? "current-password" : "new-password"} className="input" required minLength={isLogin ? 1 : 6} />
       </div>
       {state.error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
       <SubmitButton className="btn-primary w-full">{isLogin ? "Kirish" : "Ro'yxatdan o'tish"}</SubmitButton>

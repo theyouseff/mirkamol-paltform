@@ -9,6 +9,7 @@ export async function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="text-lg font-bold text-brand">Akademiya</Link>
         <nav className="flex items-center gap-2 text-sm">
+          <Link href="/courses" className="btn text-zinc-600 hover:text-zinc-900">Kurslar</Link>
           {user ? (
             <>
               {user.role === "ADMIN" && <Link href="/admin" className="btn-outline">Admin panel</Link>}

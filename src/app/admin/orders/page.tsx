@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { cancelOrder, markOrderPaid } from "@/lib/actions/admin";
-import { formatDate, formatPhone, formatPrice } from "@/lib/format";
+import { formatDate, formatPrice } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmButton } from "@/components/ConfirmButton";
 
@@ -17,7 +17,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const { status = "", q = "" } = await searchParams;
   const where: Prisma.OrderWhereInput = {
     ...(status && { status }),
-    ...(q && { OR: [{ user: { name: { contains: q, mode: "insensitive" } } }, { user: { phone: { contains: q.replace(/\D/g, "") || q } } }] }),
+    ...(q && { OR: [{ user: { name: { contains: q, mode: "insensitive" } } }, { user: { email: { contains: q, mode: "insensitive" } } }] }),
   };
   const orders = await prisma.order.findMany({
     where,
@@ -38,7 +38,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         ))}
         <form className="ml-auto">
           {status && <input type="hidden" name="status" value={status} />}
-          <input name="q" defaultValue={q} className="input w-64" placeholder="Ism yoki telefon bo'yicha qidirish" />
+          <input name="q" defaultValue={q} className="input w-64" placeholder="Ism yoki email bo'yicha qidirish" />
         </form>
       </div>
 
@@ -53,7 +53,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             {orders.map((o) => (
               <tr key={o.id} className="border-t border-zinc-100">
                 <td className="px-4 py-3">{o.number}</td>
-                <td>{o.user.name}<div className="text-xs text-zinc-400">{formatPhone(o.user.phone)}</div></td>
+                <td>{o.user.name}<div className="text-xs text-zinc-400">{o.user.email}</div></td>
                 <td>{o.tariff.course.title}<div className="text-xs text-zinc-400">{o.tariff.name}</div></td>
                 <td>{formatPrice(o.amount)}</td>
                 <td><StatusBadge status={o.status} />{o.provider && <div className="text-xs text-zinc-400">{o.provider}</div>}</td>

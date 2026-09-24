@@ -11,7 +11,7 @@ export function GrantAccessForm({ tariffs }: { tariffs: { id: string; label: str
       <h2 className="font-semibold">Qo&apos;lda kirish berish</h2>
       <p className="text-sm text-zinc-500">Naqd yoki o&apos;tkazma orqali to&apos;laganlar, bonus va h.k. uchun.</p>
       <div className="grid gap-3 sm:grid-cols-[1fr_1.5fr_140px_auto]">
-        <input name="phone" className="input" placeholder="+998 90 123 45 67" required />
+        <input name="email" type="email" className="input" placeholder="ism@gmail.com" required />
         <select name="tariffId" className="input" required>
           {tariffs.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
         </select>
