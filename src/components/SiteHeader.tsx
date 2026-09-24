@@ -4,9 +4,15 @@ import { logout } from "@/lib/actions/auth";
 import { callCenterUrl } from "@/lib/config";
 import { HeaderNav } from "./HeaderNav";
 
-// Bosilganda telefon qo'ng'irog'i boshlanadi (tel:). Raqam kiritilmagan bo'lsa — ko'rinmaydi.
-const CallCentre = () =>
-  callCenterUrl ? <a href={callCenterUrl} className="btn text-gold-text/85 hover:text-gold-text">Call - Centre</a> : null;
+// Menyuning o'ng chetidagi yaltiroq tilla "Call - Centre". Raqam kiritilgan bo'lsa, bosilganda qo'ng'iroq boshlanadi (tel:).
+const CallCentre = () => {
+  const cls = "btn ml-1 gold-text-gloss px-2 text-sm font-semibold sm:ml-4 sm:px-3 sm:text-base";
+  return callCenterUrl ? (
+    <a href={callCenterUrl} className={`${cls} transition hover:brightness-110`}>Call - Centre</a>
+  ) : (
+    <span className={`${cls} cursor-default`}>Call - Centre</span>
+  );
+};
 
 export async function SiteHeader() {
   const user = await getSession(); // bazaga bormaydi — rol sessiyaning o'zida
