@@ -23,6 +23,21 @@ export async function toggleLessonComplete(formData: FormData) {
   revalidatePath("/cabinet", "layout");
 }
 
+// Video oxirigacha ko'rilganda brauzer chaqiradi: darsni tugatilgan deb belgilaydi (takror chaqirilsa zarar yo'q).
+export async function markLessonWatched(lessonId: string) {
+  const user = await requireUser();
+  const lesson = await prisma.lesson.findUnique({ where: { id: lessonId }, include: { module: true } });
+  if (!lesson) return;
+  const enrollment = await getEnrollment(user.id, lesson.module.courseId);
+  if (lessonState(lesson, !!enrollment, user.role === "ADMIN") !== "open") return;
+  await prisma.lessonProgress.upsert({
+    where: { userId_lessonId: { userId: user.id, lessonId } },
+    update: {},
+    create: { userId: user.id, lessonId },
+  });
+  revalidatePath("/cabinet", "layout");
+}
+
 export type PasswordState = { error?: string; ok?: boolean };
 
 export async function changePassword(_: PasswordState, formData: FormData): Promise<PasswordState> {

@@ -22,7 +22,7 @@ Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 | `/activate`, `/forgot` | Emailga kelgan bir martalik kod bilan parol o'rnatish (yangi o'quvchi) va tiklash (SMTP kerak) |
 | `/courses`, `/courses/[slug]` | Kurslar katalogi va sotuv sahifasi: faqat dastur (modul/dars nomlari), video va matn yo'q |
 | `/courses` → `/cabinet/courses/[slug]` | Kirgach o'quvchi «Kurslar» sahifasiga tushadi; o'zi to'lagan kurs blokini bossa kurs ochiladi: modul → video dars, progress |
-| `/cabinet` | Akkaunt egasining avatari, ismi va progress (nechta dars tugatilgani); kurslar bu yerda chiqmaydi |
+| `/cabinet` | Akkaunt egasining avatari, ismi va progress (nechta dars ko'rilgani); kurslar bu yerda chiqmaydi |
 | `/cabinet/settings` | Parolni o'zgartirish |
 | `/admin` | Dashboard, kurslar, mualliflar, to'lovlar, o'quvchilar |
 
@@ -42,6 +42,8 @@ Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 - Kirishda urinishlar chegarasi (5 xato → 15 daqiqa kutish). Parol o'zgarsa yoki tiklansa, boshqa qurilmalardagi sessiyalar yopiladi.
 - Vercel'da **AUTH_SECRET** albatta sozlang; admin dashboardda sozlanmagan narsalar ko'rsatiladi.
 - Demo kursga namuna modul/darslarni yuklash: `npx tsx prisma/import-demo.ts` (o'quvchisi bo'lgan kursga tegmaydi).
+
+- **Progress avtomatik:** Kinescope videosi oxirigacha ko'rilsa (≥80% haqiqiy ijro; surib o'tkazish sanalmaydi) dars "ko'rildi" bo'ladi. Boshqa xizmatdagi videolar uchun qo'lda «Darsni tugatdim» tugmasi ishlaydi.
 
 ## Kirish qoidalari
 - Tarif yo'q: kursga yozilgan o'quvchi kursning hamma darsini ko'radi.

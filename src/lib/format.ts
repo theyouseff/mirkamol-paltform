@@ -21,6 +21,11 @@ export function normalizeEmail(input: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) ? email : null;
 }
 
+// Kinescope havolasidan video id ("https://kinescope.io/embed/ID" yoki ".../ID"); boshqa havola bo'lsa null.
+export function kinescopeId(url: string) {
+  return url.match(/kinescope\.io\/(?:embed\/)?([\w-]+)/)?.[1] ?? null;
+}
+
 // YouTube / Kinescope / Bunny havolasini iframe uchun embed ko'rinishiga keltiradi.
 export function toEmbedUrl(url: string) {
   if (!url) return null;

@@ -6,6 +6,8 @@ import { loadCourseForStudent } from "@/lib/course";
 import { lessonHint } from "@/lib/access";
 import { toggleLessonComplete } from "@/lib/actions/student";
 import { VideoPlayer } from "@/components/VideoPlayer";
+import { LessonVideo } from "@/components/LessonVideo";
+import { kinescopeId, toEmbedUrl } from "@/lib/format";
 import { LessonContent } from "@/components/LessonContent";
 import { SubmitButton } from "@/components/SubmitButton";
 import { BrandScope } from "@/components/BrandScope";
@@ -43,7 +45,11 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="min-w-0 space-y-6">
-          {lesson.videoUrl && <VideoPlayer url={lesson.videoUrl} watermark={user.email} />}
+          {lesson.videoUrl && (kinescopeId(lesson.videoUrl) ? (
+            <LessonVideo videoId={kinescopeId(lesson.videoUrl)!} lessonId={lesson.id} watermark={user.email} embedUrl={toEmbedUrl(lesson.videoUrl) ?? lesson.videoUrl} />
+          ) : (
+            <VideoPlayer url={lesson.videoUrl} watermark={user.email} />
+          ))}
 
           {lesson.content && (
             <section className="glass p-6 sm:p-7">
