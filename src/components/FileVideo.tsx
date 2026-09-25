@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { preconnect } from "react-dom";
 import { markLessonWatched, saveWatchProgress } from "@/lib/actions/student";
 
 // LessonVideo (Kinescope) bilan bir xil qoidalar: ≥80% haqiqiy ijro oxirigacha ko'rildi hisoblanadi, surib o'tish sanalmaydi.
@@ -22,6 +23,8 @@ const saveSeconds = (lessonId: string, seconds: Set<number>) => {
 
 // O'z videosi: shu serverdagi yopiq fayl (/api/video/[dars]) yoki R2 dan vaqtinchalik imzolangan havola. src bo'sh — video topilmadi. trackProgress=false — admin ko'rishi (analitikaga yozilmaydi).
 export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackProgress = true }: { lessonId: string; src: string | null; startAt?: number; autoPlay?: boolean; trackProgress?: boolean }) {
+  // Video boshqa manzildan (R2) kelsa, ulanish sahifa ochilgan zahoti tayyorlanadi
+  if (src && /^https?:/.test(src)) preconnect(new URL(src).origin);
   const video = useRef<HTMLVideoElement>(null);
   const [counted, setCounted] = useState(false);
   const [error, setError] = useState(false);
@@ -98,11 +101,13 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
     <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
       <video
         ref={video}
-        src={src ?? undefined}
+        // #t=0.001: brauzer birinchi kadrni darhol chizadi (qora ekran o'rniga); preload=auto: dars ochilishi bilan videoning boshi yuklana boshlaydi,
+        // shuning uchun play bosilganda kutmasdan ketadi
+        src={src ? (startAt > 0 ? src : `${src}#t=0.001`) : undefined}
         className="h-full w-full"
         controls
         playsInline
-        preload="metadata"
+        preload="auto"
         controlsList="nodownload"
         onContextMenu={(e) => e.preventDefault()}
         onError={() => setError(true)}
