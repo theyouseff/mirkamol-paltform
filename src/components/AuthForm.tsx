@@ -23,7 +23,7 @@ export function AuthForm() {
     <form action={submit} className={authCard}>
       <div className="enter" style={step(1)}>
         <h1 className="text-2xl font-bold text-gold-text">Kirish</h1>
-        <p className="mt-2 text-sm text-gold-text/80">Kabinetingizga kirish uchun adminga yozing</p>
+        <p className="mt-2 text-sm text-gold-text/80">Kabinetga kirish uchun ma&apos;lumotlaringizni kiriting</p>
       </div>
       <div className="enter" style={step(2)}>
         <label className="label text-gold-text">Email (Gmail)</label>
