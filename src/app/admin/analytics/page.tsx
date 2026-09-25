@@ -1,11 +1,9 @@
 import type { CSSProperties } from "react";
 import { prisma } from "@/lib/db";
-import { addDays, dayRange, formatClock, kinescopeId, tashkentDay, timeAgo, toEmbedUrl } from "@/lib/format";
+import { addDays, dayRange, formatClock, tashkentDay, timeAgo } from "@/lib/format";
 import { ProgressBar } from "@/components/ProgressBar";
-import { StudentVideo } from "@/components/admin/StudentVideo";
 import { VisitCalendar } from "@/components/VisitCalendar";
 import { missedFrom } from "@/lib/activity";
-import { VideoPlayer } from "@/components/VideoPlayer";
 import { StudentLink, SwitchProvider, TopPanel } from "@/components/admin/StudentSwitch";
 
 const step = (i: number) => ({ "--i": i }) as CSSProperties;
@@ -106,7 +104,6 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
 
   // ---- Tanlangan o'quvchi: oxirgi ko'rgan video va uning 4 ta asosiy metrikasi
   const lastLesson = selected?.last ? lessonById.get(selected.last.lessonId) : undefined;
-  const lastVideoId = lastLesson?.videoUrl ? kinescopeId(lastLesson.videoUrl) : null;
 
   return (
     <SwitchProvider>
@@ -124,18 +121,31 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
         <div className="space-y-4">
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="card enter space-y-3" style={step(0)}>
-            <p className="text-sm text-zinc-500">Oxirgi ko&apos;rgan video</p>
+            <p className="text-sm text-zinc-500">Oxirgi ko&apos;rgan dars</p>
             {selected.last && lastLesson ? (
               <>
-                {lastVideoId ? (
-                  <StudentVideo key={lastLesson.id} videoId={lastVideoId} position={selected.last.position} embedUrl={toEmbedUrl(lastLesson.videoUrl) ?? lastLesson.videoUrl} />
-                ) : lastLesson.videoUrl ? (
-                  <VideoPlayer url={lastLesson.videoUrl} />
-                ) : null}
                 <div>
                   <p className="text-xs font-medium uppercase tracking-widest text-zinc-400">{numbering.get(lastLesson.id)}</p>
-                  <p className="text-lg font-semibold">{lastLesson.title}</p>
+                  <p className="mt-1 text-2xl font-bold">{lastLesson.title}</p>
                   <p className="text-sm text-zinc-500">{lastLesson.module.title}</p>
+                </div>
+                {/* Video o'rniga: o'quvchi videoning qayergacha borgani */}
+                <div className="space-y-2 pt-2">
+                  <div className="relative h-3 rounded-full bg-zinc-100">
+                    <div className="h-full rounded-full bg-brand" style={{ width: `${pct(selected.last.position, selected.last.duration)}%` }} />
+                    <span
+                      className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-brand shadow"
+                      style={{ left: `${pct(selected.last.position, selected.last.duration)}%` }}
+                      aria-hidden
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-zinc-500">
+                    <span>0:00</span>
+                    <span>{formatClock(selected.last.duration)}</span>
+                  </div>
+                  <p className="text-sm text-zinc-600">
+                    To&apos;xtagan joyi: <b>{formatClock(selected.last.position)}</b> ({pct(selected.last.position, selected.last.duration)}%)
+                  </p>
                 </div>
               </>
             ) : (
