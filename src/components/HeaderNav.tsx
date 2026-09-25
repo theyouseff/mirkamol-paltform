@@ -41,6 +41,14 @@ export function HeaderNav({ isAdmin, isCurator = false, showChat = false, chatUn
   }, [activeHref]);
 
   useLayoutEffect(measure, [measure]);
+  // Menyu telefonda suriladi: faol tugma ko'rinish maydonining o'rtasiga keladi
+  useEffect(() => {
+    const el = activeHref ? refs.current[activeHref] : null;
+    const scroller = box.current?.parentElement;
+    if (!el || !scroller || scroller.scrollWidth <= scroller.clientWidth) return;
+    const left = el.offsetLeft + (box.current?.offsetLeft ?? 0) - (scroller.clientWidth - el.offsetWidth) / 2;
+    scroller.scrollTo({ left, behavior: "smooth" });
+  }, [activeHref]);
   useEffect(() => {
     const timer = setTimeout(() => setAnimate(true), 60);
     const ro = new ResizeObserver(measure);
@@ -55,7 +63,7 @@ export function HeaderNav({ isAdmin, isCurator = false, showChat = false, chatUn
     <>
       {isAdmin && <Link href="/admin" className="btn-outline">Admin panel</Link>}
       {isCurator && <Link href="/curator" className="btn-outline">Kurator paneli</Link>}
-      <div ref={box} className="relative flex items-center gap-1">
+      <div ref={box} className="relative flex shrink-0 items-center gap-1">
         <span
           aria-hidden
           className="gold-gloss absolute left-0 top-0 isolate h-full rounded-xl"

@@ -41,22 +41,24 @@ export async function SiteHeader() {
   const chatUnread = user?.role === "STUDENT" ? await studentUnread(user.userId).catch(() => 0) : 0;
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-ink-950/60 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="text-lg font-bold text-gold-text">ilmaviya</Link>
-        <nav className="flex items-center gap-1 text-sm">
-          {user ? (
-            <>
-              <HeaderNav isAdmin={user.role === "ADMIN"} isCurator={user.role === "CURATOR"} showChat={user.role === "STUDENT"} chatUnread={chatUnread} />
-              <form action={logout}><button className="btn text-gold-text/70 hover:text-gold-text">Chiqish</button></form>
-              <Contact className="ml-2 sm:ml-3 min-[1440px]:hidden" />
-            </>
-          ) : (
-            <>
-              <Link href="/courses" className="btn text-gold-text/85 hover:text-gold-text">Kurslar</Link>
-              <Link href="/login" className="btn-gold">Kirish</Link>
-              <Contact className="ml-2 sm:ml-3 min-[1440px]:hidden" />
-            </>
-          )}
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4">
+        <Link href="/" className="shrink-0 text-lg font-bold text-gold-text">ilmaviya</Link>
+        <nav className="flex min-w-0 items-center gap-1 text-sm">
+          {/* Menyu telefonda torlik qilsa o'ng-chapga suriladi (sahifaning o'zi kengaymaydi); logotip va aloqa belgilari joyida turadi */}
+          <div className="relative flex min-w-0 items-center gap-1 overflow-x-auto whitespace-nowrap py-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0">
+            {user ? (
+              <>
+                <HeaderNav isAdmin={user.role === "ADMIN"} isCurator={user.role === "CURATOR"} showChat={user.role === "STUDENT"} chatUnread={chatUnread} />
+                <form action={logout}><button className="btn text-gold-text/70 hover:text-gold-text">Chiqish</button></form>
+              </>
+            ) : (
+              <>
+                <Link href="/courses" className="btn text-gold-text/85 hover:text-gold-text">Kurslar</Link>
+                <Link href="/login" className="btn-gold">Kirish</Link>
+              </>
+            )}
+          </div>
+          <Contact className="ml-1 shrink-0 sm:ml-3 min-[1440px]:hidden" />
         </nav>
       </div>
       <div className="absolute inset-y-0 right-4 hidden items-center min-[1440px]:flex">
