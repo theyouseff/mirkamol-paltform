@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { formatClock, kinescopeId, tashkentDay, toEmbedUrl } from "@/lib/format";
+import { formatClock, tashkentDay, toEmbedUrl } from "@/lib/format";
 import { ProgressBar } from "@/components/ProgressBar";
-import { LessonVideo } from "@/components/LessonVideo";
 import { missedFrom } from "@/lib/activity";
-import { VideoPlayer } from "@/components/VideoPlayer";
 import { VisitCalendar } from "@/components/VisitCalendar";
 
 // "Ali Valiyev" -> "AV"
@@ -36,9 +34,9 @@ export default async function CabinetPage() {
     : [];
   const moduleIndex = last ? modules.findIndex((m) => m.id === last.lesson.moduleId) : -1;
   const lessonNumber = moduleIndex >= 0 ? modules[moduleIndex].lessons.findIndex((l) => l.id === last!.lesson.id) + 1 : 0;
-  const videoId = last?.lesson.videoUrl ? kinescopeId(last.lesson.videoUrl) : null;
   // Oxirigacha ko'rilgan bo'lsa, boshidan; aks holda to'xtagan joyidan davom etadi
   const finished = !!last && last.duration > 0 && last.position >= last.duration - 5;
+  const resumeHref = last ? `/cabinet/lessons/${last.lesson.id}?play=1` : "/courses";
 
   return (
     <div className="space-y-6">
@@ -59,11 +57,15 @@ export default async function CabinetPage() {
     {last ? (
       <section className="glass space-y-4 p-5 sm:p-6">
         <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">Oxirgi ko&apos;rgan video</p>
-        {videoId ? (
-          <LessonVideo key={last.lesson.id} videoId={videoId} lessonId={last.lesson.id} embedUrl={toEmbedUrl(last.lesson.videoUrl) ?? last.lesson.videoUrl} startAt={finished ? 0 : last.position} />
-        ) : last.lesson.videoUrl ? (
-          <VideoPlayer url={last.lesson.videoUrl} />
-        ) : null}
+        {/* Kabinetda video ijro etilmaydi: faqat oldindan ko'rinish, bosilsa dars sahifasi (to'xtagan joydan) ochiladi */}
+        {last.lesson.videoUrl && (
+          <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
+            <div inert className="h-full w-full">
+              <iframe src={toEmbedUrl(last.lesson.videoUrl) ?? last.lesson.videoUrl} className="h-full w-full" tabIndex={-1} aria-hidden />
+            </div>
+            <Link href={resumeHref} className="absolute inset-0" aria-label="Darsni davom ettirish" />
+          </div>
+        )}
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">
             {lessonNumber > 0 && (
@@ -72,7 +74,7 @@ export default async function CabinetPage() {
             <p className="text-lg font-bold">{last.lesson.title}</p>
             <p className="text-sm text-gold-text/70">{last.lesson.module.title}</p>
           </div>
-          <Link href={`/cabinet/lessons/${last.lesson.id}`} className="btn-primary">Darsga o&apos;tish →</Link>
+          <Link href={resumeHref} className="btn-primary">{finished ? "Darsni qayta ko'rish" : "Darsni davom ettirish"} →</Link>
         </div>
         <div className="space-y-2">
           <ProgressBar dark value={last.duration ? (last.position / last.duration) * 100 : 0} />

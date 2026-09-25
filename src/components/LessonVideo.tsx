@@ -27,7 +27,7 @@ const saveSeconds = (lessonId: string, seconds: Set<number>) => {
 // Kinescope pleyeri. O'quvchi videoni haqiqatan ijro etib oxiriga yetkazsa (≥80%), dars avtomatik "tugatilgan" bo'ladi.
 // Videoni surib oxiriga o'tkazish hisoblanmaydi: faqat ijro etilgan soniyalar sanaladi (ular brauzerda saqlanadi,
 // shuning uchun videoni bir necha marta bo'lib ko'rsa ham bo'ladi). Pleyer yuklanmasa, oddiy iframe ko'rsatiladi.
-export function LessonVideo({ videoId, lessonId, embedUrl, startAt = 0 }: { videoId: string; lessonId: string; embedUrl: string; startAt?: number }) {
+export function LessonVideo({ videoId, lessonId, embedUrl, startAt = 0, autoPlay = false }: { videoId: string; lessonId: string; embedUrl: string; startAt?: number; autoPlay?: boolean }) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [failed, setFailed] = useState(false);
   const [counted, setCounted] = useState(false);
@@ -58,10 +58,14 @@ export function LessonVideo({ videoId, lessonId, embedUrl, startAt = 0 }: { vide
       }
       player = p;
       // Oxirgi to'xtagan joydan davom etish (boshqa qurilmada ham)
-      if (startAt > 0) {
-        const seek = () => p.seekTo(startAt).catch(() => {});
-        p.once(p.Events.Loaded, seek);
-        seek();
+      if (startAt > 0 || autoPlay) {
+        // Brauzer ovozli avtomatik ijroni bloklasa, video to'xtagan joyda tayyor turadi (bosilsa davom etadi)
+        const go = async () => {
+          if (startAt > 0) await p.seekTo(startAt).catch(() => {});
+          if (autoPlay) await p.play().catch(() => {});
+        };
+        p.once(p.Events.Loaded, go);
+        go();
       }
 
       let duration = 0;
@@ -104,7 +108,7 @@ export function LessonVideo({ videoId, lessonId, embedUrl, startAt = 0 }: { vide
       flush();
       player?.destroy().catch(() => {});
     };
-  }, [videoId, lessonId, startAt]);
+  }, [videoId, lessonId, startAt, autoPlay]);
 
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">

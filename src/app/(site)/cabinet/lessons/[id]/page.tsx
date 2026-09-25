@@ -12,8 +12,9 @@ import { LessonContent } from "@/components/LessonContent";
 import { SubmitButton } from "@/components/SubmitButton";
 import { BrandScope } from "@/components/BrandScope";
 
-export default async function LessonPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function LessonPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ play?: string }> }) {
   const { id } = await params;
+  const { play } = await searchParams;
   const user = await requireUser();
   const found = await prisma.lesson.findUnique({ where: { id }, select: { module: { select: { courseId: true } } } });
   if (!found) notFound();
@@ -23,6 +24,10 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
   const lesson = flatLessons[index];
   // Video va matn faqat dars ochiq bo'lsagina serverdan chiqadi (yozilmagan yoki hali ochilmagan — 404)
   if (!lesson || lesson.state !== "open") notFound();
+
+  // O'quvchi shu darsda to'xtagan joy (oxirigacha ko'rgan bo'lsa — boshidan)
+  const watch = await prisma.lessonWatch.findUnique({ where: { userId_lessonId: { userId: user.id, lessonId: id } } });
+  const startAt = watch && watch.duration > 0 && watch.position < watch.duration - 5 ? watch.position : 0;
 
   const moduleIndex = modules.findIndex((m) => m.lessons.some((l) => l.id === id));
   const mod = modules[moduleIndex];
@@ -46,7 +51,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="min-w-0 space-y-6">
           {lesson.videoUrl && (kinescopeId(lesson.videoUrl) ? (
-            <LessonVideo videoId={kinescopeId(lesson.videoUrl)!} lessonId={lesson.id} embedUrl={toEmbedUrl(lesson.videoUrl) ?? lesson.videoUrl} />
+            <LessonVideo videoId={kinescopeId(lesson.videoUrl)!} lessonId={lesson.id} embedUrl={toEmbedUrl(lesson.videoUrl) ?? lesson.videoUrl} startAt={startAt} autoPlay={play === "1"} />
           ) : (
             <VideoPlayer url={lesson.videoUrl} />
           ))}
