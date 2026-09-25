@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
-import { logout } from "@/lib/actions/auth";
 import { callCenterUrl, telegramUrl } from "@/lib/config";
 import { studentUnread } from "@/lib/curator-scope";
 import { HeaderNav } from "./HeaderNav";
+import { LogoutButton } from "./LogoutButton";
 
 // Aloqa: ikkita yumaloq yaltiroq tilla belgi — telefon (tel:) va Telegram.
 // Keng ekranda (noutbuk, 1440px+) oynaning eng o'ng chetiga taqab turadi; torroq ekranda menyuning oxirida.
@@ -49,7 +49,7 @@ export async function SiteHeader() {
             {user ? (
               <>
                 <HeaderNav isAdmin={user.role === "ADMIN"} isCurator={user.role === "CURATOR"} showChat={user.role === "STUDENT"} chatUnread={chatUnread} />
-                <form action={logout}><button className="btn text-gold-text/70 hover:text-gold-text">Chiqish</button></form>
+                <LogoutButton className="btn text-gold-text/70 hover:text-gold-text" />
               </>
             ) : (
               <>
