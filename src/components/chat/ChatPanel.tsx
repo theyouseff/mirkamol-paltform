@@ -31,7 +31,7 @@ export function ChatPanel({ students }: { students: ChatStudent[] }) {
           placeholder="Ism yoki email"
           className="mb-3 w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-sm text-gold-text placeholder:text-gold-text/40 focus:border-gold focus:outline-none"
         />
-        <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto">
+        <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto p-0.5">
           {list.map((s) => {
             const unread = read[s.id] ? 0 : s.unread;
             return (
@@ -42,7 +42,7 @@ export function ChatPanel({ students }: { students: ChatStudent[] }) {
                     setSelectedId(s.id);
                     setRead((r) => ({ ...r, [s.id]: true }));
                   }}
-                  className={`w-full rounded-xl px-3 py-2.5 text-left transition ${s.id === selectedId ? "bg-gold/20 ring-1 ring-gold/50" : "hover:bg-white/5"}`}
+                  className={`w-full rounded-xl border px-4 py-2.5 text-left transition ${s.id === selectedId ? "border-gold/40 bg-gradient-to-r from-gold/20 to-transparent shadow-[inset_3px_0_0_#c9a227]" : "border-transparent hover:bg-white/5"}`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <p className="truncate text-sm font-medium text-gold-text">{s.name}</p>

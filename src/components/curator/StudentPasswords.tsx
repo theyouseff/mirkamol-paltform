@@ -63,13 +63,13 @@ export function StudentPasswords({ students, ownForm }: { students: Student[]; o
           <span className="text-xs text-zinc-400">{students.length} ta</span>
         </div>
         <input value={q} onChange={(e) => setQ(e.target.value)} className="input" placeholder="Ism yoki email" />
-        <ul className="max-h-[28rem] space-y-1 overflow-y-auto">
+        <ul className="max-h-[28rem] space-y-1 overflow-y-auto p-0.5">
           {list.map((s) => (
             <li key={s.id}>
               <button
                 type="button"
                 onClick={() => pick(s.id)}
-                className={`w-full rounded-xl px-3 py-2.5 text-left transition ${s.id === selectedId ? "bg-amber-50 ring-1 ring-brand" : "hover:bg-zinc-50"}`}
+                className={`w-full rounded-xl border px-4 py-2.5 text-left transition ${s.id === selectedId ? "border-brand/30 bg-gradient-to-r from-amber-50 to-white shadow-[inset_3px_0_0_var(--color-brand)]" : "border-transparent hover:bg-zinc-50"}`}
               >
                 <p className="truncate text-sm font-medium">{s.name}</p>
                 <p className="truncate text-xs text-zinc-400">{s.email}</p>
