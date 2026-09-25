@@ -83,7 +83,7 @@ export function ChatThread({ studentId, mine, disabledNote }: { studentId: strin
           const own = m.authorRole === mine;
           return (
             <div key={m.id} className={`flex ${own ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${own ? "gold-gloss rounded-br-md" : "rounded-bl-md border border-white/15 bg-white/10 text-gold-text"}`}>
+              <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${own ? "gold-gloss relative isolate overflow-hidden rounded-br-md" : "rounded-bl-md border border-white/15 bg-white/10 text-gold-text"}`}>
                 {!own && <p className="mb-0.5 text-xs font-semibold opacity-70">{m.authorName}{m.authorRole === "STAFF" ? " · kurator" : ""}</p>}
                 <p className="whitespace-pre-wrap break-words">{m.body}</p>
                 <p className={`mt-1 text-right text-[11px] ${own ? "opacity-60" : "text-gold-text/50"}`}>{clock(m.createdAt)}</p>
