@@ -24,6 +24,7 @@ model User {
   curatorCourses CuratorCourse[]
   dayNotes    DayNote[]
   chatMessages ChatMessage[]
+  curatorChats ChatMessage[] @relation("ChatCurator")
   resets      PasswordReset[]
 }
 
@@ -170,11 +171,12 @@ model DayNote {
   @@id([userId, day])
 }
 
-// O'quvchi bilan kuratorlar chati: har bir o'quvchining bitta suhbati. authorRole: STUDENT | STAFF (kurator yoki admin).
-// readAt — xabarni qarshi tomon (o'quvchi yozgan bo'lsa kurator, kurator yozgan bo'lsa o'quvchi) o'qigan vaqt.
+// O'quvchi bilan kurator chati: har bir (o'quvchi, kurator) juftligining alohida suhbati — kuratorlar bir-birining yozishmasini ko'rmaydi.
+// authorRole: STUDENT | STAFF (kurator). readAt — xabarni qarshi tomon o'qigan vaqt. curatorId — suhbat qaysi kurator bilan.
 model ChatMessage {
   id         String    @id @default(cuid())
   studentId  String
+  curatorId  String? // faqat eski yozuvlarda bo'sh bo'lishi mumkin; yangilari doim to'ldiriladi
   authorId   String
   authorRole String
   authorName String
@@ -182,8 +184,10 @@ model ChatMessage {
   createdAt  DateTime  @default(now())
   readAt     DateTime?
   student    User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  curator    User?     @relation("ChatCurator", fields: [curatorId], references: [id], onDelete: Cascade)
 
   @@index([studentId, createdAt])
+  @@index([curatorId, studentId, createdAt])
 }
 
 // Kirish va parol tiklash urinishlari (brute-force'dan himoya). key: "login:ip:email", "login:ip:1.2.3.4", "reset:email:a@b.c" ...

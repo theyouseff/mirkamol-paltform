@@ -16,35 +16,45 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       },
     }),
     prisma.chatMessage.findMany({
-      distinct: ["studentId"],
+      where: { curatorId: { not: null } },
+      distinct: ["studentId", "curatorId"],
       orderBy: { createdAt: "desc" },
-      select: { studentId: true, body: true, createdAt: true, authorRole: true },
+      select: { studentId: true, curatorId: true, body: true, createdAt: true, authorRole: true },
     }),
-    prisma.chatMessage.groupBy({ by: ["studentId"], where: { authorRole: "STUDENT", readAt: null }, _count: true }),
+    prisma.chatMessage.groupBy({ by: ["studentId", "curatorId"], where: { authorRole: "STUDENT", readAt: null, curatorId: { not: null } }, _count: true }),
   ]);
-  const lastBy = new Map(last.map((m) => [m.studentId, m]));
-  const unreadBy = new Map(unread.map((u) => [u.studentId, u._count]));
+  const key = (studentId: string, curatorId: string) => `${studentId}:${curatorId}`;
+  const lastBy = new Map(last.map((m) => [key(m.studentId, m.curatorId!), m]));
+  const unreadBy = new Map(unread.map((u) => [key(u.studentId, u.curatorId!), u._count]));
 
-  const chats: CourseChatData[] = courses.map((c) => ({
-    id: c.id,
-    title: c.title,
-    curators: c.curators.map((k) => k.curator).sort((a, b) => a.name.localeCompare(b.name)),
-    students: c.enrollments
+  const chats: CourseChatData[] = courses.map((c) => {
+    const students = c.enrollments
       .map((e) => e.user)
       .filter((u) => u.role === "STUDENT")
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map((u) => {
-        const m = lastBy.get(u.id);
-        return {
-          id: u.id,
-          name: u.name,
-          email: u.email,
-          unread: unreadBy.get(u.id) ?? 0,
-          lastAt: m?.createdAt.toISOString() ?? null,
-          lastBody: m ? `${m.authorRole === "STAFF" ? "Kurator: " : ""}${m.body}`.slice(0, 80) : "",
-        };
-      }),
-  }));
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return {
+      id: c.id,
+      title: c.title,
+      studentCount: students.length,
+      curators: c.curators
+        .map((k) => k.curator)
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((k) => ({
+          ...k,
+          students: students.map((u) => {
+            const m = lastBy.get(key(u.id, k.id));
+            return {
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              unread: unreadBy.get(key(u.id, k.id)) ?? 0,
+              lastAt: m?.createdAt.toISOString() ?? null,
+              lastBody: m ? `${m.authorRole === "STAFF" ? "Kurator: " : ""}${m.body}`.slice(0, 80) : "",
+            };
+          }),
+        })),
+    };
+  });
 
   return (
     <div className="space-y-10">

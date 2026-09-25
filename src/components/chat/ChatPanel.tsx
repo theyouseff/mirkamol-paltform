@@ -7,7 +7,7 @@ export type ChatStudent = { id: string; name: string; email: string; unread: num
 
 // Kurator chati: chapda o'quvchilar ro'yxati, tanlansa o'ngda suhbat ochiladi. Telefonda ro'yxat va suhbat almashadi.
 // readOnly — admin kuzatuvi: yozish yopiq, "o'qildi" belgisi o'zgarmaydi.
-export function ChatPanel({ students, readOnly = false }: { students: ChatStudent[]; readOnly?: boolean }) {
+export function ChatPanel({ students, curatorId, readOnly = false }: { students: ChatStudent[]; curatorId: string; readOnly?: boolean }) {
   const [q, setQ] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Ochilgan suhbatdagi "yangi" belgisi o'chadi
@@ -70,7 +70,7 @@ export function ChatPanel({ students, readOnly = false }: { students: ChatStuden
               </div>
             </div>
             <div className="min-h-0 flex-1">
-              <ChatThread key={selected.id} studentId={selected.id} mine="STAFF" disabledNote={readOnly ? "Admin sifatida faqat ko'rasiz — yozish kuratorlar uchun" : undefined} />
+              <ChatThread key={selected.id} studentId={selected.id} curatorId={curatorId} mine="STAFF" disabledNote={readOnly ? "Admin sifatida faqat ko'rasiz — yozish kuratorlar uchun" : undefined} />
             </div>
           </>
         ) : (

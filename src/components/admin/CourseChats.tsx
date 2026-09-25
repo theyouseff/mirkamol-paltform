@@ -6,8 +6,9 @@ import { ChatPanel, type ChatStudent } from "@/components/chat/ChatPanel";
 export type CourseChatData = {
   id: string;
   title: string;
-  curators: { id: string; name: string; email: string }[];
-  students: ChatStudent[];
+  studentCount: number;
+  // Har bir kuratorning o'z suhbatlari: oxirgi xabar va o'qilmaganlar faqat shu kurator bilan bo'lgan yozishmadan
+  curators: { id: string; name: string; email: string; students: ChatStudent[] }[];
 };
 
 const cardBase = "w-full rounded-xl border px-4 py-3 text-left transition";
@@ -40,7 +41,7 @@ export function CourseChats({ courses }: { courses: CourseChatData[] }) {
             className={`${cardBase} ${c.id === courseId ? on : off}`}
           >
             <p className="truncate font-medium text-gold-text">{c.title}</p>
-            <p className="text-xs text-gold-text/60">{c.curators.length} kurator · {c.students.length} o&apos;quvchi</p>
+            <p className="text-xs text-gold-text/60">{c.curators.length} kurator · {c.studentCount} o&apos;quvchi</p>
           </button>
         ))}
         {courses.length === 0 && <p className="text-sm text-gold-text/60">Kurslar yo&apos;q</p>}
@@ -67,7 +68,7 @@ export function CourseChats({ courses }: { courses: CourseChatData[] }) {
       {course && curator && (
         <div className="space-y-2">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-gold-text/70">{curator.name} — o&apos;quvchilar va chatlar</h3>
-          <ChatPanel key={`${course.id}:${curator.id}`} students={course.students} readOnly />
+          <ChatPanel key={`${course.id}:${curator.id}`} students={curator.students} curatorId={curator.id} readOnly />
         </div>
       )}
     </section>

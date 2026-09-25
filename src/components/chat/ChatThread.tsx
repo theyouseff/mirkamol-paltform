@@ -15,7 +15,7 @@ function merge(prev: ChatMsg[], incoming: ChatMsg[]) {
 
 // Bitta suhbat: xabarlar va yozish maydoni. Har 4 soniyada yangi xabarlarni tekshiradi (sahifa ochiq turganda).
 // mine — kim ko'rib turibdi (o'z xabarlari o'ngda, oltin rangda).
-export function ChatThread({ studentId, mine, disabledNote }: { studentId: string; mine: "STUDENT" | "STAFF"; disabledNote?: string }) {
+export function ChatThread({ studentId, curatorId, mine, disabledNote }: { studentId: string; curatorId: string; mine: "STUDENT" | "STAFF"; disabledNote?: string }) {
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [text, setText] = useState("");
@@ -31,7 +31,7 @@ export function ChatThread({ studentId, mine, disabledNote }: { studentId: strin
     setLoaded(false);
     setError("");
     const load = async () => {
-      const res = await fetchMessages(studentId, last);
+      const res = await fetchMessages(studentId, curatorId, last);
       if (!alive) return;
       if (res.ok) {
         if (res.messages.length) {
@@ -47,7 +47,7 @@ export function ChatThread({ studentId, mine, disabledNote }: { studentId: strin
       alive = false;
       clearInterval(timer);
     };
-  }, [studentId]);
+  }, [studentId, curatorId]);
 
   useEffect(() => {
     const el = box.current;
@@ -58,7 +58,7 @@ export function ChatThread({ studentId, mine, disabledNote }: { studentId: strin
     const body = text.trim();
     if (!body || pending) return;
     startTransition(async () => {
-      const res = await sendMessage(studentId, body);
+      const res = await sendMessage(studentId, curatorId, body);
       if (!res.ok) return setError(res.error);
       setError("");
       setText("");
