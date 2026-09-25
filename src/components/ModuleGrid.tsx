@@ -4,7 +4,7 @@ import { ProgressBar } from "./ProgressBar";
 
 const step = (i: number) => ({ "--i": i }) as CSSProperties;
 
-export type ModuleCard = { id: string; title: string; description: string; lessonCount: number; doneCount: number; available: number; totalTime?: string };
+export type ModuleCard = { id: string; title: string; description: string; lessonCount: number; doneCount: number; available: number; totalTime?: string; coverUrl?: string };
 
 // Kurs ichidagi modul bloklari; bosilganda modul ichidagi video darslar ochiladi.
 export function ModuleGrid({ modules }: { modules: ModuleCard[] }) {
@@ -17,8 +17,13 @@ export function ModuleGrid({ modules }: { modules: ModuleCard[] }) {
           className="enter glass group block overflow-hidden transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-ink-950/70"
           style={step(i)}
         >
-          <div className="relative flex aspect-[16/8] items-center justify-center bg-gradient-to-br from-ink-800 via-ink-700 to-steel-600">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_22%,rgba(241,198,87,0.28),transparent_58%)]" />
+          <div className="relative flex aspect-video items-center justify-center overflow-hidden bg-gradient-to-br from-ink-800 via-ink-700 to-steel-600">
+            {m.coverUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={m.coverUrl} alt="" loading={i < 3 ? "eager" : "lazy"} className="absolute inset-0 h-full w-full object-cover" />
+            ) : (
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_22%,rgba(241,198,87,0.28),transparent_58%)]" />
+            )}
             {/* Modul ustida: ichidagi darslarning umumiy davomiyligi (dars kartochkasidagi vaqt belgisi kabi) */}
             {m.totalTime && <span className="absolute bottom-2 right-2 rounded-md bg-black/55 px-2 py-0.5 text-xs font-medium text-white">{m.totalTime}</span>}
           </div>

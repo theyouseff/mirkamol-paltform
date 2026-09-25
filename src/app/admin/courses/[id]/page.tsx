@@ -114,6 +114,7 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
                   <ConfirmButton formAction={deleteModule} message="Modul va undagi barcha darslar o'chiriladi. Davom etasizmi?">✕</ConfirmButton>
                 </div>
                 <input name="description" className="input text-zinc-600" defaultValue={m.description} placeholder="Modul haqida qisqa tavsif (ixtiyoriy)" />
+                <input name="coverUrl" className="input text-zinc-600" defaultValue={m.coverUrl} placeholder="Modul rasmi: /modules/nom.webp yoki https://... (ixtiyoriy)" />
               </form>
             </div>
             <ul className="divide-y divide-zinc-100">
