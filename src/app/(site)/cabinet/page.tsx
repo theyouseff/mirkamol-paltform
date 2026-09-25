@@ -5,7 +5,7 @@ import { formatClock, tashkentDay, toEmbedUrl } from "@/lib/format";
 import { ProgressBar } from "@/components/ProgressBar";
 import { missedFrom } from "@/lib/activity";
 import { VisitCalendar } from "@/components/VisitCalendar";
-import { isOwnVideo } from "@/lib/video-source";
+import { isOwnVideo, ownVideoSrc } from "@/lib/video-source";
 
 // "Ali Valiyev" -> "AV"
 const initials = (name: string) =>
@@ -37,6 +37,8 @@ export default async function CabinetPage() {
   const lessonNumber = moduleIndex >= 0 ? modules[moduleIndex].lessons.findIndex((l) => l.id === last!.lesson.id) + 1 : 0;
   // Oxirigacha ko'rilgan bo'lsa, boshidan; aks holda to'xtagan joyidan davom etadi
   const finished = !!last && last.duration > 0 && last.position >= last.duration - 5;
+  // O'z videosi bo'lsa (R2 / server): to'xtagan joyidagi kadr ko'rsatiladi (ijro etilmaydi, bosilsa dars sahifasi ochiladi)
+  const previewSrc = last && isOwnVideo(last.lesson.videoUrl) ? await ownVideoSrc(last.lesson) : null;
   const resumeHref = last ? `/cabinet/lessons/${last.lesson.id}?play=1` : "/courses";
 
   return (
@@ -62,7 +64,22 @@ export default async function CabinetPage() {
         {last.lesson.videoUrl && (
           <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
             {isOwnVideo(last.lesson.videoUrl) ? (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-ink-900 to-ink-950 text-5xl text-gold-text/80" aria-hidden>▶</div>
+              <>
+                {previewSrc && (
+                  <video
+                    src={`${previewSrc}#t=${finished ? 0.001 : Math.max(last.position, 0.001)}`}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    tabIndex={-1}
+                    aria-hidden
+                    className="pointer-events-none h-full w-full object-cover"
+                  />
+                )}
+                <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25" aria-hidden>
+                  <span className="text-6xl text-gold-text/90 drop-shadow-lg">▶</span>
+                </span>
+              </>
             ) : (
               <div inert className="h-full w-full">
                 <iframe src={toEmbedUrl(last.lesson.videoUrl) ?? last.lesson.videoUrl} className="h-full w-full" tabIndex={-1} aria-hidden />
