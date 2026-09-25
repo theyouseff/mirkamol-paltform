@@ -75,7 +75,7 @@ export function ChatThread({ studentId, mine, disabledNote }: { studentId: strin
           const el = e.currentTarget;
           stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
         }}
-        className="min-h-0 flex-1 space-y-3 overflow-y-auto px-1 py-2"
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1 py-2"
       >
         {!loaded && <p className="py-10 text-center text-sm text-gold-text/60">Yuklanmoqda...</p>}
         {loaded && msgs.length === 0 && <p className="py-10 text-center text-sm text-gold-text/60">Hali xabarlar yo&apos;q. Birinchi bo&apos;lib yozing.</p>}
@@ -83,10 +83,10 @@ export function ChatThread({ studentId, mine, disabledNote }: { studentId: strin
           const own = m.authorRole === mine;
           return (
             <div key={m.id} className={`flex ${own ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${own ? "gold-gloss relative isolate overflow-hidden rounded-br-md" : "rounded-bl-md border border-white/15 bg-white/10 text-gold-text"}`}>
-                {!own && <p className="mb-0.5 text-xs font-semibold opacity-70">{m.authorName}{m.authorRole === "STAFF" ? " · kurator" : ""}</p>}
+              <div className={`max-w-[85%] rounded-2xl px-5 py-3 text-base sm:text-[17px] sm:leading-relaxed ${own ? "gold-gloss relative isolate overflow-hidden rounded-br-md" : "rounded-bl-md border border-white/15 bg-white/10 text-gold-text"}`}>
+                {!own && <p className="mb-1 text-sm font-semibold opacity-70">{m.authorName}{m.authorRole === "STAFF" ? " · kurator" : ""}</p>}
                 <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                <p className={`mt-1 text-right text-[11px] ${own ? "opacity-60" : "text-gold-text/50"}`}>{clock(m.createdAt)}</p>
+                <p className={`mt-1.5 text-right text-xs ${own ? "opacity-60" : "text-gold-text/50"}`}>{clock(m.createdAt)}</p>
               </div>
             </div>
           );
@@ -110,9 +110,9 @@ export function ChatThread({ studentId, mine, disabledNote }: { studentId: strin
             rows={1}
             maxLength={1000}
             placeholder="Xabar yozing..." title="Enter — yuborish, Shift+Enter — yangi qator"
-            className="max-h-32 min-h-11 flex-1 resize-none rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-sm text-gold-text placeholder:text-gold-text/40 focus:border-gold focus:outline-none"
+            className="max-h-36 min-h-12 flex-1 resize-none rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-base text-gold-text placeholder:text-gold-text/40 focus:border-gold focus:outline-none"
           />
-          <button type="button" onClick={send} disabled={pending || !text.trim()} className="btn-primary h-11 shrink-0 disabled:opacity-50">Yuborish</button>
+          <button type="button" onClick={send} disabled={pending || !text.trim()} className="btn-primary h-12 shrink-0 px-6 text-base disabled:opacity-50">Yuborish</button>
         </div>
       )}
     </div>
