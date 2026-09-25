@@ -252,6 +252,19 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
   };
 }
 
+// O'quvchini kursdan chiqaradi: kursga kirish yopiladi va kurator ro'yxatidan tushadi. Akkaunt, to'lov yozuvi va ko'rish natijalari saqlanadi
+// (kursga qayta qo'shilsa, tarixi qaytadi).
+export async function removeFromCourse(formData: FormData) {
+  await requireAdmin();
+  const userId = str(formData, "userId");
+  const courseId = str(formData, "courseId");
+  if (!userId || !courseId) return;
+  await prisma.enrollment.deleteMany({ where: { userId, courseId } });
+  revalidatePath("/admin", "layout");
+  revalidatePath("/cabinet", "layout");
+  revalidatePath("/curator", "layout");
+}
+
 export type AddCuratorState = {
   error?: string;
   result?: { name: string; email: string; promoted: boolean; courses: number; activationCode: string | null; mail: MailStatus; mailReason?: string };

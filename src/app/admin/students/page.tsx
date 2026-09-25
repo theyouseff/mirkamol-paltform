@@ -2,13 +2,33 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
-import { setUserRole } from "@/lib/actions/admin";
+import { removeFromCourse, setUserRole } from "@/lib/actions/admin";
 import { formatDate } from "@/lib/format";
 import { AddStudentForm } from "@/components/admin/AddStudentForm";
 import { AddCuratorForm } from "@/components/admin/AddCuratorForm";
 import { CuratorList } from "@/components/admin/CuratorList";
 import { ResetPasswordButton } from "@/components/admin/ResetPasswordButton";
 import { SubmitButton } from "@/components/SubmitButton";
+import { ConfirmButton } from "@/components/ConfirmButton";
+
+// Kurs belgisi: yonidagi × — o'quvchini shu kursdan chiqarish (tasdiq so'raladi)
+function CourseBadge({ userId, userName, courseId, title }: { userId: string; userName: string; courseId: string; title: string }) {
+  return (
+    <form action={removeFromCourse} className="inline-flex">
+      <input type="hidden" name="userId" value={userId} />
+      <input type="hidden" name="courseId" value={courseId} />
+      <span className="badge items-center gap-1 bg-brand-soft text-brand">
+        {title}
+        <ConfirmButton
+          className="rounded-full px-1 leading-none text-brand/60 hover:bg-red-100 hover:text-red-600"
+          message={`${userName} «${title}» kursidan chiqarilsinmi?\n\nKursga kirish yopiladi. Akkaunt, to'lov yozuvi va natijalari saqlanadi.`}
+        >
+          <span title="Kursdan chiqarish">×</span>
+        </ConfirmButton>
+      </span>
+    </form>
+  );
+}
 
 const roles = { STUDENT: "O'quvchi", CURATOR: "Kurator", ADMIN: "Admin" } as const;
 
@@ -72,7 +92,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
                 <td>{u.email}</td>
                 <td>
                   <div className="flex flex-wrap gap-1">
-                    {u.enrollments.map((e) => <span key={e.id} className="badge bg-brand-soft text-brand">{e.course.title}</span>)}
+                    {u.enrollments.map((e) => <CourseBadge key={e.id} userId={u.id} userName={u.name} courseId={e.courseId} title={e.course.title} />)}
                     {u.enrollments.length === 0 && <span className="text-zinc-400">—</span>}
                   </div>
                 </td>
@@ -108,7 +128,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
               <p className="break-all text-xs text-zinc-400">{u.email}</p>
             </div>
             <div className="flex flex-wrap gap-1">
-              {u.enrollments.map((e) => <span key={e.id} className="badge bg-brand-soft text-brand">{e.course.title}</span>)}
+              {u.enrollments.map((e) => <CourseBadge key={e.id} userId={u.id} userName={u.name} courseId={e.courseId} title={e.course.title} />)}
               {u.enrollments.length === 0 && <span className="text-zinc-400">Kursi yo&apos;q</span>}
             </div>
             <p className="text-xs text-zinc-500">Tugatgan darslari: {u._count.progress} · Qo&apos;shilgan: {formatDate(u.createdAt)}</p>
