@@ -24,11 +24,15 @@ export async function scopedStudents(user: { id: string; role: string }) {
   });
 }
 
-// Kuratorga kelgan, hali o'qilmagan o'quvchi xabarlari soni (menyudagi belgi uchun)
+// Nechta o'quvchi kuratorga yozgan va xabarlari hali o'qilmagan (menyudagi belgi uchun; xabar soni emas, odam soni)
 export async function curatorUnread(user: { id: string; role: string }) {
   const students = await scopedStudents(user);
   if (students.length === 0) return 0;
-  return prisma.chatMessage.count({ where: { studentId: { in: students.map((s) => s.id) }, authorRole: "STUDENT", readAt: null } });
+  const rows = await prisma.chatMessage.groupBy({
+    by: ["studentId"],
+    where: { studentId: { in: students.map((s) => s.id) }, authorRole: "STUDENT", readAt: null },
+  });
+  return rows.length;
 }
 
 // O'quvchiga kelgan, hali o'qilmagan kurator xabarlari soni

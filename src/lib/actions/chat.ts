@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { canManageStudent } from "@/lib/curator-scope";
+import { canManageStudent, curatorUnread } from "@/lib/curator-scope";
 import { isStaff } from "@/lib/roles";
 
 export type ChatMsg = { id: string; authorRole: "STUDENT" | "STAFF"; authorName: string; body: string; createdAt: string };
@@ -51,4 +51,10 @@ export async function sendMessage(studentId: string, body: string): Promise<Resu
 
   const m = await prisma.chatMessage.create({ data: { studentId, authorId: ctx.user.id, authorRole: ctx.side, authorName: ctx.user.name, body: text } });
   return { ok: true, message: toMsg(m) };
+}
+
+// Menyudagi Chat belgisi: nechta o'quvchi yozgan (o'qilmagan). Brauzer vaqti-vaqti bilan so'raydi.
+export async function unreadPeople(): Promise<number> {
+  const user = await requireUser();
+  return isStaff(user.role) ? curatorUnread(user) : 0;
 }

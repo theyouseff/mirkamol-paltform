@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireCurator } from "@/lib/auth";
 import { logout } from "@/lib/actions/auth";
 import { curatorUnread } from "@/lib/curator-scope";
+import { ChatNavLink } from "@/components/chat/ChatNavLink";
 
 // Kurator paneli: o'quvchi kabineti ham, admin paneli ham emas — alohida oyna.
 export default async function CuratorLayout({ children }: { children: React.ReactNode }) {
@@ -17,10 +18,7 @@ export default async function CuratorLayout({ children }: { children: React.Reac
           </div>
           <nav className="flex items-center gap-1 text-sm">
             <Link href="/curator" className="btn text-gold-text/85 hover:text-gold-text">Analitika</Link>
-            <Link href="/curator/chat" className="btn relative text-gold-text/85 hover:text-gold-text">
-              Chat
-              {unread > 0 && <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{unread}</span>}
-            </Link>
+            <ChatNavLink initial={unread} />
             <Link href="/curator/settings" className="btn text-gold-text/85 hover:text-gold-text">Parol</Link>
             <span className="hidden px-2 text-gold-text/60 sm:inline">{user.name}</span>
             <form action={logout}><button className="btn-outline px-3 py-1.5">Chiqish</button></form>
