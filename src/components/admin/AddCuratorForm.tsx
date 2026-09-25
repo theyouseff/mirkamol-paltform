@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { addCurator, type AddCuratorState } from "@/lib/actions/admin";
 import { SubmitButton } from "../SubmitButton";
+import { CourseMenu } from "./CourseMenu";
 
 export function AddCuratorForm({ courses }: { courses: { id: string; title: string }[] }) {
   const [state, action] = useActionState<AddCuratorState, FormData>(addCurator, {});
@@ -28,15 +29,8 @@ export function AddCuratorForm({ courses }: { courses: { id: string; title: stri
         </div>
         <fieldset>
           <legend className="label">Biriktiriladigan kurslar</legend>
-          <p className="mb-2 text-xs text-zinc-400">Kurator shu kurslardagi <b>hamma o&apos;quvchini</b> ko&apos;radi (kursga keyin yozilganlarni ham). Keyinroq «Kuratorlar» ro&apos;yxatidan o&apos;zgartirish mumkin.</p>
-          <div className="flex flex-wrap gap-2">
-            {courses.map((c) => (
-              <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-200 px-3 py-2 text-sm has-[:checked]:border-brand has-[:checked]:bg-brand-soft">
-                <input type="checkbox" name="courseId" value={c.id} /> {c.title}
-              </label>
-            ))}
-            {courses.length === 0 && <span className="text-sm text-zinc-400">Kurslar yo&apos;q</span>}
-          </div>
+          <p className="mb-2 text-xs text-zinc-400">Kurator shu kurslardagi <b>hamma o&apos;quvchini</b> ko&apos;radi (kursga keyin yozilganlarni ham). Kurs tugmasini bosib tanlang; keyinroq «Kuratorlar» ro&apos;yxatidan o&apos;zgartirish mumkin.</p>
+          <CourseMenu courses={courses} />
         </fieldset>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="sendMail" defaultChecked /> Emailga bir martalik kod yuborilsin

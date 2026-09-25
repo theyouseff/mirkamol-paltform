@@ -1,37 +1,31 @@
 import { setCuratorCourses } from "@/lib/actions/admin";
 import { SubmitButton } from "../SubmitButton";
+import { CourseMenu } from "./CourseMenu";
 
 type Curator = { id: string; name: string; email: string; courseIds: string[]; students: number };
 
-// Mavjud kuratorlar: qaysi kurslar biriktirilgani va shu kurslardagi o'quvchilar soni; kurslarni o'zgartirish.
+// Mavjud kuratorlar: har biri bir qatorda. Kurslar tugmasi bosilsa pastga menyu ochiladi (tanlab «Saqlash»).
 export function CuratorList({ curators, courses }: { curators: Curator[]; courses: { id: string; title: string }[] }) {
   if (curators.length === 0) return null;
   return (
-    <div className="card space-y-4">
+    <div className="card space-y-3">
       <div>
         <h2 className="font-semibold">Kuratorlar</h2>
-        <p className="text-sm text-zinc-500">Kurs belgilansa, kurator shu kursdagi hamma o&apos;quvchini ko&apos;radi. O&apos;zgartirgach «Saqlash»ni bosing.</p>
+        <p className="text-sm text-zinc-500">Kurs biriktirilsa, kurator shu kursdagi hamma o&apos;quvchini ko&apos;radi. Kurslar tugmasini bosib tanlang va «Saqlash»ni bosing.</p>
       </div>
       <ul className="divide-y divide-zinc-100">
         {curators.map((c) => (
-          <li key={c.id} className="py-4">
-            <form action={setCuratorCourses} className="space-y-3">
+          <li key={c.id} className="py-3">
+            <form action={setCuratorCourses} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
               <input type="hidden" name="id" value={c.id} />
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="font-medium">{c.name}</p>
-                  <p className="truncate text-xs text-zinc-400">{c.email}</p>
-                </div>
-                <span className="badge bg-brand-soft text-brand">{c.students} ta o&apos;quvchi</span>
+              <div className="min-w-0">
+                <p className="truncate font-medium">{c.name}</p>
+                <p className="truncate text-xs text-zinc-400">{c.email}</p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {courses.map((course) => (
-                  <label key={course.id} className="flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-200 px-3 py-2 text-sm has-[:checked]:border-brand has-[:checked]:bg-brand-soft">
-                    <input type="checkbox" name="courseId" value={course.id} defaultChecked={c.courseIds.includes(course.id)} /> {course.title}
-                  </label>
-                ))}
+              <div className="flex items-center gap-3">
+                <span className="badge shrink-0 bg-brand-soft text-brand">{c.students} ta o&apos;quvchi</span>
+                <CourseMenu courses={courses} selected={c.courseIds} align="right" footer={<SubmitButton className="btn-primary w-full">Saqlash</SubmitButton>} />
               </div>
-              <SubmitButton className="btn-outline">Saqlash</SubmitButton>
             </form>
           </li>
         ))}
