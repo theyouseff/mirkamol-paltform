@@ -6,7 +6,8 @@ import { ChatThread } from "./ChatThread";
 export type ChatStudent = { id: string; name: string; email: string; unread: number; lastAt: string | null; lastBody: string };
 
 // Kurator chati: chapda o'quvchilar ro'yxati, tanlansa o'ngda suhbat ochiladi. Telefonda ro'yxat va suhbat almashadi.
-export function ChatPanel({ students }: { students: ChatStudent[] }) {
+// readOnly — admin kuzatuvi: yozish yopiq, "o'qildi" belgisi o'zgarmaydi.
+export function ChatPanel({ students, readOnly = false }: { students: ChatStudent[]; readOnly?: boolean }) {
   const [q, setQ] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Ochilgan suhbatdagi "yangi" belgisi o'chadi
@@ -18,7 +19,7 @@ export function ChatPanel({ students }: { students: ChatStudent[] }) {
     .sort((a, b) => (b.lastAt ?? "").localeCompare(a.lastAt ?? "") || a.name.localeCompare(b.name));
 
   return (
-    <div className="glass grid h-[calc(100dvh-9rem)] min-h-[28rem] overflow-hidden lg:grid-cols-[320px_1fr]">
+    <div className={`glass grid overflow-hidden lg:grid-cols-[320px_1fr] ${readOnly ? "h-[36rem] max-h-[85dvh]" : "h-[calc(100dvh-9rem)] min-h-[28rem]"}`}>
       {/* Chap: o'quvchilar */}
       <aside className={`flex min-h-0 flex-col border-white/10 p-4 lg:border-r ${selected ? "max-lg:hidden" : ""}`}>
         <div className="mb-3 flex items-baseline justify-between">
@@ -40,7 +41,7 @@ export function ChatPanel({ students }: { students: ChatStudent[] }) {
                   type="button"
                   onClick={() => {
                     setSelectedId(s.id);
-                    setRead((r) => ({ ...r, [s.id]: true }));
+                    if (!readOnly) setRead((r) => ({ ...r, [s.id]: true }));
                   }}
                   className={`w-full rounded-xl border px-4 py-2.5 text-left transition ${s.id === selectedId ? "border-gold/40 bg-gradient-to-r from-gold/20 to-transparent shadow-[inset_3px_0_0_#c9a227]" : "border-transparent hover:bg-white/5"}`}
                 >
@@ -53,7 +54,7 @@ export function ChatPanel({ students }: { students: ChatStudent[] }) {
               </li>
             );
           })}
-          {list.length === 0 && <li className="px-3 py-8 text-center text-sm text-gold-text/60">{students.length === 0 ? "Sizga o'quvchilar biriktirilmagan" : "Topilmadi"}</li>}
+          {list.length === 0 && <li className="px-3 py-8 text-center text-sm text-gold-text/60">{students.length === 0 ? (readOnly ? "Kursda o'quvchilar yo'q" : "Sizga o'quvchilar biriktirilmagan") : "Topilmadi"}</li>}
         </ul>
       </aside>
 
@@ -69,7 +70,7 @@ export function ChatPanel({ students }: { students: ChatStudent[] }) {
               </div>
             </div>
             <div className="min-h-0 flex-1">
-              <ChatThread key={selected.id} studentId={selected.id} mine="STAFF" />
+              <ChatThread key={selected.id} studentId={selected.id} mine="STAFF" disabledNote={readOnly ? "Admin sifatida faqat ko'rasiz — yozish kuratorlar uchun" : undefined} />
             </div>
           </>
         ) : (

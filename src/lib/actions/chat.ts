@@ -34,8 +34,11 @@ export async function fetchMessages(studentId: string, after?: string): Promise<
     orderBy: { createdAt: "asc" },
     take: 300,
   });
-  const other = ctx.side === "STUDENT" ? "STAFF" : "STUDENT";
-  await prisma.chatMessage.updateMany({ where: { studentId, authorRole: other, readAt: null }, data: { readAt: new Date() } });
+  // Admin suhbatni faqat kuzatadi: uning ochishi xabarni kuratorga "o'qildi" qilib qo'ymasligi kerak
+  if (ctx.user.role !== "ADMIN") {
+    const other = ctx.side === "STUDENT" ? "STAFF" : "STUDENT";
+    await prisma.chatMessage.updateMany({ where: { studentId, authorRole: other, readAt: null }, data: { readAt: new Date() } });
+  }
   return { ok: true, messages: rows.map(toMsg) };
 }
 
