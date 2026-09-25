@@ -24,7 +24,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
   const [users, lessons, watches, progress] = await Promise.all([
     prisma.user.findMany({ where: { role: "STUDENT", enrollments: { some: {} } }, include: { enrollments: { select: { courseId: true } } } }),
     prisma.lesson.findMany({
-      select: { id: true, title: true, order: true, videoUrl: true, module: { select: { title: true, order: true, courseId: true } } },
+      select: { id: true, title: true, order: true, videoUrl: true, moduleId: true, module: { select: { title: true, order: true, courseId: true } } },
       orderBy: [{ module: { order: "asc" } }, { order: "asc" }],
     }),
     prisma.lessonWatch.findMany(),
@@ -32,6 +32,20 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
   ]);
 
   const lessonById = new Map(lessons.map((l) => [l.id, l]));
+  // Dars raqami: kursdagi nechanchi modul va moduldagi nechanchi dars ("1-modul · 1-dars")
+  const numbering = new Map<string, string>();
+  {
+    const moduleSeq = new Map<string, string[]>();
+    const inModule = new Map<string, number>();
+    for (const l of lessons) {
+      const seq = moduleSeq.get(l.module.courseId) ?? [];
+      if (!seq.includes(l.moduleId)) seq.push(l.moduleId);
+      moduleSeq.set(l.module.courseId, seq);
+      const n = (inModule.get(l.moduleId) ?? 0) + 1;
+      inModule.set(l.moduleId, n);
+      numbering.set(l.id, `${seq.indexOf(l.moduleId) + 1}-modul · ${n}-dars`);
+    }
+  }
   const lessonsByCourse = new Map<string, typeof lessons>();
   for (const l of lessons) lessonsByCourse.set(l.module.courseId, [...(lessonsByCourse.get(l.module.courseId) ?? []), l]);
   const done = new Set(progress.map((p) => `${p.userId}:${p.lessonId}`));
@@ -119,6 +133,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
                   <VideoPlayer url={lastLesson.videoUrl} />
                 ) : null}
                 <div>
+                  <p className="text-xs font-medium uppercase tracking-widest text-zinc-400">{numbering.get(lastLesson.id)}</p>
                   <p className="text-lg font-semibold">{lastLesson.title}</p>
                   <p className="text-sm text-zinc-500">{lastLesson.module.title}</p>
                 </div>
@@ -139,6 +154,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
                 <>
                   <div className="mt-2"><ProgressBar value={pct(selected.last.position, selected.last.duration)} /></div>
                   <p className="mt-1 text-xs text-zinc-500">{formatClock(selected.last.duration)} dan · {pct(selected.last.position, selected.last.duration)}%</p>
+                  {lastLesson && <p className="mt-2 text-sm font-medium text-zinc-700">{numbering.get(lastLesson.id)}</p>}
                 </>
               )}
             </div>
@@ -232,6 +248,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
                     <td className="py-3 pr-4">
                       {last && lastLesson ? (
                         <>
+                          <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">{numbering.get(lastLesson.id)}</p>
                           <p className="font-medium">{lastLesson.title}</p>
                           <p className="text-xs text-zinc-500">
                             To&apos;xtagan joyi: <b>{formatClock(last.position)}</b> / {formatClock(last.duration)} ({pct(last.position, last.duration)}%)
@@ -273,7 +290,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
                 </div>
                 {last && lastLesson ? (
                   <p className="text-xs text-zinc-500">
-                    <span className="font-medium text-zinc-700">{lastLesson.title}</span> · to&apos;xtagan joyi <b>{formatClock(last.position)}</b> / {formatClock(last.duration)}
+                    <span className="font-medium text-zinc-700">{numbering.get(lastLesson.id)} · {lastLesson.title}</span> · to&apos;xtagan joyi <b>{formatClock(last.position)}</b> / {formatClock(last.duration)}
                   </p>
                 ) : (
                   <p className="text-xs text-zinc-400">Hali video ko&apos;rmagan</p>
