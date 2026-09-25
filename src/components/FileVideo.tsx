@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { preconnect } from "react-dom";
+import { saveFrame } from "@/lib/last-frame";
 import { markLessonWatched, saveWatchProgress } from "@/lib/actions/student";
 
 // LessonVideo (Kinescope) bilan bir xil qoidalar: ≥80% haqiqiy ijro oxirigacha ko'rildi hisoblanadi, surib o'tish sanalmaydi.
@@ -28,6 +29,9 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
   const video = useRef<HTMLVideoElement>(null);
   const [counted, setCounted] = useState(false);
   const [error, setError] = useState(false);
+  // Boshqa manzildan (R2) kelgan videoning kadrini saqlash uchun crossOrigin kerak. Server CORS ruxsat bermasa (masalan boshqa domen), u o'chiriladi va video oddiy ijro etiladi
+  const remote = !!src && /^https?:/.test(src);
+  const [cors, setCors] = useState(true);
 
   useEffect(() => {
     const el = video.current;
@@ -54,11 +58,15 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
       last = t;
       track.pos = t;
       track.dirty = true;
-      if (Date.now() - track.sentAt > HEARTBEAT) flush();
+      if (Date.now() - track.sentAt > HEARTBEAT) {
+        flush();
+        saveFrame(lessonId, el);
+      }
     };
     const onPause = () => {
       saveSeconds(lessonId, seconds);
       flush();
+      saveFrame(lessonId, el);
     };
     const onEnded = async () => {
       saveSeconds(lessonId, seconds);
@@ -76,7 +84,11 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
     const onSeeked = () => {
       last = null;
     };
-    const onHide = () => document.visibilityState === "hidden" && flush();
+    const onHide = () => {
+      if (document.visibilityState !== "hidden") return;
+      flush();
+      saveFrame(lessonId, el);
+    };
 
     el.addEventListener("loadedmetadata", onMeta);
     el.addEventListener("timeupdate", onTime);
@@ -94,8 +106,14 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
       document.removeEventListener("visibilitychange", onHide);
       saveSeconds(lessonId, seconds);
       flush();
+      saveFrame(lessonId, el);
     };
   }, [lessonId, src, startAt, autoPlay, trackProgress]);
+
+  // CORS o'chirilgach video shu manzilni qayta yuklaydi
+  useEffect(() => {
+    if (!cors) video.current?.load();
+  }, [cors]);
 
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
@@ -108,9 +126,10 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
         controls
         playsInline
         preload="auto"
+        crossOrigin={remote && cors ? "anonymous" : undefined}
         controlsList="nodownload"
         onContextMenu={(e) => e.preventDefault()}
-        onError={() => setError(true)}
+        onError={() => (remote && cors ? setCors(false) : setError(true))}
       />
       {(error || !src) && <p className="absolute inset-0 flex items-center justify-center bg-black/80 p-6 text-center text-sm text-white/80">Videoni yuklab bo&apos;lmadi. Sahifani yangilang yoki adminga yozing.</p>}
       {counted && <span className="absolute right-3 top-3 rounded-lg bg-gold px-3 py-1 text-sm font-semibold text-ink-950 shadow-lg">✓ Dars ko&apos;rildi</span>}

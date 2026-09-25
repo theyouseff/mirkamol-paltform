@@ -6,6 +6,7 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { missedFrom } from "@/lib/activity";
 import { VisitCalendar } from "@/components/VisitCalendar";
 import { isOwnVideo, ownVideoSrc } from "@/lib/video-source";
+import { LastVideoPreview } from "@/components/LastVideoPreview";
 
 // "Ali Valiyev" -> "AV"
 const initials = (name: string) =>
@@ -61,33 +62,16 @@ export default async function CabinetPage() {
       <section className="glass space-y-4 p-5 sm:p-6">
         <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">Oxirgi ko&apos;rgan video</p>
         {/* Kabinetda video ijro etilmaydi: faqat oldindan ko'rinish, bosilsa dars sahifasi (to'xtagan joydan) ochiladi */}
-        {last.lesson.videoUrl && (
+        {last.lesson.videoUrl && (isOwnVideo(last.lesson.videoUrl) ? (
+          <LastVideoPreview lessonId={last.lesson.id} src={previewSrc} position={last.position} finished={finished} href={resumeHref} />
+        ) : (
           <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
-            {isOwnVideo(last.lesson.videoUrl) ? (
-              <>
-                {previewSrc && (
-                  <video
-                    src={`${previewSrc}#t=${finished ? 0.001 : Math.max(last.position, 0.001)}`}
-                    muted
-                    playsInline
-                    preload="metadata"
-                    tabIndex={-1}
-                    aria-hidden
-                    className="pointer-events-none h-full w-full object-cover"
-                  />
-                )}
-                <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25" aria-hidden>
-                  <span className="text-6xl text-gold-text/90 drop-shadow-lg">▶</span>
-                </span>
-              </>
-            ) : (
-              <div inert className="h-full w-full">
-                <iframe src={toEmbedUrl(last.lesson.videoUrl) ?? last.lesson.videoUrl} className="h-full w-full" tabIndex={-1} aria-hidden />
-              </div>
-            )}
+            <div inert className="h-full w-full">
+              <iframe src={toEmbedUrl(last.lesson.videoUrl) ?? last.lesson.videoUrl} className="h-full w-full" tabIndex={-1} aria-hidden />
+            </div>
             <Link href={resumeHref} className="absolute inset-0" aria-label="Darsni davom ettirish" />
           </div>
-        )}
+        ))}
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">
             {lessonNumber > 0 && (
