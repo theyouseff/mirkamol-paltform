@@ -139,10 +139,19 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
                       aria-hidden
                     />
                   </div>
-                  <div className="flex items-center justify-between text-xs text-zinc-500">
-                    <span>0:00</span>
-                    <span>{formatClock(selected.last.duration)}</span>
-                  </div>
+                  {/* Chiziq ostida: boshlanish, to'xtagan daqiqa (belgi tagida) va oxiri; chetlarga yaqin bo'lsa ustma-ust tushmasin */}
+                  {(() => {
+                    const at = pct(selected.last.position, selected.last.duration);
+                    return (
+                      <div className="relative h-5 text-xs text-zinc-500">
+                        {at >= 10 && <span className="absolute left-0">0:00</span>}
+                        <span className="absolute -translate-x-1/2 font-bold text-brand" style={{ left: `${Math.min(Math.max(at, 4), 96)}%` }}>
+                          {formatClock(selected.last.position)}
+                        </span>
+                        {at <= 90 && <span className="absolute right-0">{formatClock(selected.last.duration)}</span>}
+                      </div>
+                    );
+                  })()}
                   <p className="text-sm text-zinc-600">
                     To&apos;xtagan joyi: <b>{formatClock(selected.last.position)}</b> ({pct(selected.last.position, selected.last.duration)}%)
                   </p>
