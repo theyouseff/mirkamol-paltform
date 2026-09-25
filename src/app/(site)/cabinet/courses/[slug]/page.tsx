@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { loadCourseForStudent } from "@/lib/course";
-import { adminContactUrl } from "@/lib/config";
 import { ModuleGrid } from "@/components/ModuleGrid";
 import { ProgressBar } from "@/components/ProgressBar";
 import { BrandScope } from "@/components/BrandScope";
@@ -17,17 +16,8 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
   if (!found) notFound();
 
   const { course, modules, hasAccess, done, flatLessons } = await loadCourseForStudent(found.id, user);
-  if (!hasAccess) {
-    return (
-      <div className="glass mx-auto max-w-md space-y-4 p-7 text-center">
-        <p className="text-gold-text">Bu kurs sizda ochiq emas. Ochish uchun adminga yozing.</p>
-        <div className="flex flex-wrap justify-center gap-2">
-          {adminContactUrl && <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">Adminga yozish</a>}
-          <Link href={`/courses/${course.slug}`} className="btn-outline">Kurs haqida</Link>
-        </div>
-      </div>
-    );
-  }
+  // Yozilmagan kurs (boshqa kurs) o'quvchiga umuman ko'rinmaydi
+  if (!hasAccess) notFound();
 
   const available = flatLessons.filter((l) => l.state !== "locked");
   const completed = available.filter((l) => done.has(l.id)).length;

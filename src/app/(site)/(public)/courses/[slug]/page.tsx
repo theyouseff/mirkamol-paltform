@@ -14,8 +14,15 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
     where: { slug },
     include: { modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, select: { id: true, title: true, duration: true } } } } },
   });
-  if (!course || !course.published) notFound();
+  if (!course) notFound();
   const session = await getSession();
+  // Kirgan o'quvchi yozilmagan kursning sahifasini ko'ra olmaydi (havolani bilsa ham)
+  if (session && session.role !== "ADMIN") {
+    const enrolled = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId: session.userId, courseId: course.id } }, select: { userId: true } });
+    if (!enrolled) notFound();
+  } else if (!course.published && !session) {
+    notFound(); // e'lon qilinmagan kurs mehmonga ko'rinmaydi
+  }
   const lessonCount = course.modules.reduce((n, m) => n + m.lessons.length, 0);
 
   return (
