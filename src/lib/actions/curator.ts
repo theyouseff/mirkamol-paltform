@@ -3,18 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireCurator } from "@/lib/auth";
+import { canManageStudent } from "@/lib/curator-scope";
 import { addDays, tashkentDay } from "@/lib/format";
 import { isDayStatus } from "@/lib/day-status";
 import { MIN_PASSWORD } from "@/lib/constants";
 import bcrypt from "bcryptjs";
 
-// Kurator faqat o'ziga biriktirilgan kurslardagi o'quvchilarga yoza oladi; admin — hammaga.
-async function assertCanManage(user: { id: string; role: string }, studentId: string) {
-  if (user.role === "ADMIN") return true;
-  const assigned = await prisma.curatorCourse.findMany({ where: { curatorId: user.id }, select: { courseId: true } });
-  if (assigned.length === 0) return false;
-  return !!(await prisma.enrollment.findFirst({ where: { userId: studentId, courseId: { in: assigned.map((a) => a.courseId) } } }));
-}
+const assertCanManage = canManageStudent;
 
 const validDay = (day: string) => /^\d{4}-\d{2}-\d{2}$/.test(day) && day <= addDays(tashkentDay(), -1); // faqat o'tgan kunlar
 

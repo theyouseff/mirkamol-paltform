@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { logout } from "@/lib/actions/auth";
 import { callCenterUrl, telegramUrl } from "@/lib/config";
+import { studentUnread } from "@/lib/curator-scope";
 import { HeaderNav } from "./HeaderNav";
 
 // Aloqa: ikkita yumaloq yaltiroq tilla belgi — telefon (tel:) va Telegram.
@@ -36,7 +37,8 @@ const Contact = ({ className = "" }: { className?: string }) => (
 );
 
 export async function SiteHeader() {
-  const user = await getSession(); // bazaga bormaydi — rol sessiyaning o'zida
+  const user = await getSession(); // rol sessiyaning o'zida; faqat o'quvchi uchun chatdagi yangi xabarlar soni olinadi
+  const chatUnread = user?.role === "STUDENT" ? await studentUnread(user.userId).catch(() => 0) : 0;
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-ink-950/60 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -44,7 +46,7 @@ export async function SiteHeader() {
         <nav className="flex items-center gap-1 text-sm">
           {user ? (
             <>
-              <HeaderNav isAdmin={user.role === "ADMIN"} isCurator={user.role === "CURATOR"} />
+              <HeaderNav isAdmin={user.role === "ADMIN"} isCurator={user.role === "CURATOR"} showChat={user.role === "STUDENT"} chatUnread={chatUnread} />
               <form action={logout}><button className="btn text-gold-text/70 hover:text-gold-text">Chiqish</button></form>
               <Contact className="ml-2 sm:ml-3 min-[1440px]:hidden" />
             </>

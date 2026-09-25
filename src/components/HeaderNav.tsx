@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 const links = [
   { href: "/courses", label: "Kurslar" },
   { href: "/cabinet", label: "Kabinet" },
+  { href: "/cabinet/chat", label: "Chat" },
   { href: "/cabinet/settings", label: "Parol" },
 ];
 
@@ -20,12 +21,14 @@ function isActive(href: string, path: string) {
 }
 
 // Faol tugma orqasidagi oltin belgi CSS o'tishi bilan bir tugmadan ikkinchisiga silliq siljiydi.
-export function HeaderNav({ isAdmin, isCurator = false }: { isAdmin: boolean; isCurator?: boolean }) {
+export function HeaderNav({ isAdmin, isCurator = false, showChat = false, chatUnread = 0 }: { isAdmin: boolean; isCurator?: boolean; showChat?: boolean; chatUnread?: number }) {
   const path = usePathname();
+  // "Chat" faqat o'quvchiga (kurator bilan suhbat)
+  const items = links.filter((l) => l.href !== "/cabinet/chat" || showChat);
   // Bosilgan tugma darhol faol bo'ladi — server sahifani yuklab bo'lishini kutmaymiz
   const [target, setTarget] = useState<string | null>(null);
   useEffect(() => setTarget(null), [path]);
-  const activeHref = target ?? links.find((l) => isActive(l.href, path))?.href ?? null;
+  const activeHref = target ?? items.find((l) => isActive(l.href, path))?.href ?? null;
 
   const box = useRef<HTMLDivElement>(null);
   const refs = useRef<Record<string, HTMLAnchorElement | null>>({});
@@ -63,7 +66,7 @@ export function HeaderNav({ isAdmin, isCurator = false }: { isAdmin: boolean; is
             transition: animate ? `transform ${SLIDE}, width ${SLIDE}, opacity 0.3s` : "none",
           }}
         />
-        {links.map((l) => (
+        {items.map((l) => (
           <Link
             key={l.href}
             ref={(el) => { refs.current[l.href] = el; }}
@@ -72,6 +75,7 @@ export function HeaderNav({ isAdmin, isCurator = false }: { isAdmin: boolean; is
             className={`relative z-10 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors duration-700 ${activeHref === l.href ? "text-ink-950" : "text-gold-text/80 hover:text-gold-text"}`}
           >
             {l.label}
+            {l.href === "/cabinet/chat" && chatUnread > 0 && <span className="ml-1.5 rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{chatUnread}</span>}
           </Link>
         ))}
       </div>
