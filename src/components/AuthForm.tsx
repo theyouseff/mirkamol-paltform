@@ -41,7 +41,7 @@ export function AuthForm() {
         <p>
           Akkauntingiz yo&apos;qmi?{" "}
           {ADMIN_TELEGRAM ? (
-            <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className={authLink}>Adminga yozish</a>
+            <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className={`${authLink} underline decoration-gold-text/60 underline-offset-4 transition hover:decoration-gold-text`}>Adminga yozish</a>
           ) : (
             "Adminga yozing"
           )}
