@@ -28,6 +28,7 @@ export async function fulfillOrder(orderId: string, provider: string) {
   return prisma.$transaction(async (tx) => {
     const order = await tx.order.findUniqueOrThrow({ where: { id: orderId } });
     if (order.status === "PAID") return order;
+    if (!order.userId) throw new Error("O'quvchi akkaunti o'chirilgan");
 
     const paid = await tx.order.update({
       where: { id: orderId },

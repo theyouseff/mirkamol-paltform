@@ -225,6 +225,8 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
       data: {
         number: (last?.number ?? 1000) + 1,
         userId: user!.id,
+        buyerName: user!.name,
+        buyerEmail: user!.email,
         courseId: course.id,
         amount: int(formData, "amount"),
         utmSource: str(formData, "source"),
@@ -262,6 +264,21 @@ export async function removeFromCourse(formData: FormData) {
   await prisma.enrollment.deleteMany({ where: { userId, courseId } });
   revalidatePath("/admin", "layout");
   revalidatePath("/cabinet", "layout");
+  revalidatePath("/curator", "layout");
+}
+
+// O'quvchi akkauntini butunlay o'chiradi: kirish, kurslar, ko'rish natijalari, kirgan kunlar va chat yozuvlari o'chadi.
+// To'lov yozuvlari (daromad hisoboti) saqlanadi — ularda o'quvchining ismi va emaili nusxasi qoladi. Faqat o'quvchi (admin/kurator emas).
+export async function deleteStudent(formData: FormData) {
+  const admin = await requireAdmin();
+  const id = str(formData, "id");
+  if (!id || id === admin.id) return;
+  const user = await prisma.user.findUnique({ where: { id }, select: { role: true, name: true, email: true } });
+  if (!user || user.role !== "STUDENT") return;
+  // Yozuvlar eski bo'lsa, nusxa yo'q bo'lishi mumkin — o'chirishdan oldin to'ldiramiz
+  await prisma.order.updateMany({ where: { userId: id, buyerEmail: "" }, data: { buyerName: user.name, buyerEmail: user.email } });
+  await prisma.user.delete({ where: { id } });
+  revalidatePath("/admin", "layout");
   revalidatePath("/curator", "layout");
 }
 

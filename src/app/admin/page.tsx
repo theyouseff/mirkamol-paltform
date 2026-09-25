@@ -13,7 +13,7 @@ export default async function AdminDashboard() {
     prisma.order.count({ where: { status: "PAID" } }),
     prisma.order.count({ where: { status: "PENDING" } }),
     prisma.user.count({ where: { role: "STUDENT" } }),
-    prisma.order.findMany({ take: 8, orderBy: { createdAt: "desc" }, include: { user: true, course: true } }),
+    prisma.order.findMany({ take: 8, orderBy: { createdAt: "desc" }, include: { user: { select: { name: true, email: true } }, course: true } }),
     prisma.order.groupBy({ by: ["utmSource"], where: { status: "PAID" }, _sum: { amount: true }, _count: true }),
     prisma.order.findMany({
       where: { status: "PAID" },
@@ -84,7 +84,7 @@ export default async function AdminDashboard() {
               {recent.map((o) => (
                 <tr key={o.id} className="border-t border-zinc-100">
                   <td className="py-2.5">№{o.number}</td>
-                  <td>{o.user.name}</td>
+                  <td>{o.user?.name ?? (o.buyerName || "—")}</td>
                   <td className="text-zinc-500">{o.course.title}</td>
                   <td>{formatPrice(o.amount)}</td>
                   <td><StatusBadge status={o.status} /></td>
@@ -98,7 +98,7 @@ export default async function AdminDashboard() {
             {recent.map((o) => (
               <li key={o.id} className="flex items-start justify-between gap-3 py-3 text-sm">
                 <div className="min-w-0">
-                  <p className="font-medium">№{o.number} · {o.user.name}</p>
+                  <p className="font-medium">№{o.number} · {o.user?.name ?? (o.buyerName || "—")}</p>
                   <p className="truncate text-xs text-zinc-500">{o.course.title}</p>
                   <p className="text-xs text-zinc-400">{formatDate(o.createdAt)}</p>
                 </div>

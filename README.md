@@ -40,6 +40,7 @@ Menyuda **Kabinet**dan keyin **Postlar**: kurator o'z kursi uchun e'lon/yangilik
 1. Mijoz Telegramda kelishadi va kartaga to'laydi (skrinshot yuboradi).
 2. Admin: **O'quvchilar → O'quvchi qo'shish** — email, kurs, summa. Yangi o'quvchiga akkaunt ochiladi va emailga bir martalik kod yuboriladi; u saytda `/activate` sahifasida email + kodni kiritib, parolni o'zi qo'yadi. Xat ketmasa, kod panelda ko'rinadi (Telegramda yuborasiz).
 3. O'quvchini kursdan **chiqarish**: Admin → O'quvchilar → kurs belgisi yonidagi **×** (tasdiq so'raladi). Kursga kirish yopiladi va kurator ro'yxatidan tushadi; akkaunt, to'lov yozuvi va natijalari saqlanadi. Kursga qayta qo'shsangiz (O'quvchi qo'shish), ko'rish tarixi qaytadi.
+4. O'quvchi akkauntini **butunlay o'chirish**: O'quvchilar jadvalida qatordagi **O'chirish** (faqat o'quvchi, tasdiq bilan; ortga qaytmaydi). Kirish, kurslar, ko'rish natijalari, kirgan kunlar va chat yozuvlari o'chadi. To'lov yozuvlari saqlanadi (ularda o'quvchining ismi va emaili nusxasi qoladi), shuning uchun daromad hisobotlari buzilmaydi.
 3. O'quvchi kirib faqat o'zi to'lagan kursni ko'radi. Boshqa kurslar (boshqa mualliflarniki ham) yopiq.
 
 ## Mualliflar va brend

@@ -1,3 +1,4 @@
+import { buyer } from "@/lib/buyer";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
@@ -18,14 +19,14 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const where: Prisma.OrderWhereInput = {
     ...(status && { status }),
     ...(author && { course: { authorId: author } }),
-    ...(q && { OR: [{ user: { name: { contains: q, mode: "insensitive" } } }, { user: { email: { contains: q, mode: "insensitive" } } }] }),
+    ...(q && { OR: [{ user: { name: { contains: q, mode: "insensitive" } } }, { user: { email: { contains: q, mode: "insensitive" } } }, { buyerName: { contains: q, mode: "insensitive" } }, { buyerEmail: { contains: q, mode: "insensitive" } }] }),
   };
   const [orders, authors] = await Promise.all([
     prisma.order.findMany({
       where,
       orderBy: { createdAt: "desc" },
       take: 200,
-      include: { user: true, course: { include: { author: true } } },
+      include: { user: { select: { name: true, email: true } }, course: { include: { author: true } } },
     }),
     prisma.author.findMany({ orderBy: { name: "asc" } }),
   ]);
@@ -71,7 +72,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
             {orders.map((o) => (
               <tr key={o.id} className="border-t border-zinc-100 align-top">
                 <td className="px-4 py-3">{o.number}</td>
-                <td>{o.user.name}<div className="text-xs text-zinc-400">{o.user.email}</div></td>
+                <td>{buyer(o).name}<div className="text-xs text-zinc-400">{buyer(o).email}</div></td>
                 <td>
                   {o.course.title}
                   {o.course.author && <div className="text-xs text-zinc-400">{o.course.author.name}</div>}
@@ -102,8 +103,8 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
           <div key={o.id} className="card space-y-2 p-4 text-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-medium">№{o.number} · {o.user.name}</p>
-                <p className="truncate text-xs text-zinc-400">{o.user.email}</p>
+                <p className="font-medium">№{o.number} · {buyer(o).name}</p>
+                <p className="truncate text-xs text-zinc-400">{buyer(o).email}</p>
               </div>
               <StatusBadge status={o.status} />
             </div>

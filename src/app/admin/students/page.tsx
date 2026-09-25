@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
-import { removeFromCourse, setUserRole } from "@/lib/actions/admin";
+import { deleteStudent, removeFromCourse, setUserRole } from "@/lib/actions/admin";
 import { formatDate } from "@/lib/format";
 import { AddStudentForm } from "@/components/admin/AddStudentForm";
 import { AddCuratorForm } from "@/components/admin/AddCuratorForm";
@@ -26,6 +26,21 @@ function CourseBadge({ userId, userName, courseId, title }: { userId: string; us
           <span title="Kursdan chiqarish">×</span>
         </ConfirmButton>
       </span>
+    </form>
+  );
+}
+
+// Akkauntni butunlay o'chirish (faqat o'quvchi uchun)
+function DeleteStudent({ id, name }: { id: string; name: string }) {
+  return (
+    <form action={deleteStudent}>
+      <input type="hidden" name="id" value={id} />
+      <ConfirmButton
+        className="rounded-full border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50"
+        message={`${name} akkaunti BUTUNLAY o'chirilsinmi?\n\nO'chadi: kirish, kurslar, ko'rish natijalari va chat yozuvlari.\nSaqlanadi: to'lov yozuvi (hisobotlar buzilmaydi).\n\nBuni ortga qaytarib bo'lmaydi.`}
+      >
+        O&apos;chirish
+      </ConfirmButton>
     </form>
   );
 }
@@ -111,7 +126,12 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
                     </form>
                   )}
                 </td>
-                <td className="pr-4">{u.id !== admin.id && <ResetPasswordButton userId={u.id} />}</td>
+                <td className="pr-4">{u.id !== admin.id && (
+                  <div className="flex flex-wrap items-center gap-1">
+                    <ResetPasswordButton userId={u.id} />
+                    {u.role === "STUDENT" && <DeleteStudent id={u.id} name={u.name} />}
+                  </div>
+                )}</td>
               </tr>
             ))}
           </tbody>
@@ -144,6 +164,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
                   <SubmitButton className="btn-outline px-3 py-1 text-xs">OK</SubmitButton>
                 </form>
                 <ResetPasswordButton userId={u.id} />
+                {u.role === "STUDENT" && <DeleteStudent id={u.id} name={u.name} />}
               </div>
             )}
           </div>
