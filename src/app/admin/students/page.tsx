@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 import { setUserRole } from "@/lib/actions/admin";
 import { formatDate } from "@/lib/format";
 import { AddStudentForm } from "@/components/admin/AddStudentForm";
+import { AddCuratorForm } from "@/components/admin/AddCuratorForm";
 import { ResetPasswordButton } from "@/components/admin/ResetPasswordButton";
 import { SubmitButton } from "@/components/SubmitButton";
 
@@ -35,6 +36,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">O&apos;quvchilar</h1>
+      <AddCuratorForm />
       <AddStudentForm courses={courses.map((c) => ({ id: c.id, label: c.title, price: c.price }))} />
 
       <form className="flex flex-wrap gap-2">

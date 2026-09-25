@@ -56,6 +56,25 @@ ${codeBox(code)}
   return sendMail(to, subject, text, html);
 }
 
+// Yangi kurator: bir martalik kod. Saytda email + kod kiritilib, parol o'rnatiladi va kurator paneliga kiriladi.
+export function sendCuratorInvite(to: string, name: string, code: string) {
+  const site = SITE_URL.replace(/^https?:\/\//, "");
+  const subject = "Siz ilmaviya'ga kurator sifatida qo'shildingiz";
+  const text = `Salom, ${name}!\n\nSiz ilmaviya platformasiga kurator sifatida qo'shildingiz.\n\nBir martalik kodingiz: ${code}\n\nKirish:\n1. ${site}/activate sahifasini oching\n2. Emailingiz (${to}) va shu kodni kiriting\n3. O'zingiz uchun parol o'ylab toping\n\nKirgach, kurator paneli ochiladi. Kod bir marta ishlaydi va 7 kun amal qiladi.`;
+  const html = `<div style="font-family:Arial,sans-serif;max-width:480px;line-height:1.6">
+<p>Salom, <b>${esc(name)}</b>!</p>
+<p>Siz ilmaviya platformasiga <b>kurator</b> sifatida qo'shildingiz.</p>
+<p>Bir martalik kodingiz:</p>
+${codeBox(code)}
+<p>Kirish uchun:</p>
+<ol style="padding-left:20px;margin:0">
+<li><b>${esc(site)}/activate</b> sahifasini oching</li>
+<li>Emailingiz (<b>${esc(to)}</b>) va shu kodni kiriting</li>
+<li>O'zingiz uchun parol o'ylab toping</li></ol>
+<p style="color:#666;font-size:13px">Kirgach, kurator paneli ochiladi. Kod bir marta ishlaydi va 7 kun amal qiladi.</p></div>`;
+  return sendMail(to, subject, text, html);
+}
+
 // Mavjud akkauntga yangi kurs qo'shilganda
 export function sendCourseOpened(to: string, name: string, courseTitle: string) {
   const subject = `Yangi kurs ochildi: ${courseTitle}`;

@@ -20,7 +20,7 @@ function isActive(href: string, path: string) {
 }
 
 // Faol tugma orqasidagi oltin belgi CSS o'tishi bilan bir tugmadan ikkinchisiga silliq siljiydi.
-export function HeaderNav({ isAdmin }: { isAdmin: boolean }) {
+export function HeaderNav({ isAdmin, isCurator = false }: { isAdmin: boolean; isCurator?: boolean }) {
   const path = usePathname();
   // Bosilgan tugma darhol faol bo'ladi — server sahifani yuklab bo'lishini kutmaymiz
   const [target, setTarget] = useState<string | null>(null);
@@ -51,6 +51,7 @@ export function HeaderNav({ isAdmin }: { isAdmin: boolean }) {
   return (
     <>
       {isAdmin && <Link href="/admin" className="btn-outline">Admin panel</Link>}
+      {isCurator && <Link href="/curator" className="btn-outline">Kurator paneli</Link>}
       <div ref={box} className="relative flex items-center gap-1">
         <span
           aria-hidden

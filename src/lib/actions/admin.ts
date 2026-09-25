@@ -9,7 +9,7 @@ import bcrypt from "bcryptjs";
 import { normalizeEmail } from "@/lib/format";
 import { isHexColor } from "@/lib/brand";
 import { generatePassword } from "@/lib/password";
-import { sendActivation, sendCourseOpened, sendNewPassword, type MailResult } from "@/lib/mail";
+import { sendActivation, sendCourseOpened, sendCuratorInvite, sendNewPassword, type MailResult } from "@/lib/mail";
 import { createResetCode, INVITE_TTL_MS } from "@/lib/reset";
 
 const str = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
@@ -250,6 +250,36 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
       ...status,
     },
   };
+}
+
+export type AddCuratorState = {
+  error?: string;
+  result?: { name: string; email: string; promoted: boolean; activationCode: string | null; mail: MailStatus; mailReason?: string };
+};
+
+// Kurator qo'shadi: yangi email bo'lsa akkaunt ochiladi va emailiga bir martalik kod ketadi; mavjud foydalanuvchi bo'lsa roli kurator qilinadi.
+export async function addCurator(_: AddCuratorState, formData: FormData): Promise<AddCuratorState> {
+  await requireAdmin();
+  const email = normalizeEmail(str(formData, "email"));
+  if (!email) return { error: "Email noto'g'ri" };
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    if (existing.role === "ADMIN") return { error: "Bu akkaunt admin, uni kurator qilib bo'lmaydi." };
+    if (existing.role === "CURATOR") return { error: `${existing.name} allaqachon kurator.` };
+    await prisma.user.update({ where: { id: existing.id }, data: { role: "CURATOR" } });
+    revalidatePath("/admin", "layout");
+    return { result: { name: existing.name, email, promoted: true, activationCode: null, mail: "skipped" } };
+  }
+
+  const name = str(formData, "name");
+  if (name.length < 2) return { error: "Kurator ismini yozing" };
+  const user = await prisma.user.create({ data: { name, email, role: "CURATOR", passwordHash: await bcrypt.hash(generatePassword(24), 10) } });
+  const code = await createResetCode(user.id, INVITE_TTL_MS);
+  const mail = formData.get("sendMail") === "on" ? await sendCuratorInvite(email, name, code) : null;
+  const status = mailStatus(mail);
+  revalidatePath("/admin", "layout");
+  return { result: { name, email, promoted: false, activationCode: status.mail === "sent" ? null : code, ...status } };
 }
 
 export type ResetPasswordState = { error?: string; password?: string; mail?: MailStatus; mailReason?: string };

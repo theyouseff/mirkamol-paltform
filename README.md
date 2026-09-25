@@ -24,7 +24,11 @@ Admin: `.env` dagi `ADMIN_EMAIL` / `ADMIN_PASSWORD` (seed shu bilan yaratadi).
 | `/courses` → `/cabinet/courses/[slug]` | Kirgach o'quvchi «Kurslar» sahifasiga tushadi; o'zi to'lagan kurs blokini bossa kurs ochiladi: modul → video dars, progress |
 | `/cabinet` | Akkaunt egasining avatari, ismi va progress (nechta dars ko'rilgani); kurslar bu yerda chiqmaydi |
 | `/cabinet/settings` | Parolni o'zgartirish |
+| `/curator` | **Kurator paneli** (alohida oyna): o'quvchilar analitikasi, faqat ko'rish. Kurator o'quvchi kabinetiga ham, admin panelga ham tushmaydi |
 | `/admin` | Dashboard, kurslar, mualliflar, to'lovlar, o'quvchilar, **analitika** (umumiy metrikalar; o'quvchi tanlansa — uning oxirgi ko'rgan darsi, to'xtagan daqiqasi, kirgan kunlari kalendari va tugatgan videolari soni (adminda video ijro etilmaydi)) |
+
+## Kuratorlar
+Admin: **O'quvchilar → Kurator qo'shish** — email va ism. Yangi kuratorga akkaunt ochiladi va emailiga bir martalik kod ketadi (`/activate`), u parol qo'yib kurator paneliga kiradi. Mavjud foydalanuvchining emailini yozsangiz roli kurator bo'ladi (qayta kirishi kerak). Kirgach rolga qarab: admin → `/admin`, kurator → `/curator`, o'quvchi → `/courses`.
 
 ## Ish tartibi
 1. Mijoz Telegramda kelishadi va kartaga to'laydi (skrinshot yuboradi).

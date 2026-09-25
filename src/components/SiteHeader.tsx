@@ -44,7 +44,7 @@ export async function SiteHeader() {
         <nav className="flex items-center gap-1 text-sm">
           {user ? (
             <>
-              <HeaderNav isAdmin={user.role === "ADMIN"} />
+              <HeaderNav isAdmin={user.role === "ADMIN"} isCurator={user.role === "CURATOR"} />
               <form action={logout}><button className="btn text-gold-text/70 hover:text-gold-text">Chiqish</button></form>
               <Contact className="ml-2 sm:ml-3 min-[1440px]:hidden" />
             </>

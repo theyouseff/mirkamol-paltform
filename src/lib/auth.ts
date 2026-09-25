@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "./db";
 import { SESSION_COOKIE, signSession, verifySession } from "./session";
+import { homeFor, isStaff } from "./roles";
 
 // Parol xeshining qisqa izi. Parol o'zgarsa iz ham o'zgaradi va eski sessiyalar yaroqsiz bo'ladi.
 const passwordVersion = (passwordHash: string) => createHash("sha256").update(passwordHash).digest("base64url").slice(0, 16);
@@ -48,6 +49,13 @@ export async function requireUser() {
 
 export async function requireAdmin() {
   const user = await requireUser();
-  if (user.role !== "ADMIN") redirect("/courses");
+  if (user.role !== "ADMIN") redirect(homeFor(user.role));
+  return user;
+}
+
+// Kurator paneli: kurator (ko'rish uchun admin ham)
+export async function requireCurator() {
+  const user = await requireUser();
+  if (!isStaff(user.role)) redirect("/courses");
   return user;
 }

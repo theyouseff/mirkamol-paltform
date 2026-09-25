@@ -9,6 +9,7 @@ import { normalizeEmail } from "@/lib/format";
 import { clearAttempts, clientIp, isLimited, recordAttempt } from "@/lib/rate-limit";
 import { mailConfigured, sendResetCode } from "@/lib/mail";
 import { MIN_PASSWORD } from "@/lib/constants";
+import { homeFor } from "@/lib/roles";
 import { createResetCode, RESET_TTL_MS, verifyResetCode } from "@/lib/reset";
 
 export type AuthState = { error?: string };
@@ -20,10 +21,12 @@ const TOO_MANY = "Juda ko'p urinish. Birozdan keyin qayta urinib ko'ring.";
 // Foydalanuvchi topilmaganda ham bcrypt vaqti sarflansin (email bor-yo'qligini vaqtdan bilib bo'lmasin).
 let dummyHash: string | undefined;
 
-// Faqat ichki yo'llarga qaytaramiz (open redirect'dan himoya).
-function safeNext(next: FormDataEntryValue | null) {
+// Faqat ichki yo'llarga qaytaramiz (open redirect'dan himoya). Kurator faqat o'z panelidagi manzilga qaytadi.
+function safeNext(next: FormDataEntryValue | null, role: string) {
   const value = typeof next === "string" ? next : "";
-  return value.startsWith("/") && !value.startsWith("//") ? value : null;
+  if (!value.startsWith("/") || value.startsWith("//")) return null;
+  if (role === "CURATOR" && !value.startsWith("/curator")) return null;
+  return value;
 }
 
 export async function login(_: AuthState, formData: FormData): Promise<AuthState> {
@@ -47,7 +50,7 @@ export async function login(_: AuthState, formData: FormData): Promise<AuthState
 
   await clearAttempts([keys[0]]);
   await createSession(user);
-  redirect(safeNext(formData.get("next")) ?? (user.role === "ADMIN" ? "/admin" : "/courses"));
+  redirect(safeNext(formData.get("next"), user.role) ?? homeFor(user.role));
 }
 
 export async function logout() {
@@ -104,5 +107,5 @@ export async function activateWithCode(_: AuthState, formData: FormData): Promis
   await clearAttempts([...keys, `login:email:${email}`]);
   // Kod emailga kelgan — egasi ekani tasdiqlangan, shu zahoti kiritamiz
   await createSession(updated);
-  redirect(updated.role === "ADMIN" ? "/admin" : "/courses");
+  redirect(homeFor(updated.role));
 }
