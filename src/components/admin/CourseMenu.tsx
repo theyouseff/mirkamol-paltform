@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
-type Course = { id: string; title: string };
+type Course = { id: string; title: string; note?: string };
 
 // Kurslarni tanlash menyusi: tugma bosilsa pastga ro'yxat ochiladi. Tanlanganlar formaga "courseId" bo'lib yuboriladi.
 // footer — menyu ichida pastda turadigan tugma (masalan, «Saqlash»).
-export function CourseMenu({ courses, selected = [], footer, align = "left" }: { courses: Course[]; selected?: string[]; footer?: React.ReactNode; align?: "left" | "right" }) {
+export function CourseMenu({ courses, selected = [], footer, align = "left", emptyLabel = "Kurs biriktirish" }: { courses: Course[]; selected?: string[]; footer?: React.ReactNode; align?: "left" | "right"; emptyLabel?: string }) {
   const [open, setOpen] = useState(false);
   const [checked, setChecked] = useState<string[]>(selected);
   const box = useRef<HTMLDivElement>(null);
@@ -32,7 +32,7 @@ export function CourseMenu({ courses, selected = [], footer, align = "left" }: {
     };
   }, [open]);
 
-  const label = checked.length === 0 ? "Kurs biriktirish" : checked.length === 1 ? (courses.find((c) => c.id === checked[0])?.title ?? "1 ta kurs") : `${checked.length} ta kurs`;
+  const label = checked.length === 0 ? emptyLabel : checked.length === 1 ? (courses.find((c) => c.id === checked[0])?.title ?? "1 ta kurs") : `${checked.length} ta kurs`;
 
   return (
     <div ref={box} className="relative">
@@ -64,6 +64,7 @@ export function CourseMenu({ courses, selected = [], footer, align = "left" }: {
                 onChange={(e) => setChecked((prev) => (e.target.checked ? [...prev, c.id] : prev.filter((x) => x !== c.id)))}
               />
               <span className="min-w-0 flex-1 truncate">{c.title}</span>
+              {c.note && <span className="shrink-0 text-xs text-zinc-400">{c.note}</span>}
             </label>
           ))}
           {courses.length === 0 && <p className="px-3 py-2 text-sm text-zinc-400">Kurslar yo&apos;q</p>}

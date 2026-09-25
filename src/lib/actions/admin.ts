@@ -318,11 +318,32 @@ export async function resetStudentPassword(_: ResetPasswordState, formData: Form
 
 // ---------- Mualliflar ----------
 
+// Muallifga kurslarni biriktiradi: belgilanganlar shu muallifga o'tadi (boshqa muallifdagi bo'lsa ham),
+// oldin shu muallifda bo'lib belgisi olib tashlanganlar muallifsiz bo'ladi.
+async function assignAuthorCourses(authorId: string, courseIds: string[]) {
+  await prisma.$transaction([
+    prisma.course.updateMany({ where: { authorId, id: { notIn: courseIds } }, data: { authorId: null } }),
+    prisma.course.updateMany({ where: { id: { in: courseIds } }, data: { authorId } }),
+  ]);
+}
+
 export async function createAuthor(formData: FormData) {
   await requireAdmin();
   const name = str(formData, "name");
-  if (name) await prisma.author.create({ data: { name } });
-  revalidatePath("/admin", "layout");
+  if (name) {
+    const author = await prisma.author.create({ data: { name } });
+    const courseIds = formData.getAll("courseId").map(String);
+    if (courseIds.length) await assignAuthorCourses(author.id, courseIds);
+  }
+  revalidatePath("/", "layout");
+}
+
+export async function setAuthorCourses(formData: FormData) {
+  await requireAdmin();
+  const id = str(formData, "id");
+  if (!(await prisma.author.findUnique({ where: { id } }))) return;
+  await assignAuthorCourses(id, formData.getAll("courseId").map(String));
+  revalidatePath("/", "layout");
 }
 
 export async function updateAuthor(formData: FormData) {
