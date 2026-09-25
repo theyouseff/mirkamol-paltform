@@ -28,7 +28,7 @@ async function main() {
       description:
         "Kurs davomida profilni to'g'ri qadoqlash, kontent-reja tuzish va obunachilarni mijozga aylantirishni o'rganasiz.",
       published: true,
-      coverUrl: "/courses/lor.webp",
+      coverUrl: "/courses/bolajak-lorlar.webp",
       price: 490000,
       modules: {
         create: DEMO_MODULES.map((m, mi) => ({
