@@ -1,7 +1,11 @@
 import { AwsClient } from "aws4fetch";
 
-// Darsning o'z videosi (Kinescope emas): "file:nom.mp4" — shu serverdagi /videos papka; "r2:kurs/nom.mp4" — Cloudflare R2 dagi yopiq fayl.
-export const isOwnVideo = (url: string) => url.startsWith("file:") || url.startsWith("r2:");
+// Havola to'g'ridan-to'g'ri video faylga (.mp4 ...) olib boradimi (masalan R2 ning ochiq manzili)
+const isDirectFile = (url: string) => /^https:\/\/[^\s]+\.(mp4|m4v|webm|mov)(\?[^\s]*)?$/i.test(url);
+
+// Darsning o'z videosi (Kinescope/YouTube emas): "file:nom.mp4" — shu serverdagi /videos papka; "r2:kurs/nom.mp4" — R2 dagi yopiq fayl
+// (imzolangan havola bilan); "https://.../nom.mp4" — to'g'ridan-to'g'ri fayl havolasi (masalan R2 ochiq manzili).
+export const isOwnVideo = (url: string) => url.startsWith("file:") || url.startsWith("r2:") || isDirectFile(url);
 
 const SIGNED_FOR = 6 * 3600; // yopiq havola 6 soat yaroqli: bitta dars uchun yetarli, keyin eskiradi
 
@@ -17,6 +21,7 @@ const validKey = (key: string) => /^[\w\-./]+$/.test(key) && !key.includes("..")
 // Chaqirishdan oldin foydalanuvchining kursga kirishi allaqachon tekshirilgan bo'lishi kerak.
 export async function ownVideoSrc(lesson: { id: string; videoUrl: string }): Promise<string | null> {
   if (lesson.videoUrl.startsWith("file:")) return `/api/video/${lesson.id}`;
+  if (isDirectFile(lesson.videoUrl)) return lesson.videoUrl;
   if (!lesson.videoUrl.startsWith("r2:")) return null;
   const env = r2Env();
   const key = lesson.videoUrl.slice(3).trim();
