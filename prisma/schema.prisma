@@ -22,6 +22,7 @@ model User {
   watches     LessonWatch[]
   loginDays   LoginDay[]
   curatorCourses CuratorCourse[]
+  dayNotes    DayNote[]
   resets      PasswordReset[]
 }
 
@@ -153,6 +154,19 @@ model CuratorCourse {
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@id([curatorId, courseId])
+}
+
+// Kurator o'quvchining kelmagan kuniga qo'ygan holat va sabab. status: SEEN (dars ko'rdi) | NOT_SEEN (dars ko'rmadi) | EXCUSED (sababli).
+model DayNote {
+  userId     String
+  day        String // Toshkent vaqti bo'yicha "2026-09-24"
+  status     String
+  reason     String   @default("")
+  authorName String   @default("")
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, day])
 }
 
 // Kirish va parol tiklash urinishlari (brute-force'dan himoya). key: "login:ip:email", "login:ip:1.2.3.4", "reset:email:a@b.c" ...

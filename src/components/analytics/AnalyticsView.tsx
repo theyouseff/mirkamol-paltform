@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { addDays, dayRange, formatClock, tashkentDay, timeAgo } from "@/lib/format";
 import { ProgressBar } from "@/components/ProgressBar";
 import { VisitCalendar } from "@/components/VisitCalendar";
+import type { DayNote } from "@/lib/day-status";
 import { missedFrom } from "@/lib/activity";
 import { StudentLink, SwitchProvider, TopPanel } from "@/components/admin/StudentSwitch";
 
@@ -16,7 +17,7 @@ const duration = (seconds: number) => {
 };
 
 // O'quvchilar analitikasi (faqat ko'rish). Admin ham, kurator ham shuni ishlatadi; basePath — sahifaning manzili.
-export async function AnalyticsView({ basePath, q = "", student = "", courseIds, subtitle }: { basePath: string; q?: string; student?: string; courseIds?: string[]; subtitle?: string }) {
+export async function AnalyticsView({ basePath, q = "", student = "", courseIds, subtitle, canAnnotate = false }: { basePath: string; q?: string; student?: string; courseIds?: string[]; subtitle?: string; canAnnotate?: boolean }) {
   const weekAgo = Date.now() - 7 * 24 * 3600_000;
 
   const [users, lessons, watches, progress] = await Promise.all([
@@ -68,6 +69,10 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
   const today = tashkentDay();
   const windowStart = addDays(today, -7);
   const yesterday = addDays(today, -1);
+  // Kurator izohlari: haftalik ro'yxatda "sababli/ko'rdi" kunlar hisobga olinmaydi
+  const weekNotes = selected ? [] : await prisma.dayNote.findMany({ where: { day: { gte: windowStart } }, select: { userId: true, day: true, status: true } });
+  const coveredBy = new Map<string, Set<string>>();
+  for (const n of weekNotes) if (n.status === "SEEN" || n.status === "EXCUSED") coveredBy.set(n.userId, (coveredBy.get(n.userId) ?? new Set()).add(n.day));
   const weekLogins = selected ? [] : await prisma.loginDay.findMany({ where: { day: { gte: windowStart } }, select: { userId: true, day: true } });
   const visitedBy = new Map<string, Set<string>>();
   for (const l of weekLogins) visitedBy.set(l.userId, (visitedBy.get(l.userId) ?? new Set()).add(l.day));
@@ -78,13 +83,16 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
       const lastWatchDay = r.last ? tashkentDay(r.last.updatedAt) : "";
       const strip = dayRange(windowStart, yesterday).map((d) => ({
         d,
-        state: d < from ? "n/a" : visitedBy.get(r.u.id)?.has(d) ? "in" : d <= lastWatchDay ? "cleared" : "out",
+        state: d < from ? "n/a" : visitedBy.get(r.u.id)?.has(d) ? "in" : coveredBy.get(r.u.id)?.has(d) ? "cleared" : d <= lastWatchDay ? "cleared" : "out",
       }));
       return { r, strip, missed: strip.filter((s) => s.state === "out").length };
     })
     .filter((x) => x.missed > 0)
     .sort((a, b) => b.missed - a.missed || (a.r.last?.updatedAt.getTime() ?? 0) - (b.r.last?.updatedAt.getTime() ?? 0));
 
+  const dayNotes: DayNote[] = selected
+    ? (await prisma.dayNote.findMany({ where: { userId: selected.u.id } })).map((n) => ({ day: n.day, status: n.status as DayNote["status"], reason: n.reason, author: n.authorName }))
+    : [];
   const loginDays = selected ? (await prisma.loginDay.findMany({ where: { userId: selected.u.id }, select: { day: true } })).map((d) => d.day) : [];
 
   const href = (patch: { student?: string; q?: string }) => {
@@ -163,7 +171,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
             )}
           </div>
           <div className="enter" style={step(1)}>
-            <VisitCalendar days={loginDays} today={today} from={missedFrom(selected.u.createdAt)} subject="student" />
+            <VisitCalendar days={loginDays} today={today} from={missedFrom(selected.u.createdAt)} subject="student" annotate={canAnnotate ? { studentId: selected.u.id, notes: dayNotes } : undefined} />
           </div>
         </div>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -203,7 +211,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
         <section className="card enter space-y-4" style={step(5)}>
           <div>
             <h2 className="font-semibold">Oxirgi 7 kunda eng ko&apos;p dars qoldirganlar</h2>
-            <p className="text-sm text-zinc-500">Platformaga kirmagan kunlari soni bo&apos;yicha (kechagacha). O&apos;quvchi qaytib video ko&apos;rsa, ro&apos;yxatdan chiqib ketadi. Doiralar: <span className="text-amber-500">●</span> kirgan, <span className="text-red-500">●</span> kirmagan, <span className="text-zinc-300">●</span> hisobga olinmaydi.</p>
+            <p className="text-sm text-zinc-500">Platformaga kirmagan kunlari soni bo&apos;yicha (kechagacha). O&apos;quvchi qaytib video ko&apos;rsa, ro&apos;yxatdan chiqib ketadi. Doiralar: <span className="text-amber-500">●</span> kirgan, <span className="text-red-500">●</span> kirmagan, <span className="text-zinc-300">●</span> hisobga olinmaydi (qaytib video ko&apos;rgan yoki kurator «sababli» / «dars ko&apos;rdi» deb belgilagan).</p>
           </div>
           {skippers.length > 0 ? (
             <ul className="divide-y divide-zinc-100">

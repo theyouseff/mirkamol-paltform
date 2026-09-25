@@ -6,7 +6,7 @@ export default async function CuratorPage({ searchParams }: { searchParams: Prom
   const { q, student } = await searchParams;
   const user = await requireCurator();
   // Kurator faqat o'ziga biriktirilgan kurslardagi o'quvchilarni ko'radi (admin — hammasini)
-  if (user.role === "ADMIN") return <AnalyticsView basePath="/curator" q={q} student={student} />;
+  if (user.role === "ADMIN") return <AnalyticsView basePath="/curator" q={q} student={student} canAnnotate />;
 
   const assigned = await prisma.curatorCourse.findMany({ where: { curatorId: user.id }, include: { course: { select: { title: true } } } });
   if (assigned.length === 0) {
@@ -22,6 +22,7 @@ export default async function CuratorPage({ searchParams }: { searchParams: Prom
       basePath="/curator"
       q={q}
       student={student}
+      canAnnotate
       courseIds={assigned.map((a) => a.courseId)}
       subtitle={`Sizning kurslaringiz: ${assigned.map((a) => a.course.title).join(", ")}`}
     />
