@@ -45,3 +45,7 @@ next-env.d.ts
 
 # rasmlarning asl nusxalari (saytga public/ dagi tayyor variantlar chiqadi)
 /photo/
+
+# private videos (o'z serverida stream qilinadi; GitHub/Vercel ga chiqmaydi)
+/videos/*
+!/videos/README.txt

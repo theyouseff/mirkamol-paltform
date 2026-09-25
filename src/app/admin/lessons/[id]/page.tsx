@@ -5,6 +5,7 @@ import { deleteLesson, updateLesson } from "@/lib/actions/admin";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { VideoPlayer } from "@/components/VideoPlayer";
+import { FileVideo } from "@/components/FileVideo";
 
 // datetime-local input uchun Toshkent vaqti (UTC+5)
 const toTashkentInput = (d: Date | null) => (d ? new Date(d.getTime() + 5 * 3600_000).toISOString().slice(0, 16) : "");
@@ -43,10 +44,10 @@ export default async function AdminLessonPage({ params }: { params: Promise<{ id
         </div>
         <div>
           <label className="label">Video havolasi</label>
-          <input name="videoUrl" className="input" defaultValue={lesson.videoUrl} placeholder="YouTube, Kinescope yoki Bunny havola" />
+          <input name="videoUrl" className="input" defaultValue={lesson.videoUrl} placeholder="YouTube, Kinescope, Bunny havola yoki file:nom.mp4 (videos papkasidagi fayl)" />
           <p className="mt-1 text-xs text-zinc-400">Himoyalangan video uchun Kinescope yoki Bunny Stream tavsiya qilinadi.</p>
         </div>
-        {lesson.videoUrl && <VideoPlayer url={lesson.videoUrl} />}
+        {lesson.videoUrl.startsWith("file:") ? <FileVideo lessonId={lesson.id} trackProgress={false} /> : lesson.videoUrl && <VideoPlayer url={lesson.videoUrl} />}
         <div>
           <label className="label">Matn / konspekt</label>
           <textarea name="content" rows={10} className="input" defaultValue={lesson.content} />

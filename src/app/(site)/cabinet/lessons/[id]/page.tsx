@@ -7,6 +7,7 @@ import { lessonHint } from "@/lib/access";
 import { toggleLessonComplete } from "@/lib/actions/student";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { LessonVideo } from "@/components/LessonVideo";
+import { FileVideo } from "@/components/FileVideo";
 import { kinescopeId, toEmbedUrl } from "@/lib/format";
 import { LessonContent } from "@/components/LessonContent";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -50,7 +51,9 @@ export default async function LessonPage({ params, searchParams }: { params: Pro
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="min-w-0 space-y-6">
-          {lesson.videoUrl && (kinescopeId(lesson.videoUrl) ? (
+          {lesson.videoUrl.startsWith("file:") ? (
+            <FileVideo lessonId={lesson.id} startAt={startAt} autoPlay={play === "1"} trackProgress={user.role !== "ADMIN"} />
+          ) : lesson.videoUrl && (kinescopeId(lesson.videoUrl) ? (
             <LessonVideo videoId={kinescopeId(lesson.videoUrl)!} lessonId={lesson.id} embedUrl={toEmbedUrl(lesson.videoUrl) ?? lesson.videoUrl} startAt={startAt} autoPlay={play === "1"} />
           ) : (
             <VideoPlayer url={lesson.videoUrl} />
