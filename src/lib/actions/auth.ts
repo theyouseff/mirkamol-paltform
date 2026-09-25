@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { createSession, destroySession } from "@/lib/auth";
+import { createSession } from "@/lib/auth";
 import { normalizeEmail } from "@/lib/format";
 import { clearAttempts, clientIp, isLimited, recordAttempt } from "@/lib/rate-limit";
 import { mailConfigured, sendResetCode } from "@/lib/mail";
@@ -51,11 +51,6 @@ export async function login(_: AuthState, formData: FormData): Promise<AuthState
   await clearAttempts([keys[0]]);
   await createSession(user);
   redirect(safeNext(formData.get("next"), user.role) ?? homeFor(user.role));
-}
-
-export async function logout() {
-  await destroySession();
-  redirect("/");
 }
 
 // ---------- Parolni o'zi tiklash ----------

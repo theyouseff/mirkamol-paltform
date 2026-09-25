@@ -20,10 +20,6 @@ export async function createSession(user: { id: string; role: string; passwordHa
   });
 }
 
-export async function destroySession() {
-  (await cookies()).delete(SESSION_COOKIE);
-}
-
 export async function getSession() {
   return verifySession((await cookies()).get(SESSION_COOKIE)?.value);
 }

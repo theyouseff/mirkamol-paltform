@@ -1,14 +1,22 @@
 "use client";
+import { useState } from "react";
 import { createPortal } from "react-dom";
-import { useFormStatus } from "react-dom";
-import { logout } from "@/lib/actions/auth";
 
-// "Chiqish": bosilgan zahoti tugma o'zgaradi va butun sahifa ustida "Chiqilmoqda…" chiqadi — server javobini kutib o'tirmaymiz.
-function Button({ className }: { className: string }) {
-  const { pending } = useFormStatus();
+// "Chiqish": bosilgan zahoti tugma o'chadi, sahifa ustida "Chiqilmoqda…" chiqadi va brauzer to'g'ridan-to'g'ri
+// /api/session/logout ga o'tadi (cookie o'chiriladi, bosh sahifaga yo'naltiriladi) — server action va sahifa yangilanishini kutmaymiz.
+export function LogoutButton({ className = "btn", formClassName }: { className?: string; formClassName?: string }) {
+  const [pending, setPending] = useState(false);
   return (
-    <>
-      <button type="submit" disabled={pending} className={`${className} ${pending ? "opacity-60" : ""}`}>
+    <div className={formClassName}>
+      <button
+        type="button"
+        disabled={pending}
+        className={`${className} ${pending ? "opacity-60" : ""}`}
+        onClick={() => {
+          setPending(true);
+          window.location.assign("/api/session/logout");
+        }}
+      >
         Chiqish
       </button>
       {pending &&
@@ -21,14 +29,6 @@ function Button({ className }: { className: string }) {
           </div>,
           document.body,
         )}
-    </>
-  );
-}
-
-export function LogoutButton({ className = "btn", formClassName }: { className?: string; formClassName?: string }) {
-  return (
-    <form action={logout} className={formClassName}>
-      <Button className={className} />
-    </form>
+    </div>
   );
 }
