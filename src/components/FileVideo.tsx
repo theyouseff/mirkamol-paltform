@@ -20,15 +20,15 @@ const saveSeconds = (lessonId: string, seconds: Set<number>) => {
   } catch {}
 };
 
-// O'z serveridagi yopiq video (/api/video/[dars]). trackProgress=false — admin ko'rishi (analitikaga yozilmaydi).
-export function FileVideo({ lessonId, startAt = 0, autoPlay = false, trackProgress = true }: { lessonId: string; startAt?: number; autoPlay?: boolean; trackProgress?: boolean }) {
+// O'z videosi: shu serverdagi yopiq fayl (/api/video/[dars]) yoki R2 dan vaqtinchalik imzolangan havola. src bo'sh — video topilmadi. trackProgress=false — admin ko'rishi (analitikaga yozilmaydi).
+export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackProgress = true }: { lessonId: string; src: string | null; startAt?: number; autoPlay?: boolean; trackProgress?: boolean }) {
   const video = useRef<HTMLVideoElement>(null);
   const [counted, setCounted] = useState(false);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     const el = video.current;
-    if (!el) return;
+    if (!el || !src) return;
     const seconds = readSeconds(lessonId);
     const track = { pos: 0, duration: 0, sentAt: 0, dirty: false };
     let last: number | null = null;
@@ -92,13 +92,13 @@ export function FileVideo({ lessonId, startAt = 0, autoPlay = false, trackProgre
       saveSeconds(lessonId, seconds);
       flush();
     };
-  }, [lessonId, startAt, autoPlay, trackProgress]);
+  }, [lessonId, src, startAt, autoPlay, trackProgress]);
 
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
       <video
         ref={video}
-        src={`/api/video/${lessonId}`}
+        src={src ?? undefined}
         className="h-full w-full"
         controls
         playsInline
@@ -107,7 +107,7 @@ export function FileVideo({ lessonId, startAt = 0, autoPlay = false, trackProgre
         onContextMenu={(e) => e.preventDefault()}
         onError={() => setError(true)}
       />
-      {error && <p className="absolute inset-0 flex items-center justify-center bg-black/80 p-6 text-center text-sm text-white/80">Videoni yuklab bo&apos;lmadi. Sahifani yangilang yoki adminga yozing.</p>}
+      {(error || !src) && <p className="absolute inset-0 flex items-center justify-center bg-black/80 p-6 text-center text-sm text-white/80">Videoni yuklab bo&apos;lmadi. Sahifani yangilang yoki adminga yozing.</p>}
       {counted && <span className="absolute right-3 top-3 rounded-lg bg-gold px-3 py-1 text-sm font-semibold text-ink-950 shadow-lg">✓ Dars ko&apos;rildi</span>}
     </div>
   );

@@ -5,6 +5,7 @@ import { formatClock, tashkentDay, toEmbedUrl } from "@/lib/format";
 import { ProgressBar } from "@/components/ProgressBar";
 import { missedFrom } from "@/lib/activity";
 import { VisitCalendar } from "@/components/VisitCalendar";
+import { isOwnVideo } from "@/lib/video-source";
 
 // "Ali Valiyev" -> "AV"
 const initials = (name: string) =>
@@ -60,9 +61,13 @@ export default async function CabinetPage() {
         {/* Kabinetda video ijro etilmaydi: faqat oldindan ko'rinish, bosilsa dars sahifasi (to'xtagan joydan) ochiladi */}
         {last.lesson.videoUrl && (
           <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
-            <div inert className="h-full w-full">
-              <iframe src={toEmbedUrl(last.lesson.videoUrl) ?? last.lesson.videoUrl} className="h-full w-full" tabIndex={-1} aria-hidden />
-            </div>
+            {isOwnVideo(last.lesson.videoUrl) ? (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-ink-900 to-ink-950 text-5xl text-gold-text/80" aria-hidden>▶</div>
+            ) : (
+              <div inert className="h-full w-full">
+                <iframe src={toEmbedUrl(last.lesson.videoUrl) ?? last.lesson.videoUrl} className="h-full w-full" tabIndex={-1} aria-hidden />
+              </div>
+            )}
             <Link href={resumeHref} className="absolute inset-0" aria-label="Darsni davom ettirish" />
           </div>
         )}
