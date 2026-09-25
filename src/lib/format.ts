@@ -45,6 +45,17 @@ export function formatClock(totalSeconds: number) {
   return h ? `${h}:${String(m).padStart(2, "0")}:${sec}` : `${m}:${sec}`;
 }
 
+// Darslarning "41:17" / "1:02:05" ko'rinishidagi vaqtlari yig'indisi (modul umumiy vaqti). Vaqti yozilmagan dars hisobga olinmaydi; hech biri yo'q bo'lsa — "".
+export function totalDuration(durations: string[]) {
+  let total = 0;
+  for (const d of durations) {
+    const parts = d.split(":").map(Number);
+    if (parts.length < 2 || parts.length > 3 || parts.some((n) => !Number.isFinite(n))) continue;
+    total += parts.reduce((acc, n) => acc * 60 + n, 0);
+  }
+  return total ? formatClock(total) : "";
+}
+
 // "5 daqiqa oldin", "2 soat oldin", "3 kun oldin"; bir haftadan eski bo'lsa — sana
 export function timeAgo(date: Date) {
   const min = Math.floor((Date.now() - date.getTime()) / 60_000);

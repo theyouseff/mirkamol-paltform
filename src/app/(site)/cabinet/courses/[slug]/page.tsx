@@ -8,6 +8,7 @@ import { ModuleGrid } from "@/components/ModuleGrid";
 import { ProgressBar } from "@/components/ProgressBar";
 import { BrandScope } from "@/components/BrandScope";
 import { CourseBrand } from "@/components/CourseBrand";
+import { totalDuration } from "@/lib/format";
 
 export default async function StudentCoursePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -39,6 +40,7 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
       title: m.title,
       description: m.description,
       lessonCount: m.lessons.length,
+      totalTime: totalDuration(m.lessons.map((l) => l.duration)),
       available: open.length,
       doneCount: open.filter((l) => done.has(l.id)).length,
     };

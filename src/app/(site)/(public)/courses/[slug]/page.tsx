@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth";
 import { adminContactUrl } from "@/lib/config";
 import { BrandScope } from "@/components/BrandScope";
 import { CourseBrand } from "@/components/CourseBrand";
+import { totalDuration } from "@/lib/format";
 
 // Sotuv sahifasi: hamma ko'radi, lekin faqat dastur (modul va dars nomlari). Video va matn — faqat kabinetda.
 export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -50,7 +51,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
         <div className="mt-5 grid gap-5 lg:grid-cols-2">
           {course.modules.map((m, i) => (
             <section key={m.id} className="glass p-5">
-              <p className="text-xs font-medium uppercase tracking-wider text-gold-text/60">{i + 1}-modul</p>
+              <p className="text-xs font-medium uppercase tracking-wider text-gold-text/60">{i + 1}-modul{totalDuration(m.lessons.map((l) => l.duration)) && ` · ${totalDuration(m.lessons.map((l) => l.duration))}`}</p>
               <h3 className="mt-1 text-lg font-bold">{m.title}</h3>
               {m.description && <p className="mt-1 text-sm text-gold-text/75">{m.description}</p>}
               <ul className="mt-4 space-y-2">

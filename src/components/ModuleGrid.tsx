@@ -4,7 +4,7 @@ import { ProgressBar } from "./ProgressBar";
 
 const step = (i: number) => ({ "--i": i }) as CSSProperties;
 
-export type ModuleCard = { id: string; title: string; description: string; lessonCount: number; doneCount: number; available: number };
+export type ModuleCard = { id: string; title: string; description: string; lessonCount: number; doneCount: number; available: number; totalTime?: string };
 
 // Kurs ichidagi modul bloklari; bosilganda modul ichidagi video darslar ochiladi.
 export function ModuleGrid({ modules }: { modules: ModuleCard[] }) {
@@ -26,7 +26,7 @@ export function ModuleGrid({ modules }: { modules: ModuleCard[] }) {
             {m.description && <p className="mt-2 text-sm leading-relaxed text-gold-text/80">{m.description}</p>}
             <div className="mt-4 space-y-2">
               <ProgressBar dark value={m.available ? (m.doneCount / m.available) * 100 : 0} />
-              <p className="text-sm font-medium text-gold-text">{m.doneCount} / {m.available} dars · {m.lessonCount} ta video →</p>
+              <p className="text-sm font-medium text-gold-text">{m.doneCount} / {m.available} dars · {m.lessonCount} ta video{m.totalTime && ` · ${m.totalTime}`} →</p>
             </div>
           </div>
         </Link>

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { loadCourseForStudent } from "@/lib/course";
 import { lessonHint } from "@/lib/access";
+import { totalDuration } from "@/lib/format";
 import { VideoLessonGrid } from "@/components/VideoLessonGrid";
 import { BrandScope } from "@/components/BrandScope";
 
@@ -18,6 +19,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
   const index = modules.findIndex((m) => m.id === id);
   const mod = modules[index];
 
+  const totalTime = totalDuration(mod.lessons.map((l) => l.duration));
   const lessons = mod.lessons.map((l) => ({
     id: l.id,
     title: l.title,
@@ -34,7 +36,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
         <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">{index + 1}-modul</p>
         <h1 className="mt-1 text-3xl font-bold sm:text-4xl">{mod.title}</h1>
         {mod.description && <p className="mt-3 text-lg text-gold-text/85">{mod.description}</p>}
-        <p className="mt-6 text-sm font-medium uppercase tracking-widest text-gold-text/70">{mod.lessons.length} ta video dars</p>
+        <p className="mt-6 text-sm font-medium uppercase tracking-widest text-gold-text/70">{mod.lessons.length} ta video dars{totalTime && ` · jami ${totalTime}`}</p>
       </div>
       <div className="mt-5">
         <VideoLessonGrid lessons={lessons} />
