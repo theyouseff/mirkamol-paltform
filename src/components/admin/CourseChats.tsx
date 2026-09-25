@@ -26,7 +26,7 @@ export function CourseChats({ courses }: { courses: CourseChatData[] }) {
     <section className="space-y-4">
       <div>
         <h2 className="text-xl font-semibold text-gold-text">Kurslar va chatlar</h2>
-        <p className="text-sm text-gold-text/70">Kursni bosing → kurator → o&apos;quvchi: suhbatda nima yozilgani ko&apos;rinadi.</p>
+        <p className="text-sm text-gold-text/70">Kursni bosing → kurator → o&apos;quvchi: shu kurator bilan o&apos;quvchining suhbati ko&apos;rinadi (har bir kuratorniki alohida).</p>
       </div>
 
       <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
