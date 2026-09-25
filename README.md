@@ -33,6 +33,9 @@ Admin: **O'quvchilar → Kurator qo'shish** — email va ism. Yangi kuratorga ak
 ## Chat
 Har bir **(o'quvchi, kurator)** juftligining alohida suhbati bor: kuratorlar bir-birining yozishmasini ko'rmaydi, o'quvchi esa har bir kurator bilan alohida yozishadi (bir nechta kurator bo'lsa, chatda ularning ismlari tugma bo'lib chiqadi). Kurator panelida **Chat** (chapda o'z o'quvchilari, tanlansa suhbat), o'quvchida menyudagi **Chat**. Yangi xabarlar har 4 soniyada o'zi yangilanadi; kurator menyusidagi **Chat** yonida shu kuratorga nechta o'quvchi yozgani (o'qilmagan) qizil belgida chiqadi. Admin **Analitika** sahifasining pastida **Kurslar va chatlar**: kursni bossa kuratorlari, kuratorni bossa uning o'quvchilari, o'quvchini bossa shu kurator bilan suhbati chiqadi (faqat ko'rish; admin ochgani xabarni "o'qildi" qilib qo'ymaydi).
 
+## Postlar
+Menyuda **Kabinet**dan keyin **Postlar**: kurator o'z kursi uchun e'lon/yangilik yozadi, o'quvchi faqat o'qiydi (yoza olmaydi). Har bir post **faqat o'z kursida** ko'rinadi: masalan, LOR kuratorining posti marketing kursi o'quvchisiga chiqmaydi. Kurator postni `/curator/posts` sahifasida yozadi (faqat o'ziga biriktirilgan kurslarga) va faqat o'zinikini o'chira oladi. O'quvchi bir nechta kursga yozilgan bo'lsa, postlarni kurs bo'yicha saralaydi.
+
 ## Ish tartibi
 1. Mijoz Telegramda kelishadi va kartaga to'laydi (skrinshot yuboradi).
 2. Admin: **O'quvchilar → O'quvchi qo'shish** — email, kurs, summa. Yangi o'quvchiga akkaunt ochiladi va emailga bir martalik kod yuboriladi; u saytda `/activate` sahifasida email + kodni kiritib, parolni o'zi qo'yadi. Xat ketmasa, kod panelda ko'rinadi (Telegramda yuborasiz).

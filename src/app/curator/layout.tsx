@@ -19,6 +19,7 @@ export default async function CuratorLayout({ children }: { children: React.Reac
           <nav className="flex items-center gap-1 text-sm">
             <Link href="/curator" className="btn text-gold-text/85 hover:text-gold-text">Analitika</Link>
             <ChatNavLink initial={unread} />
+            <Link href="/curator/posts" className="btn text-gold-text/85 hover:text-gold-text">Postlar</Link>
             <Link href="/curator/settings" className="btn text-gold-text/85 hover:text-gold-text">Parol</Link>
             <span className="hidden px-2 text-gold-text/60 sm:inline">{user.name}</span>
             <LogoutButton className="btn-outline px-3 py-1.5" />
