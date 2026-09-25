@@ -254,8 +254,27 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
 
 export type AddCuratorState = {
   error?: string;
-  result?: { name: string; email: string; promoted: boolean; activationCode: string | null; mail: MailStatus; mailReason?: string };
+  result?: { name: string; email: string; promoted: boolean; courses: number; activationCode: string | null; mail: MailStatus; mailReason?: string };
 };
+
+// Kuratorga kurslarni biriktiradi (eskilari almashadi): kurator shu kurslardagi hamma o'quvchini ko'radi.
+async function assignCourses(curatorId: string, courseIds: string[]) {
+  const valid = courseIds.length ? await prisma.course.findMany({ where: { id: { in: courseIds } }, select: { id: true } }) : [];
+  await prisma.$transaction([
+    prisma.curatorCourse.deleteMany({ where: { curatorId } }),
+    prisma.curatorCourse.createMany({ data: valid.map((c) => ({ curatorId, courseId: c.id })) }),
+  ]);
+  return valid.length;
+}
+
+export async function setCuratorCourses(formData: FormData) {
+  await requireAdmin();
+  const id = str(formData, "id");
+  const curator = await prisma.user.findUnique({ where: { id } });
+  if (!curator || curator.role !== "CURATOR") return;
+  await assignCourses(id, formData.getAll("courseId").map(String));
+  revalidatePath("/admin", "layout");
+}
 
 // Kurator qo'shadi: yangi email bo'lsa akkaunt ochiladi va emailiga bir martalik kod ketadi; mavjud foydalanuvchi bo'lsa roli kurator qilinadi.
 export async function addCurator(_: AddCuratorState, formData: FormData): Promise<AddCuratorState> {
@@ -268,18 +287,20 @@ export async function addCurator(_: AddCuratorState, formData: FormData): Promis
     if (existing.role === "ADMIN") return { error: "Bu akkaunt admin, uni kurator qilib bo'lmaydi." };
     if (existing.role === "CURATOR") return { error: `${existing.name} allaqachon kurator.` };
     await prisma.user.update({ where: { id: existing.id }, data: { role: "CURATOR" } });
+    const courses = await assignCourses(existing.id, formData.getAll("courseId").map(String));
     revalidatePath("/admin", "layout");
-    return { result: { name: existing.name, email, promoted: true, activationCode: null, mail: "skipped" } };
+    return { result: { name: existing.name, email, promoted: true, courses, activationCode: null, mail: "skipped" } };
   }
 
   const name = str(formData, "name");
   if (name.length < 2) return { error: "Kurator ismini yozing" };
   const user = await prisma.user.create({ data: { name, email, role: "CURATOR", passwordHash: await bcrypt.hash(generatePassword(24), 10) } });
+  const courses = await assignCourses(user.id, formData.getAll("courseId").map(String));
   const code = await createResetCode(user.id, INVITE_TTL_MS);
   const mail = formData.get("sendMail") === "on" ? await sendCuratorInvite(email, name, code) : null;
   const status = mailStatus(mail);
   revalidatePath("/admin", "layout");
-  return { result: { name, email, promoted: false, activationCode: status.mail === "sent" ? null : code, ...status } };
+  return { result: { name, email, promoted: false, courses, activationCode: status.mail === "sent" ? null : code, ...status } };
 }
 
 export type ResetPasswordState = { error?: string; password?: string; mail?: MailStatus; mailReason?: string };

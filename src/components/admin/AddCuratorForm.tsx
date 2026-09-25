@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { addCurator, type AddCuratorState } from "@/lib/actions/admin";
 import { SubmitButton } from "../SubmitButton";
 
-export function AddCuratorForm() {
+export function AddCuratorForm({ courses }: { courses: { id: string; title: string }[] }) {
   const [state, action] = useActionState<AddCuratorState, FormData>(addCurator, {});
   const r = state.result;
   return (
@@ -26,6 +26,18 @@ export function AddCuratorForm() {
             <input name="name" className="input" placeholder="Masalan, Dilnoza Aliyeva" />
           </div>
         </div>
+        <fieldset>
+          <legend className="label">Biriktiriladigan kurslar</legend>
+          <p className="mb-2 text-xs text-zinc-400">Kurator shu kurslardagi <b>hamma o&apos;quvchini</b> ko&apos;radi (kursga keyin yozilganlarni ham). Keyinroq «Kuratorlar» ro&apos;yxatidan o&apos;zgartirish mumkin.</p>
+          <div className="flex flex-wrap gap-2">
+            {courses.map((c) => (
+              <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-200 px-3 py-2 text-sm has-[:checked]:border-brand has-[:checked]:bg-brand-soft">
+                <input type="checkbox" name="courseId" value={c.id} /> {c.title}
+              </label>
+            ))}
+            {courses.length === 0 && <span className="text-sm text-zinc-400">Kurslar yo&apos;q</span>}
+          </div>
+        </fieldset>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="sendMail" defaultChecked /> Emailga bir martalik kod yuborilsin
         </label>
@@ -38,6 +50,7 @@ export function AddCuratorForm() {
         <div className="space-y-2 rounded-xl border border-green-200 bg-green-50 p-4 text-sm">
           <p className="font-medium text-green-800">
             {r.promoted ? `${r.name} endi kurator. Qayta kirgach kurator paneli ochiladi.` : `Kurator akkaunti ochildi: ${r.name} (${r.email})`}
+            {" "}· biriktirilgan kurslar: {r.courses}
           </p>
           {!r.promoted && (
             <p className={r.mail === "failed" ? "text-amber-700" : "text-zinc-600"}>

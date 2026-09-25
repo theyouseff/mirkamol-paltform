@@ -21,6 +21,7 @@ model User {
   progress    LessonProgress[]
   watches     LessonWatch[]
   loginDays   LoginDay[]
+  curatorCourses CuratorCourse[]
   resets      PasswordReset[]
 }
 
@@ -53,6 +54,7 @@ model Course {
   modules     Module[]
   enrollments Enrollment[]
   orders      Order[]
+  curators    CuratorCourse[]
 }
 
 model Module {
@@ -140,6 +142,17 @@ model LoginDay {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, day])
+}
+
+// Kuratorga biriktirilgan kurslar: kurator shu kurslardagi barcha o'quvchilarni ko'radi (kursga keyin yozilganlar ham avtomatik).
+model CuratorCourse {
+  curatorId String
+  courseId  String
+  createdAt DateTime @default(now())
+  curator   User     @relation(fields: [curatorId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([curatorId, courseId])
 }
 
 // Kirish va parol tiklash urinishlari (brute-force'dan himoya). key: "login:ip:email", "login:ip:1.2.3.4", "reset:email:a@b.c" ...

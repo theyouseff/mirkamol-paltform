@@ -16,16 +16,17 @@ const duration = (seconds: number) => {
 };
 
 // O'quvchilar analitikasi (faqat ko'rish). Admin ham, kurator ham shuni ishlatadi; basePath — sahifaning manzili.
-export async function AnalyticsView({ basePath, q = "", student = "" }: { basePath: string; q?: string; student?: string }) {
+export async function AnalyticsView({ basePath, q = "", student = "", courseIds, subtitle }: { basePath: string; q?: string; student?: string; courseIds?: string[]; subtitle?: string }) {
   const weekAgo = Date.now() - 7 * 24 * 3600_000;
 
   const [users, lessons, watches, progress] = await Promise.all([
-    prisma.user.findMany({ where: { role: "STUDENT", enrollments: { some: {} } }, include: { enrollments: { select: { courseId: true } } } }),
+    prisma.user.findMany({ where: { role: "STUDENT", enrollments: { some: courseIds ? { courseId: { in: courseIds } } : {} } }, include: { enrollments: { select: { courseId: true } } } }),
     prisma.lesson.findMany({
+      where: courseIds ? { module: { courseId: { in: courseIds } } } : {},
       select: { id: true, title: true, order: true, videoUrl: true, moduleId: true, module: { select: { title: true, order: true, courseId: true } } },
       orderBy: [{ module: { order: "asc" } }, { order: "asc" }],
     }),
-    prisma.lessonWatch.findMany(),
+    prisma.lessonWatch.findMany({ where: courseIds ? { lesson: { module: { courseId: { in: courseIds } } } } : {} }),
     prisma.lessonProgress.findMany({ select: { userId: true, lessonId: true } }),
   ]);
 
@@ -112,7 +113,7 @@ export async function AnalyticsView({ basePath, q = "", student = "" }: { basePa
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold">Analitika</h1>
-          <p className="mt-1 text-sm text-gold-text/70">{selected ? `${selected.u.name} · ${selected.u.email}` : "Barcha o'quvchilar bo'yicha umumiy ma'lumot"}</p>
+          <p className="mt-1 text-sm text-gold-text/70">{selected ? `${selected.u.name} · ${selected.u.email}` : subtitle ?? "Barcha o'quvchilar bo'yicha umumiy ma'lumot"}</p>
         </div>
         {selected && <StudentLink href={href({ student: "" })} className="btn-outline">← Umumiy ko&apos;rinish</StudentLink>}
       </div>

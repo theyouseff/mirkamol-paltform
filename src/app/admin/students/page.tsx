@@ -6,6 +6,7 @@ import { setUserRole } from "@/lib/actions/admin";
 import { formatDate } from "@/lib/format";
 import { AddStudentForm } from "@/components/admin/AddStudentForm";
 import { AddCuratorForm } from "@/components/admin/AddCuratorForm";
+import { CuratorList } from "@/components/admin/CuratorList";
 import { ResetPasswordButton } from "@/components/admin/ResetPasswordButton";
 import { SubmitButton } from "@/components/SubmitButton";
 
@@ -22,7 +23,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
     }),
   };
 
-  const [users, authors, courses] = await Promise.all([
+  const [users, authors, courses, curators] = await Promise.all([
     prisma.user.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -31,12 +32,18 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
     }),
     prisma.author.findMany({ orderBy: { name: "asc" } }),
     prisma.course.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true, price: true } }),
+    prisma.user.findMany({ where: { role: "CURATOR" }, orderBy: { createdAt: "asc" }, include: { curatorCourses: { select: { courseId: true } } } }),
   ]);
+  // Har bir kuratorning o'quvchilari: biriktirilgan kurslarga yozilgan noyob o'quvchilar
+  const studentCounts = await Promise.all(
+    curators.map((c) => prisma.user.count({ where: { role: "STUDENT", enrollments: { some: { courseId: { in: c.curatorCourses.map((x) => x.courseId) } } } } })),
+  );
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">O&apos;quvchilar</h1>
-      <AddCuratorForm />
+      <AddCuratorForm courses={courses.map((c) => ({ id: c.id, title: c.title }))} />
+      <CuratorList courses={courses.map((c) => ({ id: c.id, title: c.title }))} curators={curators.map((c, i) => ({ id: c.id, name: c.name, email: c.email, courseIds: c.curatorCourses.map((x) => x.courseId), students: studentCounts[i] }))} />
       <AddStudentForm courses={courses.map((c) => ({ id: c.id, label: c.title, price: c.price }))} />
 
       <form className="flex flex-wrap gap-2">
