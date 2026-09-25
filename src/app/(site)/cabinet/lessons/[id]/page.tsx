@@ -4,14 +4,12 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { loadCourseForStudent } from "@/lib/course";
 import { lessonHint } from "@/lib/access";
-import { toggleLessonComplete } from "@/lib/actions/student";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { LessonVideo } from "@/components/LessonVideo";
 import { FileVideo } from "@/components/FileVideo";
 import { isOwnVideo, ownVideoSrc } from "@/lib/video-source";
 import { kinescopeId, toEmbedUrl } from "@/lib/format";
 import { LessonContent } from "@/components/LessonContent";
-import { SubmitButton } from "@/components/SubmitButton";
 import { BrandScope } from "@/components/BrandScope";
 
 export default async function LessonPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ play?: string }> }) {
@@ -35,7 +33,6 @@ export default async function LessonPage({ params, searchParams }: { params: Pro
   const mod = modules[moduleIndex];
   const lessonNumber = mod.lessons.findIndex((l) => l.id === id) + 1;
 
-  const isDone = done.has(lesson.id);
   const next = flatLessons.slice(index + 1).find((l) => l.state === "open");
   const prev = flatLessons.slice(0, index).reverse().find((l) => l.state === "open");
 
@@ -69,10 +66,6 @@ export default async function LessonPage({ params, searchParams }: { params: Pro
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             {prev ? <Link href={`/cabinet/lessons/${prev.id}`} className="btn-outline">← Oldingi dars</Link> : <span />}
-            <form action={toggleLessonComplete}>
-              <input type="hidden" name="lessonId" value={lesson.id} />
-              <SubmitButton className={isDone ? "btn-outline" : "btn-primary"}>{isDone ? "✓ Tugatilgan (bekor qilish)" : "Darsni tugatdim"}</SubmitButton>
-            </form>
             {next ? <Link href={`/cabinet/lessons/${next.id}`} className="btn-primary">Keyingi dars →</Link> : <span />}
           </div>
         </div>

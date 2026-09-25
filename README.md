@@ -49,7 +49,7 @@ Har bir **(o'quvchi, kurator)** juftligining alohida suhbati bor: kuratorlar bir
 - Vercel'da **AUTH_SECRET** albatta sozlang; admin dashboardda sozlanmagan narsalar ko'rsatiladi.
 - Demo kursga namuna modul/darslarni yuklash: `npx tsx prisma/import-demo.ts` (o'quvchisi bo'lgan kursga tegmaydi).
 
-- **Progress avtomatik:** Kinescope videosi oxirigacha ko'rilsa (≥80% haqiqiy ijro; surib o'tkazish sanalmaydi) dars "ko'rildi" bo'ladi. Boshqa xizmatdagi videolar uchun qo'lda «Darsni tugatdim» tugmasi ishlaydi.
+- **Progress avtomatik:** Kinescope videosi oxirigacha ko'rilsa (≥80% haqiqiy ijro; surib o'tkazish sanalmaydi) dars "ko'rildi" bo'ladi. Qo'lda «Darsni tugatdim» tugmasi yo'q: dars faqat video ko'rilganda tugaydi (Kinescope yoki o'z videosi).
 
 ## Kirish qoidalari
 - Tarif yo'q: kursga yozilgan o'quvchi kursning hamma darsini ko'radi.
