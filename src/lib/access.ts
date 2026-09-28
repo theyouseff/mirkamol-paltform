@@ -28,13 +28,14 @@ export async function fulfillOrder(orderId: string, provider: string) {
   return prisma.$transaction(async (tx) => {
     const order = await tx.order.findUniqueOrThrow({ where: { id: orderId } });
     if (order.status === "PAID") return order;
-    if (!order.userId) throw new Error("O'quvchi akkaunti o'chirilgan");
 
     const paid = await tx.order.update({
       where: { id: orderId },
       data: { status: "PAID", provider, paidAt: new Date() },
     });
 
+    // O'quvchi akkaunti o'chirilgan bo'lsa (to'lov yozuvi qolgan), faqat holat o'zgaradi: ochiladigan akkaunt yo'q
+    if (!order.userId) return paid;
     const existing = await tx.enrollment.findUnique({
       where: { userId_courseId: { userId: order.userId, courseId: order.courseId } },
     });

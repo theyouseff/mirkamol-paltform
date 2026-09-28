@@ -187,8 +187,8 @@ export async function setOrderStatus(formData: FormData) {
   if (!["PAID", "PENDING", "CANCELED"].includes(status)) return;
   const order = await prisma.order.findUnique({ where: { id }, select: { status: true, userId: true, provider: true } });
   if (!order || order.status === status) return;
-  if (status === "PAID" && order.userId) await fulfillOrder(id, order.provider || "manual");
-  else await prisma.order.update({ where: { id }, data: { status, ...(status === "PAID" ? { paidAt: new Date() } : {}) } });
+  if (status === "PAID") await fulfillOrder(id, order.provider || "manual");
+  else await prisma.order.update({ where: { id }, data: { status } });
   revalidatePath("/admin", "layout");
 }
 
