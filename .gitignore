@@ -49,3 +49,6 @@ next-env.d.ts
 # private videos (o'z serverida stream qilinadi; GitHub/Vercel ga chiqmaydi)
 /videos/*
 !/videos/README.txt
+
+# iCloud (Desktop) node_modules ni olib qo'ymasligi uchun
+/node_modules.nosync

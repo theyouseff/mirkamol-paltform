@@ -222,13 +222,13 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
                     <p className="truncate text-xs text-zinc-400">{r.u.email} · {r.last ? `oxirgi faollik ${timeAgo(r.last.updatedAt)}` : "hali video ko'rmagan"}</p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="flex gap-1" aria-label="Oxirgi 7 kun">
+                    <div className="flex gap-2" aria-label="Oxirgi 7 kun">
                       {strip.map((s) => (
-                        <span
-                          key={s.d}
-                          title={`${s.d}: ${s.state === "in" ? "kirgan" : s.state === "out" ? "kirmagan" : s.state === "cleared" ? "kirmagan, lekin keyin qaytib video ko'rgan" : "hisobga olinmaydi"}`}
-                          className={`h-3.5 w-3.5 rounded-full ${s.state === "in" ? "bg-amber-400" : s.state === "out" ? "bg-red-500" : "bg-zinc-200"}`}
-                        />
+                        <div key={s.d} className="flex w-5 flex-col items-center gap-1" title={`${s.d}: ${s.state === "in" ? "kirgan" : s.state === "out" ? "kirmagan" : s.state === "cleared" ? "kirmagan, lekin keyin qaytib video ko'rgan" : "hisobga olinmaydi"}`}>
+                          <span className={`h-3.5 w-3.5 rounded-full ${s.state === "in" ? "bg-amber-400" : s.state === "out" ? "bg-red-500" : "bg-zinc-200"}`} />
+                          {/* Doira tagida kun raqami (masalan 24, 25) */}
+                          <span className="text-[11px] leading-none text-zinc-500">{Number(s.d.slice(8))}</span>
+                        </div>
                       ))}
                     </div>
                     <span className="badge shrink-0 bg-red-100 text-red-700">{missed} kun kirmagan</span>
