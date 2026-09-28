@@ -33,6 +33,9 @@ Admin: **O'quvchilar → Kurator qo'shish** — email va ism. Yangi kuratorga ak
 ## Chat
 Har bir **(o'quvchi, kurator)** juftligining alohida suhbati bor: kuratorlar bir-birining yozishmasini ko'rmaydi, o'quvchi esa har bir kurator bilan alohida yozishadi (bir nechta kurator bo'lsa, chatda ularning ismlari tugma bo'lib chiqadi). Kurator panelida **Chat** (chapda o'z o'quvchilari, tanlansa suhbat), o'quvchida menyudagi **Chat**. Yangi xabarlar har 4 soniyada o'zi yangilanadi; kurator menyusidagi **Chat** yonida shu kuratorga nechta o'quvchi yozgani (o'qilmagan) qizil belgida chiqadi. Admin **Analitika** sahifasining pastida **Kurslar va chatlar**: kursni bossa kuratorlari, kuratorni bossa uning o'quvchilari, o'quvchini bossa shu kurator bilan suhbati chiqadi (faqat ko'rish; admin ochgani xabarni "o'qildi" qilib qo'ymaydi).
 
+## Muqova rasmi yuklash
+Admin → Kurslar → kursni tahrirlash: **Muqova rasmi** maydonida havola yozish yoki **Kompyuterdan yuklash** tugmasi (JPG/PNG/WebP). Brauzer rasmni yuklashdan oldin kichraytiradi (eni 1600 px gacha, WebP), rasm bazada saqlanadi va `/api/img/<id>` orqali beriladi (bir yil keshlanadi). Yuklangach «Saqlash» tugmasini bosing. Modul muqovasi ham shunday. Eski (almashtirilgan) rasm bazada qoladi, lekin hech qayerda ko'rinmaydi.
+
 ## Postlar
 Menyuda **Kabinet**dan keyin **Postlar**: kurator o'z kursi uchun e'lon/yangilik yozadi, o'quvchi faqat o'qiydi (yoza olmaydi). Har bir post **faqat o'z kursida** ko'rinadi: masalan, LOR kuratorining posti marketing kursi o'quvchisiga chiqmaydi. Kurator postni `/curator/posts` sahifasida yozadi (faqat o'ziga biriktirilgan kurslarga) va faqat o'zinikini o'chira oladi. O'quvchi bir nechta kursga yozilgan bo'lsa, postlarni kurs bo'yicha saralaydi.
 

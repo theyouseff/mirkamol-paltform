@@ -227,3 +227,11 @@ model Post {
 
   @@index([courseId, createdAt])
 }
+
+// Adminning kompyuteridan yuklangan rasmlar (kurs va modul muqovalari). /api/img/[id] orqali beriladi; rasm manzili (id) o'zgarmas, shuning uchun brauzer uni doim keshda saqlaydi.
+model UploadedImage {
+  id        String   @id @default(cuid())
+  mime      String
+  data      Bytes
+  createdAt DateTime @default(now())
+}

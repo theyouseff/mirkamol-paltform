@@ -1,3 +1,4 @@
+import { ImageField } from "@/components/admin/ImageField";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -62,8 +63,8 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
             </div>
           </div>
           <div>
-            <label className="label">Muqova rasmi (URL)</label>
-            <input name="coverUrl" className="input" defaultValue={course.coverUrl} placeholder="https://..." />
+            <label className="label">Muqova rasmi</label>
+            <ImageField name="coverUrl" defaultValue={course.coverUrl} placeholder="Havola (https://...) yozing yoki kompyuterdan yuklang" />
           </div>
           <div>
             <label className="label">Muallif</label>
@@ -114,7 +115,7 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
                   <ConfirmButton formAction={deleteModule} message="Modul va undagi barcha darslar o'chiriladi. Davom etasizmi?">✕</ConfirmButton>
                 </div>
                 <input name="description" className="input text-zinc-600" defaultValue={m.description} placeholder="Modul haqida qisqa tavsif (ixtiyoriy)" />
-                <input name="coverUrl" className="input text-zinc-600" defaultValue={m.coverUrl} placeholder="Modul rasmi: /modules/nom.webp yoki https://... (ixtiyoriy)" />
+                <ImageField name="coverUrl" defaultValue={m.coverUrl} inputClassName="input text-zinc-600" placeholder="Modul rasmi: havola yoki kompyuterdan yuklang (ixtiyoriy)" />
               </form>
             </div>
             <ul className="divide-y divide-zinc-100">

@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Muqova rasmi yuklash (brauzer uni oldindan kichraytiradi, odatda 1 MB dan kam)
+  experimental: { serverActions: { bodySizeLimit: "3mb" } },
   async headers() {
     return [
       {
