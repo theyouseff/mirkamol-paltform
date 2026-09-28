@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { loadCourseForStudent } from "@/lib/course";
 import { lessonHint } from "@/lib/access";
 import { totalDuration } from "@/lib/format";
+import { isOwnVideo, ownVideoSrc } from "@/lib/video-source";
 import { VideoLessonGrid } from "@/components/VideoLessonGrid";
 
 export default async function ModulePage({ params }: { params: Promise<{ id: string }> }) {
@@ -19,13 +20,16 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
   const mod = modules[index];
 
   const totalTime = totalDuration(mod.lessons.map((l) => l.duration));
-  const lessons = mod.lessons.map((l) => ({
+  // Ochiq darslarning o'z videosi bo'lsa, blokda uning kadri ko'rinadi (yopiq darsning videosi manzili berilmaydi)
+  const previews = await Promise.all(mod.lessons.map((l) => (l.state === "open" && isOwnVideo(l.videoUrl) ? ownVideoSrc(l) : null)));
+  const lessons = mod.lessons.map((l, i) => ({
     id: l.id,
     title: l.title,
     duration: l.duration,
     state: l.state,
     done: done.has(l.id),
     hint: lessonHint(l, l.state),
+    previewSrc: previews[i],
   }));
 
   return (

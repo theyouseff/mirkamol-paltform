@@ -4,7 +4,7 @@ import type { LessonState } from "@/lib/access";
 
 const step = (i: number) => ({ "--i": i }) as CSSProperties;
 
-export type LessonCard = { id: string; title: string; duration: string; state: LessonState; done: boolean; hint: string | null };
+export type LessonCard = { id: string; title: string; duration: string; state: LessonState; done: boolean; hint: string | null; previewSrc?: string | null };
 
 function Play() {
   return (
@@ -36,7 +36,20 @@ export function VideoLessonGrid({ lessons }: { lessons: LessonCard[] }) {
           <>
             <div className="relative flex aspect-video items-center justify-center bg-gradient-to-br from-ink-800 via-ink-700 to-steel-600">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_22%,rgba(241,198,87,0.28),transparent_58%)]" />
-              {open ? <Play /> : <Lock />}
+              {/* Dars videosining o'zi (3-soniyadagi kadr) blok ustida ko'rinib turadi; video yuklanmaguncha tilla-kulrang fon */}
+              {l.previewSrc && (
+                <video
+                  src={`${l.previewSrc}#t=3`}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  tabIndex={-1}
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                />
+              )}
+              {l.previewSrc && <div className="absolute inset-0 bg-black/20" />}
+              <div className="relative flex items-center justify-center">{open ? <Play /> : <Lock />}</div>
               {l.duration && <span className="absolute bottom-2 right-2 rounded-md bg-black/55 px-2 py-0.5 text-xs font-medium text-white">{l.duration}</span>}
               {l.done && <span className="absolute left-2 top-2 rounded-md bg-gold px-2 py-0.5 text-xs font-semibold text-ink-950">Tugatilgan</span>}
             </div>
