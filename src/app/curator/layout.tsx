@@ -3,6 +3,7 @@ import { requireCurator } from "@/lib/auth";
 import { LogoutButton } from "@/components/LogoutButton";
 import { curatorUnread } from "@/lib/curator-scope";
 import { ChatNavLink } from "@/components/chat/ChatNavLink";
+import { ChatToaster } from "@/components/chat/ChatToaster";
 
 // Kurator paneli: o'quvchi kabineti ham, admin paneli ham emas — alohida oyna.
 export default async function CuratorLayout({ children }: { children: React.ReactNode }) {
@@ -10,6 +11,7 @@ export default async function CuratorLayout({ children }: { children: React.Reac
   const unread = await curatorUnread(user);
   return (
     <div className="min-h-screen">
+      {user.role === "CURATOR" && <ChatToaster chatHref="/curator/chat" />}
       <header className="sticky top-0 z-40 border-b border-white/10 bg-ink-950/60 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
           <div className="flex items-center gap-3">

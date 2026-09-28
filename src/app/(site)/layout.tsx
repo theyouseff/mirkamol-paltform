@@ -2,6 +2,7 @@ import { after } from "next/server";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getSession } from "@/lib/auth";
 import { recordVisit } from "@/lib/activity";
+import { ChatToaster } from "@/components/chat/ChatToaster";
 
 // Sarlavha shu yerda turadi, shuning uchun sahifalar almashganda qayta chizilmaydi va faol belgi silliq siljiydi.
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -11,6 +12,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   return (
     <>
       <SiteHeader />
+      {session?.role === "STUDENT" && <ChatToaster chatHref="/cabinet/chat" />}
       {children}
     </>
   );

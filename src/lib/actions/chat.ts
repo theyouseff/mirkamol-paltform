@@ -68,3 +68,21 @@ export async function unreadPeople(): Promise<number> {
   const user = await requireUser();
   return user.role === "CURATOR" ? curatorUnread(user) : 0;
 }
+
+export type ChatNotice = { id: string; from: string; body: string };
+
+// Platforma ichidagi bildirishnoma: menga qarshi tomondan kelgan, hali o'qilmagan xabarlar (o'quvchiga — kuratordan, kuratorga — o'quvchidan).
+// Har kim faqat o'z suhbatlaridagi xabarlarni ko'radi.
+export async function pollChatNotices(): Promise<ChatNotice[]> {
+  const user = await requireUser();
+  const since = new Date(Date.now() - 24 * 3600_000);
+  const where =
+    user.role === "STUDENT"
+      ? { studentId: user.id, authorRole: "STAFF", readAt: null, createdAt: { gt: since } }
+      : user.role === "CURATOR"
+        ? { curatorId: user.id, authorRole: "STUDENT", readAt: null, createdAt: { gt: since } }
+        : null;
+  if (!where) return [];
+  const rows = await prisma.chatMessage.findMany({ where, orderBy: { createdAt: "desc" }, take: 3, select: { id: true, authorName: true, body: true } });
+  return rows.map((m) => ({ id: m.id, from: m.authorName, body: m.body.replace(/\s+/g, " ").slice(0, 120) }));
+}
