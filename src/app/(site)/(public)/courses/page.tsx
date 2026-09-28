@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { getCurrentUser, getSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const session = await getSession();
+  const user = session ? await getCurrentUser() : null; // sarlavhada ism ko'rsatiladi
   // Kirgan o'quvchi faqat o'zi yozilgan kurslarni ko'radi (boshqa kurslar — ham nomi, ham sahifasi — yashirin). Admin hamma kursni, mehmon esa ochiq katalogni ko'radi.
   const mineOnly = !!session && session.role !== "ADMIN";
   const courses = await prisma.course.findMany({
@@ -16,7 +17,7 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="text-3xl font-bold">Kurslar</h1>
+      <h1 className="text-3xl font-bold">{user ? `${user.name}, Xush kelibsiz!` : "Kurslar"}</h1>
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {courses.map((c) => (
           // Kirgan o'quvchi (yoki admin) bosganda kursning o'zi ochiladi; mehmonga — kurs haqida sahifa
