@@ -3,8 +3,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { adminContactUrl } from "@/lib/config";
-import { BrandScope } from "@/components/BrandScope";
-import { CourseBrand } from "@/components/CourseBrand";
 import { totalDuration } from "@/lib/format";
 
 // Sotuv sahifasi: hamma ko'radi, lekin faqat dastur (modul va dars nomlari). Video va matn — faqat kabinetda.
@@ -26,12 +24,11 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
   const lessonCount = course.modules.reduce((n, m) => n + m.lessons.length, 0);
 
   return (
-    <BrandScope color={course.brandColor}>
+    <>
       <div className="mx-auto max-w-6xl px-4 py-10">
         <Link href="/courses" className="text-sm font-medium text-gold-text/80 hover:text-gold-text">← Kurslar</Link>
 
         <div className="mt-5 max-w-3xl">
-          {(course.logoUrl || course.brandName) && <CourseBrand course={course} className="mb-4 block" />}
           <h1 className="text-3xl font-bold sm:text-4xl">{course.title}</h1>
           {course.subtitle && <p className="mt-3 text-lg text-gold-text/85">{course.subtitle}</p>}
           {course.description && <p className="mt-5 whitespace-pre-line leading-relaxed text-gold-text/80">{course.description}</p>}
@@ -74,6 +71,6 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
           ))}
         </div>
       </div>
-    </BrandScope>
+    </>
   );
 }

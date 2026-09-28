@@ -6,7 +6,6 @@ import { loadCourseForStudent } from "@/lib/course";
 import { lessonHint } from "@/lib/access";
 import { totalDuration } from "@/lib/format";
 import { VideoLessonGrid } from "@/components/VideoLessonGrid";
-import { BrandScope } from "@/components/BrandScope";
 
 export default async function ModulePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,7 +29,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
   }));
 
   return (
-    <BrandScope color={course.brandColor}>
+    <>
       <Link href={`/cabinet/courses/${course.slug}`} className="text-sm font-medium text-gold-text/80 hover:text-gold-text">← {course.title}</Link>
       <div className="mt-5">
         <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">{index + 1}-modul</p>
@@ -41,6 +40,6 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
       <div className="mt-5">
         <VideoLessonGrid lessons={lessons} />
       </div>
-    </BrandScope>
+    </>
   );
 }

@@ -10,7 +10,6 @@ import { FileVideo } from "@/components/FileVideo";
 import { isOwnVideo, ownVideoSrc } from "@/lib/video-source";
 import { kinescopeId, toEmbedUrl } from "@/lib/format";
 import { LessonContent } from "@/components/LessonContent";
-import { BrandScope } from "@/components/BrandScope";
 
 export default async function LessonPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ play?: string }> }) {
   const { id } = await params;
@@ -19,7 +18,7 @@ export default async function LessonPage({ params, searchParams }: { params: Pro
   const found = await prisma.lesson.findUnique({ where: { id }, select: { module: { select: { courseId: true } } } });
   if (!found) notFound();
 
-  const { course, modules, done, flatLessons } = await loadCourseForStudent(found.module.courseId, user);
+  const { modules, done, flatLessons } = await loadCourseForStudent(found.module.courseId, user);
   const index = flatLessons.findIndex((l) => l.id === id);
   const lesson = flatLessons[index];
   // Video va matn faqat dars ochiq bo'lsagina serverdan chiqadi (yozilmagan yoki hali ochilmagan — 404)
@@ -37,7 +36,7 @@ export default async function LessonPage({ params, searchParams }: { params: Pro
   const prev = flatLessons.slice(0, index).reverse().find((l) => l.state === "open");
 
   return (
-    <BrandScope color={course.brandColor}>
+    <>
       <Link href={`/cabinet/modules/${mod.id}`} className="text-sm font-medium text-gold-text/80 hover:text-gold-text">← {mod.title}</Link>
 
       <div className="mt-5">
@@ -95,6 +94,6 @@ export default async function LessonPage({ params, searchParams }: { params: Pro
           </ul>
         </aside>
       </div>
-    </BrandScope>
+    </>
   );
 }

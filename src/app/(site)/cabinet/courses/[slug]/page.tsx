@@ -5,8 +5,6 @@ import { requireUser } from "@/lib/auth";
 import { loadCourseForStudent } from "@/lib/course";
 import { ModuleGrid } from "@/components/ModuleGrid";
 import { ProgressBar } from "@/components/ProgressBar";
-import { BrandScope } from "@/components/BrandScope";
-import { CourseBrand } from "@/components/CourseBrand";
 import { totalDuration } from "@/lib/format";
 
 export default async function StudentCoursePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -38,10 +36,10 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
   });
 
   return (
-    <BrandScope color={course.brandColor}>
+    <>
       <Link href="/courses" className="text-sm font-medium text-gold-text/80 hover:text-gold-text">← Kurslar</Link>
       <div className="mt-5 max-w-3xl space-y-4">
-        <CourseBrand course={course} className="block" />
+        <span className="block text-lg font-bold text-brand">{course.title}</span>
         <h1 className="text-3xl font-bold sm:text-4xl">{course.title}</h1>
         {course.subtitle && <p className="text-lg text-gold-text/85">{course.subtitle}</p>}
         <div className="space-y-2 pt-2">
@@ -54,6 +52,6 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
         <ModuleGrid modules={cards} />
         {cards.length === 0 && <p className="text-gold-text/70">Bu kursda hozircha modullar yo&apos;q.</p>}
       </div>
-    </BrandScope>
+    </>
   );
 }

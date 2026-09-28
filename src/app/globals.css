@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Kurs brendi (rang) shu o'zgaruvchilarni qayta yozadi — qarang: lib/brand.ts */
+/* Bitta neytral palitra (grafit + oltin) hamma kurslar uchun */
 :root {
   --brand: #a8741a;
   --brand-dark: #855a10;

@@ -7,7 +7,6 @@ import { requireAdmin } from "@/lib/auth";
 import { fulfillOrder } from "@/lib/access";
 import bcrypt from "bcryptjs";
 import { normalizeEmail } from "@/lib/format";
-import { isHexColor } from "@/lib/brand";
 import { generatePassword } from "@/lib/password";
 import { sendCourseOpened, sendCuratorAccess, sendNewPassword, sendStudentAccess, type MailResult } from "@/lib/mail";
 
@@ -57,9 +56,6 @@ export async function updateCourse(formData: FormData) {
       subtitle: str(formData, "subtitle"),
       description: str(formData, "description"),
       coverUrl: str(formData, "coverUrl"),
-      brandName: str(formData, "brandName"),
-      logoUrl: str(formData, "logoUrl"),
-      brandColor: isHexColor(str(formData, "brandColor")) ? str(formData, "brandColor") : "",
       authorId: str(formData, "authorId") || null,
       published: formData.get("published") === "on",
       price: Math.max(0, int(formData, "price")),

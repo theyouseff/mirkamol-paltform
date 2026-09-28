@@ -46,9 +46,9 @@ Menyuda **Kabinet**dan keyin **Postlar**: kurator o'z kursi uchun e'lon/yangilik
 4. O'quvchi akkauntini **butunlay o'chirish**: O'quvchilar jadvalida qatordagi **O'chirish** (faqat o'quvchi, tasdiq bilan; ortga qaytmaydi). Kirish, kurslar, ko'rish natijalari, kirgan kunlar va chat yozuvlari o'chadi. To'lov yozuvlari saqlanadi (ularda o'quvchining ismi va emaili nusxasi qoladi), shuning uchun daromad hisobotlari buzilmaydi.
 3. O'quvchi kirib faqat o'zi yozilgan kursni ko'radi: Kurslar sahifasida boshqa kurslar chiqmaydi, ularning havolasi ochilmaydi (404). Mehmon (kirmagan) esa e'lon qilingan kurslar katalogini ko'radi.
 
-## Mualliflar va brend
+## Mualliflar
 - **Mualliflar** — kurs egalari (siz, mijozlaringiz). Kursga muallif biriktiriladi; dashboard va to'lovlarda muallif bo'yicha hisobot va filtr bor.
-- Har kursning **brendi**: nom/logotip va asosiy rang (kurs sozlamalarida). O'quvchi shu kursni ochganda o'sha rangni ko'radi.
+- Hamma kurslar bitta neytral palitrada (grafit + oltin): kursga alohida logotip yoki rang berilmaydi.
 
 ## Xavfsizlik
 - Video va dars matni faqat kabinetda, faqat kursga yozilgan (yoki admin) foydalanuvchiga serverdan chiqadi. Sotuv sahifasida faqat nomlar.
