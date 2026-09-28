@@ -41,11 +41,12 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
     let last: number | null = null;
     let sent = false;
 
-    const flush = () => {
-      if (!trackProgress || !track.dirty || !track.duration) return;
+    // force — o'zgarish bo'lmasa ham yuboradi (pauza/tugash/chiqishda "tomosha qilyapti" holati o'chsin); playing — video hozir ijro etilayaptimi
+    const flush = (force = false, playing = !el.paused && !el.ended) => {
+      if (!trackProgress || !track.duration || (!force && !track.dirty)) return;
       track.dirty = false;
       track.sentAt = Date.now();
-      saveWatchProgress(lessonId, track.pos, track.duration, seconds.size).catch(() => {});
+      saveWatchProgress(lessonId, track.pos, track.duration, seconds.size, playing).catch(() => {});
     };
     const onMeta = () => {
       track.duration = el.duration || 0;
@@ -65,12 +66,12 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
     };
     const onPause = () => {
       saveSeconds(lessonId, seconds);
-      flush();
+      flush(true);
       saveFrame(lessonId, el);
     };
     const onEnded = async () => {
       saveSeconds(lessonId, seconds);
-      flush();
+      flush(true, false);
       const total = el.duration;
       if (!trackProgress || sent || !total || seconds.size < total * REQUIRED) return;
       sent = true;
@@ -86,7 +87,7 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
     };
     const onHide = () => {
       if (document.visibilityState !== "hidden") return;
-      flush();
+      flush(true);
       saveFrame(lessonId, el);
     };
 
@@ -105,7 +106,7 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
       el.removeEventListener("ended", onEnded);
       document.removeEventListener("visibilitychange", onHide);
       saveSeconds(lessonId, seconds);
-      flush();
+      flush(true, false); // sahifadan chiqildi — endi tomosha qilmayapti
       saveFrame(lessonId, el);
     };
   }, [lessonId, src, startAt, autoPlay, trackProgress]);
@@ -114,6 +115,17 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
   useEffect(() => {
     if (!cors) video.current?.load();
   }, [cors]);
+
+  // Yuklash xatosi: crossOrigin bilan bo'lsa (serverda CORS ruxsati yo'q) — uni o'chirib qayta urinamiz, aks holda xabar ko'rsatamiz.
+  // React serverdan kelgan <video> ning onError'ini ulamaydi (xato gidratsiyadan oldin bo'lishi mumkin), shuning uchun hodisani o'zimiz tinglaymiz.
+  useEffect(() => {
+    const el = video.current;
+    if (!el || !src) return;
+    const onErr = () => (remote && cors ? setCors(false) : setError(true));
+    if (el.error) onErr();
+    el.addEventListener("error", onErr);
+    return () => el.removeEventListener("error", onErr);
+  }, [src, remote, cors]);
 
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
@@ -129,7 +141,6 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
         crossOrigin={remote && cors ? "anonymous" : undefined}
         controlsList="nodownload"
         onContextMenu={(e) => e.preventDefault()}
-        onError={() => (remote && cors ? setCors(false) : setError(true))}
       />
       {(error || !src) && <p className="absolute inset-0 flex items-center justify-center bg-black/80 p-6 text-center text-sm text-white/80">Videoni yuklab bo&apos;lmadi. Sahifani yangilang yoki adminga yozing.</p>}
       {counted && <span className="absolute right-3 top-3 rounded-lg bg-gold px-3 py-1 text-sm font-semibold text-ink-950 shadow-lg">✓ Dars ko&apos;rildi</span>}

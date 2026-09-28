@@ -12,6 +12,8 @@ export function missedFrom(createdAt: Date) {
 
 // "Online" — oxirgi 2 daqiqada faol (sahifa ochgan yoki video ko'rgan). "Kirish" — 10 daqiqadan ortiq nofaollikdan keyingi birinchi faollik.
 export const ONLINE_MS = 2 * 60_000;
+// "Tomosha qilyapti" — video ijro etilayotganda brauzer 15 soniyada bir uradi; 45 soniya jim bo'lsa (yopilgan/pauza) holat o'chadi.
+export const WATCHING_MS = 45_000;
 const ENTRY_GAP_MS = 10 * 60_000;
 const SEEN_THROTTLE_MS = 45_000;
 

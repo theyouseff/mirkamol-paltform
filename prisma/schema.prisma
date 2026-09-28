@@ -15,6 +15,7 @@ model User {
   passwordHash String
   role         String    @default("STUDENT") // ADMIN | CURATOR | STUDENT
   createdAt    DateTime  @default(now())
+  watchingAt   DateTime? // video hozir ijro etilayotgan bo'lsa — oxirgi urilish vaqti (15 soniyada bir yangilanadi, pauzada bo'shatiladi)
   lastSeenAt   DateTime? // oxirgi faollik (sahifa ochish yoki video ko'rish); "online" holati va kirish xabari shundan
 
   enrollments    Enrollment[]

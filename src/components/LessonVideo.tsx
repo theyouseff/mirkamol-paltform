@@ -37,14 +37,15 @@ export function LessonVideo({ videoId, lessonId, embedUrl, startAt = 0, autoPlay
     let cancelled = false;
     const seconds = readSeconds(lessonId);
     // Analitika: to'xtagan joyi va ko'rilgan miqdor serverga yuboriladi (o'zgargan bo'lsagina)
-    const track = { pos: 0, duration: 0, sentAt: 0, dirty: false };
-    const flush = () => {
-      if (!track.dirty || !track.duration) return;
+    const track = { pos: 0, duration: 0, sentAt: 0, dirty: false, playing: false };
+    // force — pauza/tugash/chiqishda o'zgarish bo'lmasa ham yuboradi ("tomosha qilyapti" holati o'chsin)
+    const flush = (force = false) => {
+      if (!track.duration || (!force && !track.dirty)) return;
       track.dirty = false;
       track.sentAt = Date.now();
-      saveWatchProgress(lessonId, track.pos, track.duration, seconds.size).catch(() => {});
+      saveWatchProgress(lessonId, track.pos, track.duration, seconds.size, track.playing).catch(() => {});
     };
-    const onHide = () => document.visibilityState === "hidden" && flush();
+    const onHide = () => document.visibilityState === "hidden" && flush(true);
     document.addEventListener("visibilitychange", onHide);
 
     (async () => {
@@ -74,8 +75,9 @@ export function LessonVideo({ videoId, lessonId, embedUrl, startAt = 0, autoPlay
       p.on(p.Events.DurationChange, (e) => { duration = e.data.duration; track.duration = duration; });
       p.on(p.Events.Seeked, () => { last = null; });
       p.on(p.Events.Pause, () => {
+        track.playing = false;
         saveSeconds(lessonId, seconds);
-        flush();
+        flush(true);
       });
       p.on(p.Events.TimeUpdate, (e) => {
         const t = e.data.currentTime;
@@ -84,11 +86,13 @@ export function LessonVideo({ videoId, lessonId, embedUrl, startAt = 0, autoPlay
         last = t;
         track.pos = t;
         track.dirty = true;
+        track.playing = true; // vaqt oldinga yurayapti — video ijro etilmoqda
         if (Date.now() - track.sentAt > HEARTBEAT) flush();
       });
       p.on(p.Events.Ended, async () => {
+        track.playing = false;
         saveSeconds(lessonId, seconds);
-        flush();
+        flush(true);
         const total = duration || (await p.getDuration());
         if (sent || !total || seconds.size < total * REQUIRED) return;
         sent = true;
@@ -105,7 +109,8 @@ export function LessonVideo({ videoId, lessonId, embedUrl, startAt = 0, autoPlay
       cancelled = true;
       document.removeEventListener("visibilitychange", onHide);
       saveSeconds(lessonId, seconds);
-      flush();
+      track.playing = false;
+      flush(true);
       player?.destroy().catch(() => {});
     };
   }, [videoId, lessonId, startAt, autoPlay]);

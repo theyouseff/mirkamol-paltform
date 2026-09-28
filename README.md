@@ -38,6 +38,7 @@ Admin → Kurslar → kursni tahrirlash: **Muqova rasmi** maydonida havola yozis
 
 ## Online holati va kirish xabari
 - **Online:** o'quvchi oxirgi 2 daqiqada sahifa ochgan yoki video ko'rgan bo'lsa, Analitikada «Oxirgi faollik» o'rnida yashil chiroqcha bilan **Online** chiqadi (sahifa har 20 soniyada o'zi yangilanadi).
+- **Tomosha qilyapti:** video ijro etilayotganda (har 15 soniyada brauzer uradi) Analitikada Online o'rniga **Tomosha qilyapti** chiqadi; pauza qilsa yoki sahifadan chiqsa darhol o'chadi (yopilgan brauzerda ham 45 soniyada o'chadi).
 - **Kirish xabari:** o'quvchi 10 daqiqadan ortiq nofaollikdan keyin platformaga kirsa, adminga (va o'z o'quvchisi bo'lsa kuratorga) tepada o'ngda «*Ism* platformaga kirdi» xabari chiqadi.
 
 ## Postlar

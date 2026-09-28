@@ -26,10 +26,12 @@ export async function markLessonWatched(lessonId: string) {
 const clamp = (n: number, max: number) => (Number.isFinite(n) ? Math.min(Math.max(Math.round(n), 0), max) : 0);
 
 // Video ko'rilayotganda brauzer davriy chaqiradi: qaysi soniyada to'xtagani va qancha ko'rgani (admin "Analitika" uchun).
-export async function saveWatchProgress(lessonId: string, position: number, duration: number, watched: number) {
+export async function saveWatchProgress(lessonId: string, position: number, duration: number, watched: number, playing = false) {
   const user = await requireUser();
   if (user.role === "ADMIN") return; // adminning ko'rishlari o'quvchi analitikasiga kirmasin
   await markSeen(user.id); // video ko'rilayotgan bo'lsa — online
+  // "Tomosha qilyapti": ijro etilayotganda vaqt yoziladi, pauza/tugaganda o'chiriladi
+  await prisma.user.update({ where: { id: user.id }, data: { watchingAt: playing ? new Date() : null } });
   const lesson = await prisma.lesson.findUnique({ where: { id: lessonId }, include: { module: true } });
   if (!lesson) return;
   const enrollment = await getEnrollment(user.id, lesson.module.courseId);

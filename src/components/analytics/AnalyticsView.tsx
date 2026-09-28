@@ -4,15 +4,25 @@ import { addDays, dayRange, formatClock, tashkentDay, timeAgo } from "@/lib/form
 import { ProgressBar } from "@/components/ProgressBar";
 import { VisitCalendar } from "@/components/VisitCalendar";
 import type { DayNote } from "@/lib/day-status";
-import { missedFrom, ONLINE_MS } from "@/lib/activity";
+import { missedFrom, ONLINE_MS, WATCHING_MS } from "@/lib/activity";
 import { AutoRefresh } from "@/components/analytics/AutoRefresh";
 import { StudentLink, SwitchProvider, TopPanel } from "@/components/admin/StudentSwitch";
 
 const step = (i: number) => ({ "--i": i }) as CSSProperties;
 
 const pct = (part: number, whole: number) => (whole > 0 ? Math.min(100, Math.round((part / whole) * 100)) : 0);
-// Faollik belgisi: online bo'lsa yashil chiroqcha, aks holda "3 daqiqa oldin"
-function Presence({ online, at, className = "" }: { online: boolean; at: Date | null; className?: string }) {
+// Faollik belgisi: video ijro etilayotgan bo'lsa "Tomosha qilyapti", faol bo'lsa "Online" (yashil chiroqcha), aks holda "3 daqiqa oldin"
+function Presence({ online, watching = false, at, className = "" }: { online: boolean; watching?: boolean; at: Date | null; className?: string }) {
+  if (watching)
+    return (
+      <span className={`inline-flex items-center gap-1.5 font-medium text-emerald-600 ${className}`}>
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+        </span>
+        Tomosha qilyapti
+      </span>
+    );
   if (online)
     return (
       <span className={`inline-flex items-center gap-1.5 font-medium text-green-600 ${className}`}>
@@ -77,7 +87,8 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
       const last = [...myWatches.values()].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())[0];
       // Oxirgi faollik: sahifa ochgan yoki video ko'rgan eng so'nggi vaqt; 2 daqiqa ichida bo'lsa — online
       const at = Math.max(u.lastSeenAt?.getTime() ?? 0, last?.updatedAt.getTime() ?? 0);
-      return { u, mine, myWatches, completed, last, lastActive: at ? new Date(at) : null, online: at > 0 && Date.now() - at < ONLINE_MS };
+      const watching = !!u.watchingAt && Date.now() - u.watchingAt.getTime() < WATCHING_MS; // video hozir ijro etilyapti
+      return { u, mine, myWatches, completed, last, lastActive: at ? new Date(at) : null, online: watching || (at > 0 && Date.now() - at < ONLINE_MS), watching };
     })
     .sort((a, b) => (b.last?.updatedAt.getTime() ?? 0) - (a.last?.updatedAt.getTime() ?? 0));
   const rows = all.filter((r) => !q || r.u.name.toLowerCase().includes(q.toLowerCase()) || r.u.email.toLowerCase().includes(q.toLowerCase()));
@@ -134,7 +145,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
 
   return (
     <SwitchProvider>
-    <AutoRefresh />
+    <AutoRefresh everyMs={15_000} />
     <div className="space-y-8">
       <TopPanel id={selected?.u.id ?? "all"}>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -212,7 +223,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
             </div>
             <div className="card enter" style={step(4)}>
               <p className="text-sm text-zinc-500">Oxirgi faollik</p>
-              <p className="mt-2 text-2xl font-bold"><Presence online={selected.online} at={selected.lastActive} /></p>
+              <p className="mt-2 text-2xl font-bold"><Presence online={selected.online} watching={selected.watching} at={selected.lastActive} /></p>
             </div>
           </div>
         </div>
@@ -238,7 +249,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
                 <li key={r.u.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
                   <div className="min-w-0">
                     <StudentLink href={href({ student: r.u.id })} className="font-medium text-brand hover:underline">{r.u.name}</StudentLink>
-                    <p className="truncate text-xs text-zinc-400">{r.u.email} · {r.online ? "hozir online" : r.lastActive ? `oxirgi faollik ${timeAgo(r.lastActive)}` : "hali video ko'rmagan"}</p>
+                    <p className="truncate text-xs text-zinc-400">{r.u.email} · {r.watching ? "hozir tomosha qilyapti" : r.online ? "hozir online" : r.lastActive ? `oxirgi faollik ${timeAgo(r.lastActive)}` : "hali video ko'rmagan"}</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex gap-2" aria-label="Oxirgi 7 kun">
@@ -279,7 +290,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
               <tr><th className="px-4 py-3">O&apos;quvchi</th><th>Progress</th><th>Oxirgi ko&apos;rgan dars</th><th>Oxirgi faollik</th><th></th></tr>
             </thead>
             <tbody>
-              {rows.map(({ u, mine, completed, last, lastActive, online }) => {
+              {rows.map(({ u, mine, completed, last, lastActive, online, watching }) => {
                 const lastLesson = last && lessonById.get(last.lessonId);
                 const active = u.id === student;
                 return (
@@ -305,7 +316,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
                         <span className="text-zinc-400">Hali video ko&apos;rmagan</span>
                       )}
                     </td>
-                    <td className="py-3 pr-4 text-zinc-500"><Presence online={online} at={lastActive} /></td>
+                    <td className="py-3 pr-4 text-zinc-500"><Presence online={online} watching={watching} at={lastActive} /></td>
                     <td className="py-3 pr-4 text-right">
                       <StudentLink href={href({ student: u.id })} className={active ? "text-xs font-medium text-zinc-400" : "btn-outline px-2.5 py-1 text-xs"}>{active ? "Tanlangan" : "Ko'rish →"}</StudentLink>
                     </td>
@@ -319,7 +330,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
 
         {/* Telefon va planshet: jadval o'rniga kartochkalar */}
         <div className="space-y-3 lg:hidden">
-          {rows.map(({ u, mine, completed, last, lastActive, online }) => {
+          {rows.map(({ u, mine, completed, last, lastActive, online, watching }) => {
             const lastLesson = last && lessonById.get(last.lessonId);
             const active = u.id === student;
             return (
@@ -329,7 +340,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
                     <StudentLink href={href({ student: u.id })} className="font-medium text-brand">{u.name}</StudentLink>
                     <p className="truncate text-xs text-zinc-400">{u.email}</p>
                   </div>
-                  <Presence online={online} at={lastActive} className="shrink-0 text-xs text-zinc-500" />
+                  <Presence online={online} watching={watching} at={lastActive} className="shrink-0 text-xs text-zinc-500" />
                 </div>
                 <div>
                   <ProgressBar value={pct(completed, mine.length)} />
