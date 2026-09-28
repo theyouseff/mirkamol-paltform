@@ -2,7 +2,7 @@ import { buyer } from "@/lib/buyer";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { cancelOrder, markOrderPaid } from "@/lib/actions/admin";
+import { cancelOrder, deleteOrder, markOrderPaid, toggleRefund } from "@/lib/actions/admin";
 import { formatDate, formatPrice } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmButton } from "@/components/ConfirmButton";
@@ -12,7 +12,40 @@ const filters = [
   { value: "PAID", label: "To'langan" },
   { value: "PENDING", label: "Kutilmoqda" },
   { value: "CANCELED", label: "Bekor qilingan" },
+  { value: "REFUNDED", label: "Qaytarilgan" },
 ];
+
+type OrderRow = { id: string; number: number; status: string };
+
+// To'langan/Qaytarilgan belgisi bosiladigan: bosilsa (tasdiq bilan) holat almashadi
+function StatusToggle({ o }: { o: OrderRow }) {
+  if (o.status !== "PAID" && o.status !== "REFUNDED") return <StatusBadge status={o.status} />;
+  const toRefund = o.status === "PAID";
+  return (
+    <form>
+      <input type="hidden" name="id" value={o.id} />
+      <ConfirmButton
+        formAction={toggleRefund}
+        className="rounded-full ring-offset-1 transition hover:ring-2 hover:ring-zinc-300"
+        message={toRefund ? `№${o.number} to'lovi «Qaytarilgan» deb belgilansinmi?\n\nPul qaytarib berildi deb hisoblanadi va daromaddan chiqariladi. Kursga kirish o'zgarmaydi.` : `№${o.number} to'lovi yana «To'langan» holatiga qaytarilsinmi?`}
+      >
+        <span title={toRefund ? "Bosib «Qaytarilgan» ga o'zgartiring" : "Bosib «To'langan» ga qaytaring"} className="cursor-pointer"><StatusBadge status={o.status} /></span>
+      </ConfirmButton>
+    </form>
+  );
+}
+
+// To'lov yozuvini o'chirish tugmasi (tasdiq bilan)
+function DeleteOrder({ o, className }: { o: OrderRow; className: string }) {
+  return (
+    <form>
+      <input type="hidden" name="id" value={o.id} />
+      <ConfirmButton formAction={deleteOrder} className={className} message={`№${o.number} to'lovi butunlay o'chirilsinmi?\n\nDaromad hisobotidan ham chiqadi. Kursga kirish o'zgarmaydi. Buni ortga qaytarib bo'lmaydi.`}>
+        O&apos;chirish
+      </ConfirmButton>
+    </form>
+  );
+}
 
 export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string; author?: string }> }) {
   const { status = "", q = "", author = "" } = await searchParams;
@@ -78,17 +111,20 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                   {o.course.author && <div className="text-xs text-zinc-400">{o.course.author.name}</div>}
                 </td>
                 <td>{formatPrice(o.amount)}</td>
-                <td><StatusBadge status={o.status} />{o.provider && <div className="text-xs text-zinc-400">{o.provider}</div>}</td>
+                <td><StatusToggle o={o} />{o.provider && <div className="text-xs text-zinc-400">{o.provider}</div>}</td>
                 <td className="text-zinc-500">{o.utmSource || "—"}{o.note && <div className="text-xs text-zinc-400">{o.note}</div>}</td>
                 <td className="text-zinc-500">{formatDate(o.createdAt)}</td>
                 <td className="pr-4">
-                  {o.status === "PENDING" && (
-                    <form className="flex justify-end gap-1">
-                      <input type="hidden" name="id" value={o.id} />
-                      <ConfirmButton formAction={markOrderPaid} className="btn-outline px-2 py-1 text-xs" message="Buyurtmani to'langan deb belgilab, kursni ochasizmi?">✓ To&apos;landi</ConfirmButton>
-                      <ConfirmButton formAction={cancelOrder} className="btn-danger px-2 py-1 text-xs" message="Buyurtmani bekor qilasizmi?">✕</ConfirmButton>
-                    </form>
-                  )}
+                  <div className="flex justify-end gap-1">
+                    {o.status === "PENDING" && (
+                      <form className="flex gap-1">
+                        <input type="hidden" name="id" value={o.id} />
+                        <ConfirmButton formAction={markOrderPaid} className="btn-outline px-2 py-1 text-xs" message="Buyurtmani to'langan deb belgilab, kursni ochasizmi?">✓ To&apos;landi</ConfirmButton>
+                        <ConfirmButton formAction={cancelOrder} className="btn-danger px-2 py-1 text-xs" message="Buyurtmani bekor qilasizmi?">✕</ConfirmButton>
+                      </form>
+                    )}
+                    <DeleteOrder o={o} className="rounded-full border border-red-200 px-3 py-1 text-xs text-red-600 hover:bg-red-50" />
+                  </div>
                 </td>
               </tr>
             ))}
@@ -106,7 +142,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                 <p className="font-medium">№{o.number} · {buyer(o).name}</p>
                 <p className="truncate text-xs text-zinc-400">{buyer(o).email}</p>
               </div>
-              <StatusBadge status={o.status} />
+              <StatusToggle o={o} />
             </div>
             <div className="flex items-end justify-between gap-3">
               <div className="min-w-0">
@@ -119,13 +155,16 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               {formatDate(o.createdAt)}{o.provider && ` · ${o.provider}`}{o.utmSource && ` · ${o.utmSource}`}
               {o.note && <span className="block text-zinc-400">{o.note}</span>}
             </p>
-            {o.status === "PENDING" && (
-              <form className="flex gap-2 pt-1">
-                <input type="hidden" name="id" value={o.id} />
-                <ConfirmButton formAction={markOrderPaid} className="btn-outline flex-1 px-2 py-2 text-xs" message="Buyurtmani to'langan deb belgilab, kursni ochasizmi?">✓ To&apos;landi</ConfirmButton>
-                <ConfirmButton formAction={cancelOrder} className="btn-danger px-4 py-2 text-xs" message="Buyurtmani bekor qilasizmi?">✕</ConfirmButton>
-              </form>
-            )}
+            <div className="flex items-center gap-2 pt-1">
+              {o.status === "PENDING" && (
+                <form className="flex flex-1 gap-2">
+                  <input type="hidden" name="id" value={o.id} />
+                  <ConfirmButton formAction={markOrderPaid} className="btn-outline flex-1 px-2 py-2 text-xs" message="Buyurtmani to'langan deb belgilab, kursni ochasizmi?">✓ To&apos;landi</ConfirmButton>
+                  <ConfirmButton formAction={cancelOrder} className="btn-danger px-4 py-2 text-xs" message="Buyurtmani bekor qilasizmi?">✕</ConfirmButton>
+                </form>
+              )}
+              <div className="ml-auto"><DeleteOrder o={o} className="rounded-full border border-red-200 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50" /></div>
+            </div>
           </div>
         ))}
         {orders.length === 0 && <p className="card text-center text-zinc-500">To&apos;lovlar topilmadi</p>}

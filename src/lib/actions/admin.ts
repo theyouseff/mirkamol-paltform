@@ -177,6 +177,23 @@ export async function cancelOrder(formData: FormData) {
   revalidatePath("/admin", "layout");
 }
 
+// To'langan ↔ Qaytarilgan (pul qaytarib berildi). Qaytarilgan to'lov daromaddan chiqadi; kursga kirish o'zgarmaydi (kerak bo'lsa o'quvchini kursdan chiqaring).
+export async function toggleRefund(formData: FormData) {
+  await requireAdmin();
+  const id = str(formData, "id");
+  const order = await prisma.order.findUnique({ where: { id }, select: { status: true } });
+  if (order?.status === "PAID") await prisma.order.updateMany({ where: { id, status: "PAID" }, data: { status: "REFUNDED" } });
+  else if (order?.status === "REFUNDED") await prisma.order.updateMany({ where: { id, status: "REFUNDED" }, data: { status: "PAID" } });
+  revalidatePath("/admin", "layout");
+}
+
+// To'lov yozuvini o'chiradi (daromad hisobotidan ham chiqadi). Kursga kirish o'zgarmaydi.
+export async function deleteOrder(formData: FormData) {
+  await requireAdmin();
+  await prisma.order.deleteMany({ where: { id: str(formData, "id") } });
+  revalidatePath("/admin", "layout");
+}
+
 export type MailStatus = "sent" | "failed" | "skipped";
 export type AddStudentState = {
   error?: string;

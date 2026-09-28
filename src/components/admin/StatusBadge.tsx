@@ -2,6 +2,7 @@ const styles: Record<string, [string, string]> = {
   PAID: ["To'langan", "bg-green-100 text-green-700"],
   PENDING: ["Kutilmoqda", "bg-amber-100 text-amber-700"],
   CANCELED: ["Bekor qilingan", "bg-zinc-100 text-zinc-500"],
+  REFUNDED: ["Qaytarilgan", "bg-red-100 text-red-700"],
 };
 
 export function StatusBadge({ status }: { status: string }) {

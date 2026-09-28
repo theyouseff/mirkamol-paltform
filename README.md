@@ -44,6 +44,9 @@ Admin → Kurslar → kursni tahrirlash: **Muqova rasmi** maydonida havola yozis
 ## O'quvchiga email yozish
 Analitika → «Oxirgi 7 kunda eng ko'p dars qoldirganlar» ro'yxatida har bir o'quvchi yonida **Email yozish** tugmasi: bosilsa matn maydoni ochiladi (tepada o'quvchining emaili), «Yuborish» xatni SMTP orqali jo'natadi. Xatdagi «Javob» (Reply-To) yuborgan admin/kuratorning emaili bo'ladi, shuning uchun o'quvchi javob yozsa unga boradi. Kurator faqat o'z o'quvchisiga yoza oladi; 10 daqiqada 10 tadan ko'p xat yuborib bo'lmaydi. SMTP sozlanmagan bo'lsa, xato xabari chiqadi.
 
+## To'lovlarni boshqarish
+Admin → To'lovlar: **To'langan** belgisini bossangiz (tasdiq bilan) to'lov **Qaytarilgan**ga o'tadi (pul qaytarib berildi: daromad va hisobotlardan chiqadi); **Qaytarilgan** belgisini yana bossangiz, qayta To'langan bo'ladi. Har bir qatorda **O'chirish** tugmasi to'lov yozuvini butunlay o'chiradi (tasdiq bilan, ortga qaytmaydi). Ikkalasi ham kursga kirishga tegmaydi: o'quvchini kursdan chiqarish alohida (O'quvchilar → kurs belgisi yonidagi ×). «Qaytarilgan» bo'yicha filtr ham bor.
+
 ## Postlar
 Menyuda **Kabinet**dan keyin **Postlar**: kurator o'z kursi uchun e'lon/yangilik yozadi, o'quvchi faqat o'qiydi (yoza olmaydi). Har bir post **faqat o'z kursida** ko'rinadi: masalan, LOR kuratorining posti marketing kursi o'quvchisiga chiqmaydi. Kurator postni `/curator/posts` sahifasida yozadi (faqat o'ziga biriktirilgan kurslarga) va faqat o'zinikini o'chira oladi. O'quvchi bir nechta kursga yozilgan bo'lsa, postlarni kurs bo'yicha saralaydi.
 
