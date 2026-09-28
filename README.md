@@ -36,6 +36,10 @@ Har bir **(o'quvchi, kurator)** juftligining alohida suhbati bor: kuratorlar bir
 ## Muqova rasmi yuklash
 Admin → Kurslar → kursni tahrirlash: **Muqova rasmi** maydonida havola yozish yoki **Kompyuterdan yuklash** tugmasi (JPG/PNG/WebP). Brauzer rasmni yuklashdan oldin kichraytiradi (eni 1600 px gacha, WebP), rasm bazada saqlanadi va `/api/img/<id>` orqali beriladi (bir yil keshlanadi). Yuklangach «Saqlash» tugmasini bosing. Modul muqovasi ham shunday. Eski (almashtirilgan) rasm bazada qoladi, lekin hech qayerda ko'rinmaydi.
 
+## Online holati va kirish xabari
+- **Online:** o'quvchi oxirgi 2 daqiqada sahifa ochgan yoki video ko'rgan bo'lsa, Analitikada «Oxirgi faollik» o'rnida yashil chiroqcha bilan **Online** chiqadi (sahifa har 20 soniyada o'zi yangilanadi).
+- **Kirish xabari:** o'quvchi 10 daqiqadan ortiq nofaollikdan keyin platformaga kirsa, adminga (va o'z o'quvchisi bo'lsa kuratorga) tepada o'ngda «*Ism* platformaga kirdi» xabari chiqadi.
+
 ## Postlar
 Menyuda **Kabinet**dan keyin **Postlar**: kurator o'z kursi uchun e'lon/yangilik yozadi, o'quvchi faqat o'qiydi (yoza olmaydi). Har bir post **faqat o'z kursida** ko'rinadi: masalan, LOR kuratorining posti marketing kursi o'quvchisiga chiqmaydi. Kurator postni `/curator/posts` sahifasida yozadi (faqat o'ziga biriktirilgan kurslarga) va faqat o'zinikini o'chira oladi. O'quvchi bir nechta kursga yozilgan bo'lsa, postlarni kurs bo'yicha saralaydi.
 

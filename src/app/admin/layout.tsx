@@ -2,11 +2,13 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { LogoutButton } from "@/components/LogoutButton";
 import { AdminNav } from "@/components/admin/AdminNav";
+import { EntryToaster } from "@/components/admin/EntryToaster";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await requireAdmin();
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[220px_1fr]">
+      <EntryToaster />
       <aside className="border-b border-white/10 bg-ink-950/60 p-4 backdrop-blur-md lg:min-h-screen lg:border-r lg:border-b-0">
         <div className="mb-4 flex items-center justify-between">
           <Link href="/" className="block px-3 text-lg font-bold text-gold-text">ilmaviya</Link>

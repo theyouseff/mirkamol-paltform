@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { createSession, requireUser } from "@/lib/auth";
 import { MIN_PASSWORD } from "@/lib/constants";
 import { getEnrollment, lessonState } from "@/lib/access";
+import { markSeen } from "@/lib/activity";
 
 // Video oxirigacha ko'rilganda brauzer chaqiradi: darsni tugatilgan deb belgilaydi (takror chaqirilsa zarar yo'q).
 export async function markLessonWatched(lessonId: string) {
@@ -28,6 +29,7 @@ const clamp = (n: number, max: number) => (Number.isFinite(n) ? Math.min(Math.ma
 export async function saveWatchProgress(lessonId: string, position: number, duration: number, watched: number) {
   const user = await requireUser();
   if (user.role === "ADMIN") return; // adminning ko'rishlari o'quvchi analitikasiga kirmasin
+  await markSeen(user.id); // video ko'rilayotgan bo'lsa — online
   const lesson = await prisma.lesson.findUnique({ where: { id: lessonId }, include: { module: true } });
   if (!lesson) return;
   const enrollment = await getEnrollment(user.id, lesson.module.courseId);

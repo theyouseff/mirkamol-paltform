@@ -9,12 +9,13 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   name         String
   passwordHash String
-  role         String   @default("STUDENT") // ADMIN | CURATOR | STUDENT
-  createdAt    DateTime @default(now())
+  role         String    @default("STUDENT") // ADMIN | CURATOR | STUDENT
+  createdAt    DateTime  @default(now())
+  lastSeenAt   DateTime? // oxirgi faollik (sahifa ochish yoki video ko'rish); "online" holati va kirish xabari shundan
 
   enrollments    Enrollment[]
   orders         Order[]
@@ -25,6 +26,7 @@ model User {
   dayNotes       DayNote[]
   chatMessages   ChatMessage[]
   curatorChats   ChatMessage[]    @relation("ChatCurator")
+  entries        PlatformEntry[]
   posts          Post[]
   resets         PasswordReset[]
 }
@@ -234,4 +236,14 @@ model UploadedImage {
   mime      String
   data      Bytes
   createdAt DateTime @default(now())
+}
+
+// O'quvchining platformaga "kirishi": 10 daqiqadan ortiq nofaollikdan keyin birinchi sahifa ochilishi. Admin/kuratorga "... platformaga kirdi" xabari shundan.
+model PlatformEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
 }
