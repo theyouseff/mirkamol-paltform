@@ -177,13 +177,17 @@ export async function cancelOrder(formData: FormData) {
   revalidatePath("/admin", "layout");
 }
 
-// To'langan ↔ Qaytarilgan (pul qaytarib berildi). Qaytarilgan to'lov daromaddan chiqadi; kursga kirish o'zgarmaydi (kerak bo'lsa o'quvchini kursdan chiqaring).
-export async function toggleRefund(formData: FormData) {
+// To'lov holatini o'zgartiradi: To'langan / Kutilmoqda / Bekor qilingan (Qaytarildi ham shu bloka tushadi). To'langan bo'lganda kurs ochiladi;
+// boshqa holatga o'tganda kursga kirish o'zgarmaydi (kerak bo'lsa o'quvchini kursdan chiqaring). Daromadga faqat To'langanlar kiradi.
+export async function setOrderStatus(formData: FormData) {
   await requireAdmin();
   const id = str(formData, "id");
-  const order = await prisma.order.findUnique({ where: { id }, select: { status: true } });
-  if (order?.status === "PAID") await prisma.order.updateMany({ where: { id, status: "PAID" }, data: { status: "REFUNDED" } });
-  else if (order?.status === "REFUNDED") await prisma.order.updateMany({ where: { id, status: "REFUNDED" }, data: { status: "PAID" } });
+  const status = str(formData, "status");
+  if (!["PAID", "PENDING", "CANCELED"].includes(status)) return;
+  const order = await prisma.order.findUnique({ where: { id }, select: { status: true, userId: true, provider: true } });
+  if (!order || order.status === status) return;
+  if (status === "PAID" && order.userId) await fulfillOrder(id, order.provider || "manual");
+  else await prisma.order.update({ where: { id }, data: { status, ...(status === "PAID" ? { paidAt: new Date() } : {}) } });
   revalidatePath("/admin", "layout");
 }
 

@@ -2,7 +2,7 @@ import { buyer } from "@/lib/buyer";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { cancelOrder, deleteOrder, markOrderPaid, toggleRefund } from "@/lib/actions/admin";
+import { cancelOrder, deleteOrder, markOrderPaid, setOrderStatus } from "@/lib/actions/admin";
 import { formatDate, formatPrice } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmButton } from "@/components/ConfirmButton";
@@ -12,28 +12,39 @@ const filters = [
   { value: "PAID", label: "To'langan" },
   { value: "PENDING", label: "Kutilmoqda" },
   { value: "CANCELED", label: "Bekor qilingan" },
-  { value: "REFUNDED", label: "Qaytarilgan" },
 ];
 
 type OrderRow = { id: string; number: number; status: string };
 
-// To'langan/Qaytarilgan belgisi bosiladigan: bosilsa holat darhol almashadi
+// Holat belgisi bosiladigan: bosilsa boshqa holatlar chiqadi (To'langan → Kutilmoqda / Qaytarildi). Tanlangan holat darhol o'rnatiladi va
+// buyurtma tegishli blokka (filtr) tushadi. «Qaytarildi» — «Bekor qilingan» bloki.
+const STATUS_OPTIONS: Record<string, { value: string; label: string }[]> = {
+  PAID: [{ value: "PENDING", label: "Kutilmoqda" }, { value: "CANCELED", label: "Qaytarildi" }],
+  PENDING: [{ value: "PAID", label: "To'langan" }, { value: "CANCELED", label: "Bekor qilingan" }],
+  CANCELED: [{ value: "PAID", label: "To'langan" }, { value: "PENDING", label: "Kutilmoqda" }],
+};
+
 function StatusToggle({ o }: { o: OrderRow }) {
-  if (o.status !== "PAID" && o.status !== "REFUNDED") return <StatusBadge status={o.status} />;
-  const toRefund = o.status === "PAID";
+  const options = STATUS_OPTIONS[o.status];
+  if (!options) return <StatusBadge status={o.status} />;
   return (
-    <form>
-      <input type="hidden" name="id" value={o.id} />
-      {/* Tasdiqsiz: bir bosishda almashadi (xato bosilsa, yana bossangiz qaytadi) */}
-      <button
-        type="submit"
-        formAction={toggleRefund}
-        title={toRefund ? "Bosib «Qaytarilgan» ga o'zgartiring" : "Bosib «To'langan» ga qaytaring"}
-        className="cursor-pointer rounded-full ring-offset-1 transition hover:ring-2 hover:ring-zinc-300"
-      >
+    <details key={o.status} className="group">
+      <summary className="inline-block cursor-pointer list-none rounded-full ring-offset-1 transition hover:ring-2 hover:ring-zinc-300" title="Holatni o'zgartirish">
         <StatusBadge status={o.status} />
-      </button>
-    </form>
+      </summary>
+      <div className="mt-1 flex flex-wrap gap-1">
+        {options.map((op) => (
+          // Har bir variant alohida forma: server action tugmaning name/value'sini almashtirib yuboradi, shuning uchun holat yashirin maydonda
+          <form key={op.value} action={setOrderStatus}>
+            <input type="hidden" name="id" value={o.id} />
+            <input type="hidden" name="status" value={op.value} />
+            <button type="submit" className="rounded-full border border-zinc-300 bg-white px-2.5 py-1 text-xs text-zinc-700 hover:bg-zinc-100">
+              {op.label}
+            </button>
+          </form>
+        ))}
+      </div>
+    </details>
   );
 }
 
