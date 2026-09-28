@@ -90,34 +90,22 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
     curators.map((c) => prisma.user.count({ where: { role: "STUDENT", enrollments: { some: { courseId: { in: c.curatorCourses.map((x) => x.courseId) } } } } })),
   );
 
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">O&apos;quvchilar</h1>
-      <AddCuratorForm courses={courses.map((c) => ({ id: c.id, title: c.title }))} />
-      <CuratorList courses={courses.map((c) => ({ id: c.id, title: c.title }))} curators={curators.map((c, i) => ({ id: c.id, name: c.name, email: c.email, courseIds: c.curatorCourses.map((x) => x.courseId), students: studentCounts[i] }))} />
-      <AddStudentForm courses={courses.map((c) => ({ id: c.id, label: c.title, price: c.price }))} />
+  // Foydalanuvchilar kurs bo'yicha guruhlanadi: kurs nomi bosilganda o'sha kursning o'quvchilari ro'yxati ochiladi.
+  // Bir nechta kursga yozilgan foydalanuvchi har bir kursning ro'yxatida chiqadi; kursi yo'qlar — «Kursi yo'q» guruhida.
+  const filtered = !!(q || author || course);
+  const groups = [
+    ...courses.map((c) => ({ key: c.id, title: c.title, list: users.filter((u) => u.enrollments.some((e) => e.courseId === c.id)) })),
+    { key: "none", title: "Kursi yo'q", list: users.filter((u) => u.enrollments.length === 0) },
+  ].filter((g) => (filtered || g.key === "none" ? g.list.length > 0 : true)); // filtr yoki «Kursi yo'q» bo'sh bo'lsa — bo'sh guruh yashiriladi
 
-      <form className="flex flex-wrap gap-2">
-        <input name="q" defaultValue={q} className="input max-w-xs" placeholder="Ism yoki email bo'yicha qidirish" />
-        <select name="author" defaultValue={author} className="input max-w-[200px]">
-          <option value="">Barcha mualliflar</option>
-          {authors.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-        </select>
-        <select name="course" defaultValue={course} className="input max-w-[220px]">
-          <option value="">Barcha kurslar</option>
-          {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
-        </select>
-        <button className="btn-outline">Filtr</button>
-        {(q || author || course) && <Link href="/admin/students" className="btn text-gold-text/80 hover:text-gold-text">Tozalash</Link>}
-      </form>
-
-      <div className="card overflow-x-auto p-0 max-lg:hidden">
+  const renderTable = (list: typeof users) => (
+    <div className="overflow-x-auto max-lg:hidden">
         <table className="w-full min-w-[900px] text-sm">
           <thead className="bg-zinc-50 text-left text-zinc-500">
             <tr><th className="px-4 py-3">Ism</th><th>Email</th><th>Kurslar</th><th>Darslar</th><th>Qo&apos;shilgan</th><th>Rol</th><th></th></tr>
           </thead>
           <tbody>
-            {users.map((u) => (
+            {list.map((u) => (
               <tr key={u.id} className="border-t border-zinc-100 align-top">
                 <td className="px-4 py-3 font-medium">{u.name}</td>
                 <td>{u.email}</td>
@@ -152,12 +140,12 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
             ))}
           </tbody>
         </table>
-        {users.length === 0 && <p className="p-6 text-center text-zinc-500">Topilmadi</p>}
       </div>
+  );
 
-      {/* Telefon va planshet: jadval o'rniga kartochkalar */}
-      <div className="space-y-3 lg:hidden">
-        {users.map((u) => (
+  const renderCards = (list: typeof users) => (
+      <div className="space-y-3 p-3 lg:hidden">
+        {list.map((u) => (
           <div key={u.id} className="card space-y-3 p-4 text-sm">
             <div>
               <p className="font-medium">{u.name}</p>
@@ -185,7 +173,53 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
             )}
           </div>
         ))}
-        {users.length === 0 && <p className="card text-center text-zinc-500">Topilmadi</p>}
+      </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">O&apos;quvchilar</h1>
+      <AddCuratorForm courses={courses.map((c) => ({ id: c.id, title: c.title }))} />
+      <CuratorList courses={courses.map((c) => ({ id: c.id, title: c.title }))} curators={curators.map((c, i) => ({ id: c.id, name: c.name, email: c.email, courseIds: c.curatorCourses.map((x) => x.courseId), students: studentCounts[i] }))} />
+      <AddStudentForm courses={courses.map((c) => ({ id: c.id, label: c.title, price: c.price }))} />
+
+      <form className="flex flex-wrap gap-2">
+        <input name="q" defaultValue={q} className="input max-w-xs" placeholder="Ism yoki email bo'yicha qidirish" />
+        <select name="author" defaultValue={author} className="input max-w-[200px]">
+          <option value="">Barcha mualliflar</option>
+          {authors.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+        </select>
+        <select name="course" defaultValue={course} className="input max-w-[220px]">
+          <option value="">Barcha kurslar</option>
+          {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+        </select>
+        <button className="btn-outline">Filtr</button>
+        {(q || author || course) && <Link href="/admin/students" className="btn text-gold-text/80 hover:text-gold-text">Tozalash</Link>}
+      </form>
+
+      <div className="space-y-3">
+        {groups.map((g) => (
+          <details key={g.key} open={filtered} className="card group overflow-hidden p-0">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 hover:bg-zinc-50">
+              <div className="min-w-0">
+                <h2 className="truncate font-semibold">{g.title}</h2>
+                <p className="text-sm text-zinc-500">{g.list.length} kishi</p>
+              </div>
+              <span className="text-zinc-400 transition group-open:rotate-180" aria-hidden>▾</span>
+            </summary>
+            <div className="border-t border-zinc-100">
+              {g.list.length === 0 ? (
+                <p className="p-6 text-center text-zinc-500">Bu kursda hali o&apos;quvchi yo&apos;q</p>
+              ) : (
+                <>
+                  {renderTable(g.list)}
+                  {renderCards(g.list)}
+                </>
+              )}
+            </div>
+          </details>
+        ))}
+        {groups.length === 0 && <p className="card text-center text-zinc-500">Topilmadi</p>}
       </div>
     </div>
   );
