@@ -9,7 +9,7 @@ export function mailConfigured() {
   return !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
 }
 
-export async function sendMail(to: string, subject: string, text: string, html: string): Promise<MailResult> {
+export async function sendMail(to: string, subject: string, text: string, html: string, replyTo?: string): Promise<MailResult> {
   if (!mailConfigured()) return { sent: false, reason: "Email yuborish sozlanmagan (SMTP)" };
   try {
     const port = Number(process.env.SMTP_PORT ?? 465);
@@ -25,6 +25,7 @@ export async function sendMail(to: string, subject: string, text: string, html: 
       subject,
       text,
       html,
+      ...(replyTo ? { replyTo } : {}),
     });
     return { sent: true };
   } catch (e) {
@@ -105,4 +106,15 @@ ${codeBox(code)}
 <p><b>${esc(site)}/activate</b> sahifasida emailingiz va shu kodni kiriting, keyin yangi parol o'ylab toping.</p>
 <p style="color:#666;font-size:13px">Kod bir marta ishlaydi va 1 soat amal qiladi. Agar bu so'rovni siz yubormagan bo'lsangiz, xatni e'tiborsiz qoldiring.</p></div>`;
   return sendMail(to, subject, text, html);
+}
+
+// Admin/kurator o'quvchiga o'z matnini yuboradi (javob shu xodimning emailiga boradi)
+export function sendStaffMessage(to: string, studentName: string, senderName: string, senderEmail: string, message: string) {
+  const subject = `ilmaviya: ${senderName} dan xabar`;
+  const text = `Salom, ${studentName}!\n\n${message}\n\n— ${senderName}\nilmaviya (${SITE_URL})`;
+  const html = `<div style="font-family:Arial,sans-serif;max-width:520px;line-height:1.6">
+<p>Salom, <b>${esc(studentName)}</b>!</p>
+<div style="white-space:pre-wrap">${esc(message)}</div>
+<p style="color:#666;font-size:13px;margin-top:20px">— ${esc(senderName)}<br><a href="${SITE_URL}" style="color:#666">ilmaviya</a></p></div>`;
+  return sendMail(to, subject, text, html, senderEmail);
 }

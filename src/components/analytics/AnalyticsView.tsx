@@ -6,6 +6,7 @@ import { VisitCalendar } from "@/components/VisitCalendar";
 import type { DayNote } from "@/lib/day-status";
 import { missedFrom, ONLINE_MS, WATCHING_MS } from "@/lib/activity";
 import { AutoRefresh } from "@/components/analytics/AutoRefresh";
+import { EmailStudent } from "@/components/analytics/EmailStudent";
 import { StudentLink, SwitchProvider, TopPanel } from "@/components/admin/StudentSwitch";
 
 const step = (i: number) => ({ "--i": i }) as CSSProperties;
@@ -263,6 +264,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
                     </div>
                     <span className="badge shrink-0 bg-red-100 text-red-700">{missed} kun kirmagan</span>
                   </div>
+                  <EmailStudent studentId={r.u.id} name={r.u.name} email={r.u.email} />
                 </li>
               ))}
             </ul>

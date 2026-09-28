@@ -41,6 +41,9 @@ Admin → Kurslar → kursni tahrirlash: **Muqova rasmi** maydonida havola yozis
 - **Tomosha qilyapti:** video ijro etilayotganda (har 15 soniyada brauzer uradi) Analitikada Online o'rniga **Tomosha qilyapti** chiqadi; pauza qilsa yoki sahifadan chiqsa darhol o'chadi (yopilgan brauzerda ham 45 soniyada o'chadi).
 - **Kirish xabari:** o'quvchi 10 daqiqadan ortiq nofaollikdan keyin platformaga kirsa, adminga (va o'z o'quvchisi bo'lsa kuratorga) tepada o'ngda «*Ism* platformaga kirdi» xabari chiqadi.
 
+## O'quvchiga email yozish
+Analitika → «Oxirgi 7 kunda eng ko'p dars qoldirganlar» ro'yxatida har bir o'quvchi yonida **Email yozish** tugmasi: bosilsa matn maydoni ochiladi (tepada o'quvchining emaili), «Yuborish» xatni SMTP orqali jo'natadi. Xatdagi «Javob» (Reply-To) yuborgan admin/kuratorning emaili bo'ladi, shuning uchun o'quvchi javob yozsa unga boradi. Kurator faqat o'z o'quvchisiga yoza oladi; 10 daqiqada 10 tadan ko'p xat yuborib bo'lmaydi. SMTP sozlanmagan bo'lsa, xato xabari chiqadi.
+
 ## Postlar
 Menyuda **Kabinet**dan keyin **Postlar**: kurator o'z kursi uchun e'lon/yangilik yozadi, o'quvchi faqat o'qiydi (yoza olmaydi). Har bir post **faqat o'z kursida** ko'rinadi: masalan, LOR kuratorining posti marketing kursi o'quvchisiga chiqmaydi. Kurator postni `/curator/posts` sahifasida yozadi (faqat o'ziga biriktirilgan kurslarga) va faqat o'zinikini o'chira oladi. O'quvchi bir nechta kursga yozilgan bo'lsa, postlarni kurs bo'yicha saralaydi.
 
