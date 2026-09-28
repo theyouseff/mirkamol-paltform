@@ -2,7 +2,6 @@ import { createHash, randomInt } from "node:crypto";
 import { prisma } from "./db";
 
 export const RESET_TTL_MS = 60 * 60_000; // parolni tiklash kodi: 1 soat
-export const INVITE_TTL_MS = 7 * 24 * 60 * 60_000; // yangi o'quvchi kodi: 7 kun
 
 // O'xshash belgilarsiz (0/O, 1/I/L): kodni xatdan ko'chirish yoki yozishda adashilmasin. 31 belgi, 8 ta joy.
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";

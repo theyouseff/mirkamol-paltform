@@ -7,7 +7,7 @@ import { SubmitButton } from "../SubmitButton";
 type CourseOption = { id: string; label: string; price: number };
 
 const MAIL_TEXT = {
-  sent: "✓ Bir martalik kod emailga yuborildi",
+  sent: "✓ Login va parol emailga yuborildi",
   failed: "⚠ Email yuborilmadi",
   skipped: "Email yuborilmadi (tanlanmagan)",
 } as const;
@@ -22,7 +22,7 @@ export function AddStudentForm({ courses }: { courses: CourseOption[] }) {
       <div>
         <h2 className="font-semibold">O&apos;quvchi qo&apos;shish / kurs ochish</h2>
         <p className="text-sm text-zinc-500">
-          To&apos;lov kelgach shu yerda kiriting: yangi o&apos;quvchiga akkaunt ochiladi va emailiga bir martalik kod yuboriladi — o&apos;quvchi kodni saytga kiritib, parolni o&apos;zi qo&apos;yadi. Mavjud o&apos;quvchiga faqat yangi kurs ochiladi.
+          To&apos;lov kelgach shu yerda kiriting: yangi o&apos;quvchiga akkaunt ochiladi, tayyor parol yaratilib emailiga yuboriladi — o&apos;quvchi email va shu parol bilan kiradi (keyin «Parol» bo&apos;limida o&apos;zgartira oladi). Mavjud o&apos;quvchiga faqat yangi kurs ochiladi.
         </p>
       </div>
       <form action={action} className="space-y-3">
@@ -65,7 +65,7 @@ export function AddStudentForm({ courses }: { courses: CourseOption[] }) {
           <input name="note" className="input" placeholder="Masalan: kartaga tushdi, skrinshot Telegramda" />
         </div>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="sendMail" defaultChecked /> Emailga bir martalik kod yuborilsin
+          <input type="checkbox" name="sendMail" defaultChecked /> Emailga login va parol yuborilsin
         </label>
         <SubmitButton>Kirish ochish</SubmitButton>
       </form>
@@ -77,11 +77,11 @@ export function AddStudentForm({ courses }: { courses: CourseOption[] }) {
           <p className="font-medium text-green-800">
             {r.isNew ? "Yangi akkaunt ochildi" : "Mavjud akkauntga kurs qo'shildi"}: {r.name} → «{r.course}»
           </p>
-          {r.activationCode && (
+          {r.password && (
             <div className="rounded-lg bg-white p-3">
               <p>Login (email): <b>{r.email}</b></p>
-              <p>Bir martalik kod (7 kun): <b className="font-mono text-base tracking-widest">{r.activationCode}</b></p>
-              <p className="mt-1 text-xs text-zinc-500">Xat ketmadi. Kodni o&apos;quvchiga Telegramda shaxsiy xabarda yuboring; u saytda «Kodni kiritish» orqali email va kodni yozib, o&apos;zi parol qo&apos;yadi. Kod faqat hozir ko&apos;rinadi.</p>
+              <p>Parol: <b className="font-mono text-base">{r.password}</b></p>
+              <p className="mt-1 text-xs text-zinc-500">O&apos;quvchi shu email va parol bilan kiradi. Xat ketmasa yoki yo&apos;qolsa, parolni o&apos;quvchiga Telegramda shaxsiy xabarda yuboring. Parol faqat hozir ko&apos;rinadi (keyin «Yangi parol» tugmasi bilan yangilash mumkin).</p>
             </div>
           )}
           <p className={r.mail === "failed" ? "text-amber-700" : "text-zinc-600"}>

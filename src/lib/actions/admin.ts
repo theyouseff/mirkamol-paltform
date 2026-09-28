@@ -9,8 +9,7 @@ import bcrypt from "bcryptjs";
 import { normalizeEmail } from "@/lib/format";
 import { isHexColor } from "@/lib/brand";
 import { generatePassword } from "@/lib/password";
-import { sendActivation, sendCourseOpened, sendCuratorInvite, sendNewPassword, type MailResult } from "@/lib/mail";
-import { createResetCode, INVITE_TTL_MS } from "@/lib/reset";
+import { sendCourseOpened, sendCuratorAccess, sendNewPassword, sendStudentAccess, type MailResult } from "@/lib/mail";
 
 const str = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 const int = (fd: FormData, key: string, fallback = 0) => {
@@ -185,7 +184,7 @@ export async function cancelOrder(formData: FormData) {
 export type MailStatus = "sent" | "failed" | "skipped";
 export type AddStudentState = {
   error?: string;
-  result?: { name: string; email: string; course: string; isNew: boolean; activationCode: string | null; mail: MailStatus; mailReason?: string };
+  result?: { name: string; email: string; course: string; isNew: boolean; password: string | null; mail: MailStatus; mailReason?: string };
 };
 
 function mailStatus(r: MailResult | null): { mail: MailStatus; mailReason?: string } {
@@ -204,7 +203,7 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
 
   let user = await prisma.user.findUnique({ where: { email } });
   const isNew = !user;
-  let activationCode: string | null = null;
+  let password: string | null = null; // faqat yangi akkaunt uchun: tayyor parol (emailga ketadi va panelda ko'rinadi)
 
   if (user) {
     const enrollment = await prisma.enrollment.findUnique({
@@ -214,9 +213,9 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
   } else {
     const name = str(formData, "name");
     if (name.length < 2) return { error: "Yangi o'quvchi uchun ism va familiyani yozing" };
-    // Vaqtinchalik parol hech kimga ko'rsatilmaydi; o'quvchi kod orqali o'zi parol qo'yadi
-    user = await prisma.user.create({ data: { name, email, passwordHash: await bcrypt.hash(generatePassword(24), 10) } });
-    activationCode = await createResetCode(user.id, INVITE_TTL_MS);
+    // Yangi o'quvchiga tayyor parol beriladi: email va shu parol bilan to'g'ridan-to'g'ri kiradi (keyin «Parol» bo'limida o'zgartiradi)
+    password = generatePassword();
+    user = await prisma.user.create({ data: { name, email, passwordHash: await bcrypt.hash(password, 10) } });
   }
 
   const order = await prisma.$transaction(async (tx) => {
@@ -238,8 +237,8 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
 
   let mail: MailResult | null = null;
   if (formData.get("sendMail") === "on") {
-    mail = activationCode
-      ? await sendActivation(email, user.name, course.title, activationCode)
+    mail = password
+      ? await sendStudentAccess(email, user.name, course.title, password)
       : await sendCourseOpened(email, user.name, course.title);
   }
   revalidatePath("/admin", "layout");
@@ -247,8 +246,8 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
   return {
     result: {
       name: user.name, email, course: course.title, isNew,
-      // Xat ketgan bo'lsa kodni ko'rsatmaymiz; ketmasa admin uni Telegramda o'zi yuboradi
-      activationCode: status.mail === "sent" ? null : activationCode,
+      // Parol panelda ham ko'rinadi (xat ketmasa yoki o'quvchi yo'qotsa, admin uni Telegramda yuboradi)
+      password,
       ...status,
     },
   };
@@ -284,7 +283,7 @@ export async function deleteStudent(formData: FormData) {
 
 export type AddCuratorState = {
   error?: string;
-  result?: { name: string; email: string; promoted: boolean; courses: number; activationCode: string | null; mail: MailStatus; mailReason?: string };
+  result?: { name: string; email: string; promoted: boolean; courses: number; password: string | null; mail: MailStatus; mailReason?: string };
 };
 
 // Kuratorga kurslarni biriktiradi (eskilari almashadi): kurator shu kurslardagi hamma o'quvchini ko'radi.
@@ -319,18 +318,18 @@ export async function addCurator(_: AddCuratorState, formData: FormData): Promis
     await prisma.user.update({ where: { id: existing.id }, data: { role: "CURATOR" } });
     const courses = await assignCourses(existing.id, formData.getAll("courseId").map(String));
     revalidatePath("/admin", "layout");
-    return { result: { name: existing.name, email, promoted: true, courses, activationCode: null, mail: "skipped" } };
+    return { result: { name: existing.name, email, promoted: true, courses, password: null, mail: "skipped" } };
   }
 
   const name = str(formData, "name");
   if (name.length < 2) return { error: "Kurator ismini yozing" };
-  const user = await prisma.user.create({ data: { name, email, role: "CURATOR", passwordHash: await bcrypt.hash(generatePassword(24), 10) } });
+  const password = generatePassword();
+  const user = await prisma.user.create({ data: { name, email, role: "CURATOR", passwordHash: await bcrypt.hash(password, 10) } });
   const courses = await assignCourses(user.id, formData.getAll("courseId").map(String));
-  const code = await createResetCode(user.id, INVITE_TTL_MS);
-  const mail = formData.get("sendMail") === "on" ? await sendCuratorInvite(email, name, code) : null;
+  const mail = formData.get("sendMail") === "on" ? await sendCuratorAccess(email, name, password) : null;
   const status = mailStatus(mail);
   revalidatePath("/admin", "layout");
-  return { result: { name, email, promoted: false, courses, activationCode: status.mail === "sent" ? null : code, ...status } };
+  return { result: { name, email, promoted: false, courses, password, ...status } };
 }
 
 export type ResetPasswordState = { error?: string; password?: string; mail?: MailStatus; mailReason?: string };

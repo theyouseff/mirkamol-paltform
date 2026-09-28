@@ -13,7 +13,7 @@ export function AddCuratorForm({ courses }: { courses: { id: string; title: stri
       <div>
         <h2 className="font-semibold">Kurator qo&apos;shish</h2>
         <p className="text-sm text-zinc-500">
-          Yangi email bo&apos;lsa akkaunt ochiladi va emailiga bir martalik kod yuboriladi: kurator kodni kiritib, parolni o&apos;zi qo&apos;yadi va <b>kurator paneliga</b> kiradi (o&apos;quvchi kabinetiga ham, admin panelga ham emas). Mavjud foydalanuvchining emailini yozsangiz, roli kurator bo&apos;ladi (u qayta kirishi kerak).
+          Yangi email bo&apos;lsa akkaunt ochiladi, tayyor parol yaratilib emailiga yuboriladi: kurator email va shu parol bilan <b>kurator paneliga</b> kiradi (o&apos;quvchi kabinetiga ham, admin panelga ham emas). Mavjud foydalanuvchining emailini yozsangiz, roli kurator bo&apos;ladi (u qayta kirishi kerak).
         </p>
       </div>
       <form action={action} className="space-y-3">
@@ -33,7 +33,7 @@ export function AddCuratorForm({ courses }: { courses: { id: string; title: stri
           <CourseMenu courses={courses} />
         </fieldset>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="sendMail" defaultChecked /> Emailga bir martalik kod yuborilsin
+          <input type="checkbox" name="sendMail" defaultChecked /> Emailga login va parol yuborilsin
         </label>
         <SubmitButton>Kurator qo&apos;shish</SubmitButton>
       </form>
@@ -48,14 +48,14 @@ export function AddCuratorForm({ courses }: { courses: { id: string; title: stri
           </p>
           {!r.promoted && (
             <p className={r.mail === "failed" ? "text-amber-700" : "text-zinc-600"}>
-              {r.mail === "sent" ? "✓ Bir martalik kod emailga yuborildi" : r.mail === "failed" ? `⚠ Email yuborilmadi${r.mailReason ? `: ${r.mailReason}` : ""}` : "Email yuborilmadi (tanlanmagan)"}
+              {r.mail === "sent" ? "✓ Login va parol emailga yuborildi" : r.mail === "failed" ? `⚠ Email yuborilmadi${r.mailReason ? `: ${r.mailReason}` : ""}` : "Email yuborilmadi (tanlanmagan)"}
             </p>
           )}
-          {r.activationCode && (
+          {r.password && (
             <div className="rounded-lg bg-white p-3">
               <p>Login (email): <b>{r.email}</b></p>
-              <p>Bir martalik kod (7 kun): <b className="font-mono text-base tracking-widest">{r.activationCode}</b></p>
-              <p className="mt-1 text-xs text-zinc-500">Kodni kuratorga Telegramda shaxsiy xabarda yuboring; u saytda <b>/activate</b> sahifasida email va kodni kiritib, parol qo&apos;yadi. Kod faqat hozir ko&apos;rinadi.</p>
+              <p>Parol: <b className="font-mono text-base">{r.password}</b></p>
+              <p className="mt-1 text-xs text-zinc-500">Kurator shu email va parol bilan kiradi. Xat ketmasa, parolni kuratorga Telegramda shaxsiy xabarda yuboring. Parol faqat hozir ko&apos;rinadi.</p>
             </div>
           )}
         </div>
