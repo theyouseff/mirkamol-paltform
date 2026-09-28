@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { fulfillOrder } from "@/lib/access";
+import { remindOrder } from "@/lib/reminders";
 import bcrypt from "bcryptjs";
 import { normalizeEmail } from "@/lib/format";
 import { generatePassword } from "@/lib/password";
@@ -188,6 +189,23 @@ export async function setOrderStatus(formData: FormData) {
   if (!order || order.status === status) return;
   if (status === "PAID" && order.userId) await fulfillOrder(id, order.provider || "manual");
   else await prisma.order.update({ where: { id }, data: { status, ...(status === "PAID" ? { paidAt: new Date() } : {}) } });
+  revalidatePath("/admin", "layout");
+}
+
+// Kutilmoqda to'lov uchun to'lash kerak bo'lgan kun. Shu kuni (ertalab 09:00, Toshkent) o'quvchiga emailga eslatma avtomatik ketadi.
+export async function setOrderDue(formData: FormData) {
+  await requireAdmin();
+  const id = str(formData, "id");
+  const day = str(formData, "dueDay");
+  const valid = /^\d{4}-\d{2}-\d{2}$/.test(day) && !Number.isNaN(new Date(`${day}T00:00:00Z`).getTime());
+  await prisma.order.updateMany({ where: { id, status: "PENDING" }, data: { dueDay: valid ? day : null, reminderSentAt: null } });
+  revalidatePath("/admin", "layout");
+}
+
+// Eslatmani hozir qo'lda yuborish
+export async function remindOrderNow(formData: FormData) {
+  await requireAdmin();
+  await remindOrder(str(formData, "id"));
   revalidatePath("/admin", "layout");
 }
 

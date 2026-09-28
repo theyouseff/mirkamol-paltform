@@ -118,3 +118,16 @@ export function sendStaffMessage(to: string, studentName: string, senderName: st
 <p style="color:#666;font-size:13px;margin-top:20px">— ${esc(senderName)}<br><a href="${SITE_URL}" style="color:#666">ilmaviya</a></p></div>`;
   return sendMail(to, subject, text, html, senderEmail);
 }
+
+// To'lov muddati kelganda o'quvchiga eslatma (Kutilmoqda holatidagi to'lov uchun)
+export function sendPaymentReminder(to: string, name: string, courseTitle: string, amountText: string, dueText: string, contact: string) {
+  const subject = `To'lov eslatmasi: ${courseTitle}`;
+  const text = `Salom, ${name}!\n\n«${courseTitle}» kursi uchun to'lov muddati keldi (${dueText}).\nTo'lanishi kerak: ${amountText}\n\nTo'lov qilgach bizga yozing${contact ? `: ${contact}` : ""}\n\nAgar allaqachon to'lagan bo'lsangiz, bu xatni e'tiborsiz qoldiring.`;
+  const html = `<div style="font-family:Arial,sans-serif;max-width:480px;line-height:1.6">
+<p>Salom, <b>${esc(name)}</b>!</p>
+<p>«<b>${esc(courseTitle)}</b>» kursi uchun to'lov muddati keldi (<b>${esc(dueText)}</b>).</p>
+<div style="background:#f4f4f8;border-radius:10px;padding:14px 16px;margin:16px 0">To'lanishi kerak: <b style="font-size:18px">${esc(amountText)}</b></div>
+${contact ? `<p>To'lov qilgach bizga yozing: <a href="${esc(contact)}">${esc(contact)}</a></p>` : "<p>To'lov qilgach bizga yozing.</p>"}
+<p style="color:#666;font-size:13px">Agar allaqachon to'lagan bo'lsangiz, bu xatni e'tiborsiz qoldiring.</p></div>`;
+  return sendMail(to, subject, text, html);
+}

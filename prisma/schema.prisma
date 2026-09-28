@@ -103,22 +103,24 @@ model Enrollment {
 }
 
 model Order {
-  id          String    @id @default(cuid())
-  number      Int       @unique // Payme/Click uchun qisqa raqam
-  userId      String? // o'quvchi akkaunti o'chirilsa bo'sh qoladi, to'lov yozuvi saqlanadi
-  buyerName   String    @default("") // to'lov paytidagi ism/email nusxasi (akkaunt o'chirilgach ham hisobotda ko'rinadi)
-  buyerEmail  String    @default("")
-  courseId    String
-  amount      Int
-  status      String    @default("PENDING") // PENDING | PAID | CANCELED
-  provider    String    @default("") // payme | click | manual | test
-  utmSource   String    @default("")
-  utmCampaign String    @default("")
-  note        String    @default("") // masalan: "Karta orqali, skrinshot Telegramda"
-  createdAt   DateTime  @default(now())
-  paidAt      DateTime?
-  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  course      Course    @relation(fields: [courseId], references: [id], onDelete: Restrict) // to'lov yozuvlari kurs bilan birga o'chib ketmasin
+  id             String    @id @default(cuid())
+  number         Int       @unique // Payme/Click uchun qisqa raqam
+  userId         String? // o'quvchi akkaunti o'chirilsa bo'sh qoladi, to'lov yozuvi saqlanadi
+  buyerName      String    @default("") // to'lov paytidagi ism/email nusxasi (akkaunt o'chirilgach ham hisobotda ko'rinadi)
+  buyerEmail     String    @default("")
+  courseId       String
+  amount         Int
+  status         String    @default("PENDING") // PENDING | PAID | CANCELED
+  provider       String    @default("") // payme | click | manual | test
+  utmSource      String    @default("")
+  utmCampaign    String    @default("")
+  note           String    @default("") // masalan: "Karta orqali, skrinshot Telegramda"
+  createdAt      DateTime  @default(now())
+  paidAt         DateTime?
+  dueDay         String? // Kutilmoqda: to'lash kerak bo'lgan kun (Toshkent vaqti, "2026-10-15"); shu kuni o'quvchiga emailga eslatma ketadi
+  reminderSentAt DateTime? // eslatma yuborilgan vaqt (bir sana uchun bir marta)
+  user           User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  course         Course    @relation(fields: [courseId], references: [id], onDelete: Restrict) // to'lov yozuvlari kurs bilan birga o'chib ketmasin
 }
 
 model LessonProgress {

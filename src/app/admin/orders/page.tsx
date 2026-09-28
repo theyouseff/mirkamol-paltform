@@ -2,7 +2,9 @@ import { buyer } from "@/lib/buyer";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { cancelOrder, deleteOrder, markOrderPaid, setOrderStatus } from "@/lib/actions/admin";
+import { cancelOrder, deleteOrder, markOrderPaid, remindOrderNow, setOrderDue, setOrderStatus } from "@/lib/actions/admin";
+import { dueLabel } from "@/lib/reminders";
+import { SubmitButton } from "@/components/SubmitButton";
 import { formatDate, formatPrice } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmButton } from "@/components/ConfirmButton";
@@ -14,7 +16,7 @@ const filters = [
   { value: "CANCELED", label: "Bekor qilingan" },
 ];
 
-type OrderRow = { id: string; number: number; status: string };
+type OrderRow = { id: string; number: number; status: string; dueDay: string | null; reminderSentAt: Date | null };
 
 // Holat belgisi bosiladigan: bosilsa boshqa holatlar chiqadi (To'langan → Kutilmoqda / Qaytarildi). Tanlangan holat darhol o'rnatiladi va
 // buyurtma tegishli blokka (filtr) tushadi. «Qaytarildi» — «Bekor qilingan» bloki.
@@ -45,6 +47,33 @@ function StatusToggle({ o }: { o: OrderRow }) {
         ))}
       </div>
     </details>
+  );
+}
+
+// Kutilmoqda to'lov uchun: to'lash kerak bo'lgan sana. Shu kuni ertalab o'quvchining emailiga eslatma avtomatik ketadi.
+function DueDate({ o }: { o: OrderRow }) {
+  if (o.status !== "PENDING") return null;
+  return (
+    <div className="mt-2 space-y-1">
+      <form action={setOrderDue} className="flex items-center gap-1">
+        <input type="hidden" name="id" value={o.id} />
+        <input type="date" name="dueDay" defaultValue={o.dueDay ?? ""} className="input w-36 py-1 text-xs" aria-label="To'lov sanasi" />
+        <SubmitButton className="btn-outline px-2 py-1 text-xs">Saqlash</SubmitButton>
+      </form>
+      {o.dueDay ? (
+        <p className="text-xs text-zinc-500">
+          To&apos;lov sanasi: <b>{dueLabel(o.dueDay)}</b> · {o.reminderSentAt ? "eslatma yuborildi ✓" : "shu kuni emailga eslatma ketadi"}
+        </p>
+      ) : (
+        <p className="text-xs text-zinc-400">Sanani tanlang: shu kuni o&apos;quvchiga emailga eslatma ketadi</p>
+      )}
+      {o.dueDay && (
+        <form action={remindOrderNow}>
+          <input type="hidden" name="id" value={o.id} />
+          <ConfirmButton className="text-xs text-brand underline" message="Eslatma hozir o'quvchining emailiga yuborilsinmi?">Hozir eslatish</ConfirmButton>
+        </form>
+      )}
+    </div>
   );
 }
 
@@ -124,7 +153,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                   {o.course.author && <div className="text-xs text-zinc-400">{o.course.author.name}</div>}
                 </td>
                 <td>{formatPrice(o.amount)}</td>
-                <td><StatusToggle o={o} />{o.provider && <div className="text-xs text-zinc-400">{o.provider}</div>}</td>
+                <td><StatusToggle o={o} />{o.provider && <div className="text-xs text-zinc-400">{o.provider}</div>}<DueDate o={o} /></td>
                 <td className="text-zinc-500">{o.utmSource || "—"}{o.note && <div className="text-xs text-zinc-400">{o.note}</div>}</td>
                 <td className="text-zinc-500">{formatDate(o.createdAt)}</td>
                 <td className="pr-4">
@@ -164,6 +193,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               </div>
               <p className="shrink-0 font-semibold">{formatPrice(o.amount)}</p>
             </div>
+            <DueDate o={o} />
             <p className="text-xs text-zinc-500">
               {formatDate(o.createdAt)}{o.provider && ` · ${o.provider}`}{o.utmSource && ` · ${o.utmSource}`}
               {o.note && <span className="block text-zinc-400">{o.note}</span>}
