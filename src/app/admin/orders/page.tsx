@@ -17,20 +17,22 @@ const filters = [
 
 type OrderRow = { id: string; number: number; status: string };
 
-// To'langan/Qaytarilgan belgisi bosiladigan: bosilsa (tasdiq bilan) holat almashadi
+// To'langan/Qaytarilgan belgisi bosiladigan: bosilsa holat darhol almashadi
 function StatusToggle({ o }: { o: OrderRow }) {
   if (o.status !== "PAID" && o.status !== "REFUNDED") return <StatusBadge status={o.status} />;
   const toRefund = o.status === "PAID";
   return (
     <form>
       <input type="hidden" name="id" value={o.id} />
-      <ConfirmButton
+      {/* Tasdiqsiz: bir bosishda almashadi (xato bosilsa, yana bossangiz qaytadi) */}
+      <button
+        type="submit"
         formAction={toggleRefund}
-        className="rounded-full ring-offset-1 transition hover:ring-2 hover:ring-zinc-300"
-        message={toRefund ? `№${o.number} to'lovi «Qaytarilgan» deb belgilansinmi?\n\nPul qaytarib berildi deb hisoblanadi va daromaddan chiqariladi. Kursga kirish o'zgarmaydi.` : `№${o.number} to'lovi yana «To'langan» holatiga qaytarilsinmi?`}
+        title={toRefund ? "Bosib «Qaytarilgan» ga o'zgartiring" : "Bosib «To'langan» ga qaytaring"}
+        className="cursor-pointer rounded-full ring-offset-1 transition hover:ring-2 hover:ring-zinc-300"
       >
-        <span title={toRefund ? "Bosib «Qaytarilgan» ga o'zgartiring" : "Bosib «To'langan» ga qaytaring"} className="cursor-pointer"><StatusBadge status={o.status} /></span>
-      </ConfirmButton>
+        <StatusBadge status={o.status} />
+      </button>
     </form>
   );
 }
