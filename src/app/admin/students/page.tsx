@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
-import { deleteStudent, removeFromCourse, setUserRole } from "@/lib/actions/admin";
+import { changeCourse, deleteStudent, removeFromCourse, setUserRole } from "@/lib/actions/admin";
 import { formatDate } from "@/lib/format";
 import { AddStudentForm } from "@/components/admin/AddStudentForm";
 import { AddCuratorForm } from "@/components/admin/AddCuratorForm";
@@ -11,22 +11,38 @@ import { ResetPasswordButton } from "@/components/admin/ResetPasswordButton";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ConfirmButton } from "@/components/ConfirmButton";
 
-// Kurs belgisi: yonidagi × — o'quvchini shu kursdan chiqarish (tasdiq so'raladi)
-function CourseBadge({ userId, userName, courseId, title }: { userId: string; userName: string; courseId: string; title: string }) {
+// Kurs belgisi: yonidagi × — o'quvchini shu kursdan chiqarish (tasdiq so'raladi); ⇄ — boshqa kursga almashtirish
+function CourseBadge({ userId, userName, courseId, title, others }: { userId: string; userName: string; courseId: string; title: string; others: { id: string; title: string }[] }) {
   return (
-    <form action={removeFromCourse} className="inline-flex">
-      <input type="hidden" name="userId" value={userId} />
-      <input type="hidden" name="courseId" value={courseId} />
-      <span className="badge items-center gap-1 bg-brand-soft text-brand">
-        {title}
-        <ConfirmButton
-          className="rounded-full px-1 leading-none text-brand/60 hover:bg-red-100 hover:text-red-600"
-          message={`${userName} «${title}» kursidan chiqarilsinmi?\n\nKursga kirish yopiladi. Akkaunt, to'lov yozuvi va natijalari saqlanadi.`}
-        >
-          <span title="Kursdan chiqarish">×</span>
-        </ConfirmButton>
-      </span>
-    </form>
+    <div className="inline-flex flex-wrap items-start gap-1">
+      <form action={removeFromCourse} className="inline-flex">
+        <input type="hidden" name="userId" value={userId} />
+        <input type="hidden" name="courseId" value={courseId} />
+        <span className="badge items-center gap-1 bg-brand-soft text-brand">
+          {title}
+          <ConfirmButton
+            className="rounded-full px-1 leading-none text-brand/60 hover:bg-red-100 hover:text-red-600"
+            message={`${userName} «${title}» kursidan chiqarilsinmi?\n\nKursga kirish yopiladi. Akkaunt, to'lov yozuvi va natijalari saqlanadi.`}
+          >
+            <span title="Kursdan chiqarish">×</span>
+          </ConfirmButton>
+        </span>
+      </form>
+      {others.length > 0 && (
+        <details className="group">
+          <summary className="badge cursor-pointer list-none bg-zinc-100 text-zinc-600 hover:bg-zinc-200" title="Boshqa kursga almashtirish">⇄</summary>
+          <form action={changeCourse} className="mt-1 flex items-center gap-1 rounded-lg border border-zinc-200 bg-white p-1.5 shadow-sm">
+            <input type="hidden" name="userId" value={userId} />
+            <input type="hidden" name="fromCourseId" value={courseId} />
+            <select name="toCourseId" required defaultValue="" className="input max-w-[180px] py-1 text-xs">
+              <option value="" disabled>Qaysi kursga?</option>
+              {others.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+            </select>
+            <SubmitButton className="btn-outline px-2 py-1 text-xs">Almashtirish</SubmitButton>
+          </form>
+        </details>
+      )}
+    </div>
   );
 }
 
@@ -107,7 +123,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
                 <td>{u.email}</td>
                 <td>
                   <div className="flex flex-wrap gap-1">
-                    {u.enrollments.map((e) => <CourseBadge key={e.id} userId={u.id} userName={u.name} courseId={e.courseId} title={e.course.title} />)}
+                    {u.enrollments.map((e) => <CourseBadge key={e.id} userId={u.id} userName={u.name} courseId={e.courseId} title={e.course.title} others={courses.filter((c) => !u.enrollments.some((x) => x.courseId === c.id))} />)}
                     {u.enrollments.length === 0 && <span className="text-zinc-400">—</span>}
                   </div>
                 </td>
@@ -148,7 +164,7 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
               <p className="break-all text-xs text-zinc-400">{u.email}</p>
             </div>
             <div className="flex flex-wrap gap-1">
-              {u.enrollments.map((e) => <CourseBadge key={e.id} userId={u.id} userName={u.name} courseId={e.courseId} title={e.course.title} />)}
+              {u.enrollments.map((e) => <CourseBadge key={e.id} userId={u.id} userName={u.name} courseId={e.courseId} title={e.course.title} others={courses.filter((c) => !u.enrollments.some((x) => x.courseId === c.id))} />)}
               {u.enrollments.length === 0 && <span className="text-zinc-400">Kursi yo&apos;q</span>}
             </div>
             <p className="text-xs text-zinc-500">Tugatgan darslari: {u._count.progress} · Qo&apos;shilgan: {formatDate(u.createdAt)}</p>

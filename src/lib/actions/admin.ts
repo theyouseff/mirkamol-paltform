@@ -262,6 +262,26 @@ export async function removeFromCourse(formData: FormData) {
   revalidatePath("/curator", "layout");
 }
 
+// O'quvchining kursini almashtiradi: eski kursdan chiqarib, yangisiga yozadi (kirgan sanasi saqlanadi). To'lov yozuvlari o'zgarmaydi.
+export async function changeCourse(formData: FormData) {
+  await requireAdmin();
+  const userId = str(formData, "userId");
+  const fromId = str(formData, "fromCourseId");
+  const toId = str(formData, "toCourseId");
+  if (!userId || !fromId || !toId || fromId === toId) return;
+  const [from, target] = await Promise.all([
+    prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId: fromId } } }),
+    prisma.course.findUnique({ where: { id: toId }, select: { id: true } }),
+  ]);
+  if (!from || !target) return;
+  const already = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId: toId } } });
+  if (already) await prisma.enrollment.delete({ where: { id: from.id } }); // yangi kursga allaqachon yozilgan bo'lsa, eskisidan chiqariladi
+  else await prisma.enrollment.update({ where: { id: from.id }, data: { courseId: toId } });
+  revalidatePath("/admin", "layout");
+  revalidatePath("/cabinet", "layout");
+  revalidatePath("/curator", "layout");
+}
+
 // O'quvchi akkauntini butunlay o'chiradi: kirish, kurslar, ko'rish natijalari, kirgan kunlar va chat yozuvlari o'chadi.
 // To'lov yozuvlari (daromad hisoboti) saqlanadi — ularda o'quvchining ismi va emaili nusxasi qoladi. Faqat o'quvchi (admin/kurator emas).
 export async function deleteStudent(formData: FormData) {
