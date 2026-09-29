@@ -52,6 +52,14 @@ Admin → To'lovlar: holat belgisini (masalan **To'langan**) bossangiz, boshqa h
 ## To'lov eslatmasi (Kutilmoqda)
 Kutilmoqda holatidagi to'lov qatorida **sana** tanlanadi (masalan 15 oktabr) va «Saqlash» bosiladi. Shu kuni ertalab (09:00, Toshkent) o'quvchining emailiga «To'lov eslatmasi» xati **avtomatik** ketadi (kurs nomi, summa, admin Telegrami bilan); bir sana uchun bir marta. Qatorda **Hozir eslatish** tugmasi ham bor (qo'lda darhol yuborish). Avtomatik yuborish Vercel Cron orqali ishlaydi (`vercel.json`, har kuni 04:00 UTC): buning uchun Vercel → Settings → Environment Variables da **`CRON_SECRET`** (tasodifiy uzun matn, masalan `openssl rand -hex 32`) qo'yilishi shart, aks holda `/api/cron/payment-reminders` 401 qaytaradi. SMTP ham sozlangan bo'lishi kerak. Muddati 7 kundan oshgan, yoki To'langan/Bekor qilingan bo'lgan to'lovlarga eslatma ketmaydi.
 
+## Dars bloklaridagi rasmlar (darhol ko'rinadi)
+Modul sahifasida har bir dars blokida videoning **tayyor rasmi** (3-soniyadagi kadr) turadi: modulga kirilganda u video yuklanishini kutmay darhol ko'rinadi, kurs sahifasi ochilganda esa rasmlar fonda oldindan yuklab qo'yiladi. Rasmi bo'lmagan darsda avvalgidek videoning o'zidan kadr olinadi (sekinroq).
+Yangi dars videosini R2'ga yuklab, darsga ulagach (Mac'da, terminalda):
+1. `npx tsx --env-file=.env scripts/make-thumbs.ts` — yangi darslar uchun `public/thumbs/<darsId>.jpg` tayyorlaydi (bazaga tegmaydi; videoni to'liq yuklamaydi).
+2. `git add public/thumbs && git commit -m "Dars rasmlari" && git push` — rasmlar saytga chiqadi (deploy tugashini kuting).
+3. `npx tsx --env-file=.env scripts/make-thumbs.ts --link` — rasmi bor darslarga baza'da manzilni yozadi.
+Terminalsiz: Admin → dars → **Kartochka rasmi** maydoniga rasmni kompyuterdan yuklash yoki havola yozish ham mumkin.
+
 ## Postlar
 Menyuda **Kabinet**dan keyin **Postlar**: kurator o'z kursi uchun e'lon/yangilik yozadi, o'quvchi faqat o'qiydi (yoza olmaydi). Har bir post **faqat o'z kursida** ko'rinadi: masalan, LOR kuratorining posti marketing kursi o'quvchisiga chiqmaydi. Kurator postni `/curator/posts` sahifasida yozadi (faqat o'ziga biriktirilgan kurslarga) va faqat o'zinikini o'chira oladi. O'quvchi bir nechta kursga yozilgan bo'lsa, postlarni kurs bo'yicha saralaydi.
 

@@ -149,6 +149,7 @@ export async function updateLesson(formData: FormData) {
       content: str(formData, "content"),
       videoUrl: str(formData, "videoUrl"),
       duration: str(formData, "duration"),
+      thumbUrl: str(formData, "thumbUrl"),
       order: int(formData, "order"),
       openAt: parseTashkent(str(formData, "openAt")),
     },

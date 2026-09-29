@@ -7,9 +7,9 @@ const MAX_BYTES = 900 * 1024;
 
 // Rasmni yuklashdan oldin kichraytiradi (WebP) — katta telefon/kamera rasmlari ham tez yuklansin.
 // Muqova: eni 1600 px gacha; ikonka: uzun tomoni 256 px gacha. WebP shaffof fonni saqlaydi (PNG ikonka orqasi qora bo'lib qolmaydi).
-async function shrink(file: File, icon: boolean): Promise<Blob> {
+async function shrink(file: File, icon: boolean, width: number): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
-  const scale = icon ? Math.min(1, 256 / Math.max(bitmap.width, bitmap.height)) : Math.min(1, 1600 / bitmap.width);
+  const scale = icon ? Math.min(1, 256 / Math.max(bitmap.width, bitmap.height)) : Math.min(1, width / bitmap.width);
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
@@ -24,8 +24,8 @@ async function shrink(file: File, icon: boolean): Promise<Blob> {
 }
 
 // Rasm maydoni: havola yozish YOKI kompyuterdan yuklash. Yuklangach manzil maydonga yoziladi; formadagi «Saqlash» bosilgach saqlanadi.
-// icon — kichik kvadrat ikonka (256 px gacha kichraytiriladi, oldindan ko'rinishi ham kvadrat).
-export function ImageField({ name, defaultValue = "", placeholder, inputClassName = "input", icon = false }: { name: string; defaultValue?: string; placeholder?: string; inputClassName?: string; icon?: boolean }) {
+// icon — kichik kvadrat ikonka (256 px gacha kichraytiriladi, oldindan ko'rinishi ham kvadrat); width — oddiy rasm uchun eng katta eni (standart 1600 px).
+export function ImageField({ name, defaultValue = "", placeholder, inputClassName = "input", icon = false, width = 1600 }: { name: string; defaultValue?: string; placeholder?: string; inputClassName?: string; icon?: boolean; width?: number }) {
   const [value, setValue] = useState(defaultValue);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -36,7 +36,7 @@ export function ImageField({ name, defaultValue = "", placeholder, inputClassNam
     setBusy(true);
     setMsg(null);
     try {
-      const blob = await shrink(f, icon);
+      const blob = await shrink(f, icon, width);
       const fd = new FormData();
       fd.append("file", new File([blob], icon ? "icon" : "cover", { type: blob.type }));
       const res = await uploadImage(fd);

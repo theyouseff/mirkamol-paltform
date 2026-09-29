@@ -6,6 +6,7 @@ import { loadCourseForStudent } from "@/lib/course";
 import { ModuleGrid } from "@/components/ModuleGrid";
 import { ProgressBar } from "@/components/ProgressBar";
 import { totalDuration } from "@/lib/format";
+import { ThumbPrefetch } from "@/components/ThumbPrefetch";
 
 export default async function StudentCoursePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -35,8 +36,12 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
     };
   });
 
+  // Ochiq darslarning tayyor rasmlari: modulga kirishdan oldin fonda yuklab qo'yiladi (dars bloklari rasm bilan darhol chiqishi uchun)
+  const thumbs = flatLessons.filter((l) => l.state === "open" && l.thumbUrl).map((l) => l.thumbUrl);
+
   return (
     <>
+      <ThumbPrefetch urls={thumbs} />
       <Link href="/courses" className="text-sm font-medium text-gold-text/80 hover:text-gold-text active:text-gold-text">← Kurslar</Link>
       <div className="mt-5 max-w-3xl space-y-4">
         <span className="block text-lg font-bold text-brand">{course.title}</span>

@@ -31,6 +31,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
     done: done.has(l.id),
     hint: lessonHint(l, l.state),
     previewSrc: previews[i],
+    thumbUrl: l.state === "open" ? l.thumbUrl : "",
   }));
 
   return (

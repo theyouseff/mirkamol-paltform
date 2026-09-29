@@ -84,6 +84,7 @@ model Lesson {
   content  String    @default("")
   videoUrl String    @default("")
   duration String    @default("") // masalan: "12:40" (ixtiyoriy)
+  thumbUrl String    @default("") // kartochkadagi tayyor rasm (videodan olingan kadr): /thumbs/<id>.jpg yoki /api/img/... ; bo'sh bo'lsa video kadri ishlatiladi
   order    Int       @default(0)
   openAt   DateTime? // zapusk uchun: shu sanagacha yopiq
   module   Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)

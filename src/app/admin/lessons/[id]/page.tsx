@@ -7,6 +7,7 @@ import { ConfirmButton } from "@/components/ConfirmButton";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { FileVideo } from "@/components/FileVideo";
 import { isOwnVideo, ownVideoSrc } from "@/lib/video-source";
+import { ImageField } from "@/components/admin/ImageField";
 
 // datetime-local input uchun Toshkent vaqti (UTC+5)
 const toTashkentInput = (d: Date | null) => (d ? new Date(d.getTime() + 5 * 3600_000).toISOString().slice(0, 16) : "");
@@ -49,6 +50,11 @@ export default async function AdminLessonPage({ params }: { params: Promise<{ id
           <p className="mt-1 text-xs text-zinc-400">Himoyalangan video uchun Kinescope yoki Bunny Stream tavsiya qilinadi.</p>
         </div>
         {isOwnVideo(lesson.videoUrl) ? <FileVideo lessonId={lesson.id} src={await ownVideoSrc(lesson)} trackProgress={false} /> : lesson.videoUrl && <VideoPlayer url={lesson.videoUrl} />}
+        <div>
+          <label className="label">Kartochka rasmi (ixtiyoriy)</label>
+          <ImageField name="thumbUrl" width={640} defaultValue={lesson.thumbUrl} placeholder="Modul sahifasida dars blokida ko'rinadigan rasm: havola yoki kompyuterdan yuklang" />
+          <p className="mt-1 text-xs text-zinc-400">Rasm shu darsning blokida darhol ko&apos;rinadi (video yuklanishini kutmaydi). Bo&apos;sh qoldirsangiz, videoning 3-soniyadagi kadri olinadi (sekinroq).</p>
+        </div>
         <div>
           <label className="label">Matn / konspekt</label>
           <textarea name="content" rows={10} className="input" defaultValue={lesson.content} />
