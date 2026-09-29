@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { CardLink } from "@/components/CardLink";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, getSession } from "@/lib/auth";
 
@@ -21,7 +21,7 @@ export default async function HomePage() {
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {courses.map((c) => (
           // Kirgan o'quvchi (yoki admin) bosganda kursning o'zi ochiladi; mehmonga — kurs haqida sahifa
-          <Link key={c.id} href={session ? `/cabinet/courses/${c.slug}` : `/courses/${c.slug}`} className="card-gold flex flex-col">
+          <CardLink key={c.id} href={session ? `/cabinet/courses/${c.slug}` : `/courses/${c.slug}`} className="card-gold flex flex-col">
             {c.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={c.coverUrl} alt="" className="mb-4 aspect-video w-full rounded-xl object-cover" />
@@ -30,7 +30,7 @@ export default async function HomePage() {
             )}
             <h2 className="text-lg font-semibold">{c.title}</h2>
             <p className="mt-1 flex-1 text-sm text-zinc-500">{c.subtitle}</p>
-          </Link>
+          </CardLink>
         ))}
         {courses.length === 0 && <p className="text-gold-text/80">{mineOnly ? "Sizga hali kurs ochilmagan. Kurs ochish uchun adminga yozing." : "Hozircha kurslar yo'q."}</p>}
       </div>

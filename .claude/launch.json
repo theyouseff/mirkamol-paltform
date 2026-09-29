@@ -6,6 +6,12 @@
       "runtimeExecutable": "/bin/zsh",
       "runtimeArgs": ["-c", "export PATH=\"$HOME/.local/node/bin:$PATH\" && npm run dev"],
       "port": 3000
+    },
+    {
+      "name": "prod",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": ["-c", "export PATH=\"$HOME/.local/node/bin:$PATH\" && npm run start"],
+      "port": 3000
     }
   ]
 }

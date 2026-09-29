@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import Link from "next/link";
+import { CardLink } from "./CardLink";
 import type { LessonState } from "@/lib/access";
 
 const step = (i: number) => ({ "--i": i }) as CSSProperties;
@@ -8,7 +8,7 @@ export type LessonCard = { id: string; title: string; duration: string; state: L
 
 function Play() {
   return (
-    <span className="gold-gloss relative isolate flex h-14 w-14 items-center justify-center overflow-hidden rounded-full transition-transform duration-300 before:rounded-none! group-hover:scale-110 group-active:scale-95">
+    <span className="gold-gloss relative isolate flex h-14 w-14 items-center justify-center overflow-hidden rounded-full transition-transform duration-300 before:rounded-none! group-hover:scale-110 group-active:scale-110 group-data-[opening]:scale-110">
       <svg viewBox="0 0 24 24" className="ml-0.5 h-6 w-6" fill="currentColor" aria-hidden>
         <path d="M8 5.5v13a1 1 0 001.5.86l10.5-6.5a1 1 0 000-1.72L9.5 4.64A1 1 0 008 5.5z" />
       </svg>
@@ -61,14 +61,14 @@ export function VideoLessonGrid({ lessons }: { lessons: LessonCard[] }) {
           </>
         );
         return open ? (
-          <Link
+          <CardLink
             key={l.id}
             href={`/cabinet/lessons/${l.id}`}
-            className="enter glass group relative block overflow-hidden transition-[transform,border-color,background-color] duration-150 hover:-translate-y-1 hover:border-gold/70 hover:bg-ink-950/70 active:z-20 active:-translate-y-1 active:scale-[1.04] active:border-gold/70 active:bg-ink-950/70 active:shadow-[0_24px_48px_-16px_rgba(212,175,55,0.55),0_0_40px_8px_rgba(212,175,55,0.18)]"
+            className="enter glass card-press group block overflow-hidden"
             style={step(i)}
           >
             {body}
-          </Link>
+          </CardLink>
         ) : (
           <div key={l.id} className="enter glass block overflow-hidden opacity-70" style={step(i)}>{body}</div>
         );

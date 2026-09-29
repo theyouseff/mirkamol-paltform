@@ -127,7 +127,9 @@ a, button, summary, [role="button"] {
     transform: translateY(-2px);
     box-shadow: 0 16px 32px -14px rgb(212 175 55 / 0.8);
   }
-  &:active {
+  /* data-opening: bosilgan blok sahifa ochilguncha oldinda turadi (CardLink) */
+  &:active,
+  &[data-opening] {
     @apply border-gold relative z-20;
     transform: translateY(-4px) scale(1.04);
     box-shadow: 0 24px 48px -16px rgb(212 175 55 / 0.55), 0 0 40px 8px rgb(212 175 55 / 0.18);
@@ -137,6 +139,63 @@ a, button, summary, [role="button"] {
 /* Shisha (glass) blok: qorong'u fonda kurs, modul va dars kartochkalari */
 @utility glass {
   @apply rounded-2xl border border-gold/30 bg-ink-950/55 backdrop-blur-sm;
+}
+
+/* Modul va dars bloklari: bosilganda oldinga chiqadi (biroz sakrab), atrofida xira oltin yorug'lik.
+   transform emas, translate/scale ishlatilgan: .enter paydo bo'lish animatsiyasi transform'ni egallab turadi.
+   box-shadow animatsiyasiz — darhol yonadi (blur'ni har kadrda qayta chizish sekinlashtiradi). */
+@utility card-press {
+  transition:
+    translate 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    scale 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-color 0.2s,
+    background-color 0.2s;
+  &:hover {
+    translate: 0 -4px;
+    border-color: rgb(201 162 39 / 0.7);
+    background-color: rgb(17 20 26 / 0.7);
+  }
+  &:active,
+  &[data-opening] {
+    position: relative;
+    z-index: 20;
+    translate: 0 -4px;
+    scale: 1.04;
+    border-color: rgb(201 162 39 / 0.85);
+    background-color: rgb(17 20 26 / 0.75);
+    box-shadow: 0 24px 48px -16px rgb(212 175 55 / 0.55), 0 0 40px 8px rgb(212 175 55 / 0.18);
+  }
+}
+
+/* Yuklanish qolipi (skeleton): qorong'u fonda xira bloklar, ustidan yumshoq oltin nur o'tib turadi */
+@utility skeleton {
+  @apply rounded-lg;
+  background: linear-gradient(100deg, rgb(255 255 255 / 0.05) 35%, rgb(241 198 87 / 0.16) 50%, rgb(255 255 255 / 0.05) 65%);
+  background-size: 250% 100%;
+  animation: skeleton-shimmer 1.4s linear infinite;
+}
+
+@keyframes skeleton-shimmer {
+  from { background-position: 125% 0; }
+  to { background-position: -25% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+}
+
+/* Blok ichiga "kirish": yangi sahifa qolipi bir zumda, ozgina kattalashib paydo bo'ladi */
+@keyframes zoom-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+main > .zoom-in {
+  animation: zoom-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main > .zoom-in { animation: none; }
 }
 
 @utility badge {
@@ -176,7 +235,7 @@ a, button, summary, [role="button"] {
 main > *,
 main > .contents > *,
 .page-in {
-  animation: page-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: page-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
