@@ -14,7 +14,7 @@ export function ModuleGrid({ modules }: { modules: ModuleCard[] }) {
         <Link
           key={m.id}
           href={`/cabinet/modules/${m.id}`}
-          className="enter glass group block overflow-hidden transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-ink-950/70"
+          className="enter glass group block overflow-hidden transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-ink-950/70 active:scale-[0.97] active:border-gold/70 active:bg-ink-950/70"
           style={step(i)}
         >
           <div className="relative flex aspect-video items-center justify-center overflow-hidden bg-gradient-to-br from-ink-800 via-ink-700 to-steel-600">

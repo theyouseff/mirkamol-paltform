@@ -81,7 +81,7 @@ export function HeaderNav({ isAdmin, isCurator = false, showChat = false, chatUn
             ref={(el) => { refs.current[l.href] = el; }}
             href={l.href}
             onClick={() => setTarget(l.href)}
-            className={`relative z-10 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors duration-700 ${activeHref === l.href ? "text-ink-950" : "text-gold-text/80 hover:text-gold-text"}`}
+            className={`relative z-10 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors duration-700 active:scale-95 ${activeHref === l.href ? "text-ink-950" : "text-gold-text/80 hover:text-gold-text active:text-gold-text"}`}
           >
             {l.label}
             {l.href === "/cabinet/chat" && chatUnread > 0 && <span className="ml-1.5 rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white">{chatUnread}</span>}

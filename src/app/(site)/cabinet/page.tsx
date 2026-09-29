@@ -65,10 +65,11 @@ export default async function CabinetPage() {
         {last.lesson.videoUrl && (isOwnVideo(last.lesson.videoUrl) ? (
           <LastVideoPreview lessonId={last.lesson.id} src={previewSrc} position={last.position} finished={finished} href={resumeHref} />
         ) : (
-          <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
+          <div className="group relative aspect-video w-full overflow-hidden rounded-2xl bg-black">
             <div inert className="h-full w-full">
               <iframe src={toEmbedUrl(last.lesson.videoUrl) ?? last.lesson.videoUrl} className="h-full w-full" tabIndex={-1} aria-hidden />
             </div>
+            <span className="pointer-events-none absolute inset-0 bg-black/0 transition-colors group-active:bg-black/30" aria-hidden />
             <Link href={resumeHref} className="absolute inset-0" aria-label="Darsni davom ettirish" />
           </div>
         ))}

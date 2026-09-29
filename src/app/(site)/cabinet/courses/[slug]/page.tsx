@@ -37,7 +37,7 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
 
   return (
     <>
-      <Link href="/courses" className="text-sm font-medium text-gold-text/80 hover:text-gold-text">← Kurslar</Link>
+      <Link href="/courses" className="text-sm font-medium text-gold-text/80 hover:text-gold-text active:text-gold-text">← Kurslar</Link>
       <div className="mt-5 max-w-3xl space-y-4">
         <span className="block text-lg font-bold text-brand">{course.title}</span>
         <h1 className="text-3xl font-bold sm:text-4xl">{course.title}</h1>

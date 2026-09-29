@@ -26,7 +26,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
   return (
     <>
       <div className="mx-auto max-w-6xl px-4 py-10">
-        <Link href="/courses" className="text-sm font-medium text-gold-text/80 hover:text-gold-text">← Kurslar</Link>
+        <Link href="/courses" className="text-sm font-medium text-gold-text/80 hover:text-gold-text active:text-gold-text">← Kurslar</Link>
 
         <div className="mt-5 max-w-3xl">
           <h1 className="text-3xl font-bold sm:text-4xl">{course.title}</h1>

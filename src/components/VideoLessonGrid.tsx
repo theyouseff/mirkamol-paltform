@@ -8,7 +8,7 @@ export type LessonCard = { id: string; title: string; duration: string; state: L
 
 function Play() {
   return (
-    <span className="gold-gloss relative isolate flex h-14 w-14 items-center justify-center overflow-hidden rounded-full transition-transform duration-300 before:rounded-none! group-hover:scale-110">
+    <span className="gold-gloss relative isolate flex h-14 w-14 items-center justify-center overflow-hidden rounded-full transition-transform duration-300 before:rounded-none! group-hover:scale-110 group-active:scale-95">
       <svg viewBox="0 0 24 24" className="ml-0.5 h-6 w-6" fill="currentColor" aria-hidden>
         <path d="M8 5.5v13a1 1 0 001.5.86l10.5-6.5a1 1 0 000-1.72L9.5 4.64A1 1 0 008 5.5z" />
       </svg>
@@ -64,7 +64,7 @@ export function VideoLessonGrid({ lessons }: { lessons: LessonCard[] }) {
           <Link
             key={l.id}
             href={`/cabinet/lessons/${l.id}`}
-            className="enter glass group block overflow-hidden transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-ink-950/70"
+            className="enter glass group block overflow-hidden transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-ink-950/70 active:scale-[0.97] active:border-gold/70 active:bg-ink-950/70"
             style={step(i)}
           >
             {body}

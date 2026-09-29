@@ -17,7 +17,7 @@ export function LastVideoPreview({ lessonId, src, position, finished, href }: { 
   }, [lessonId, position, finished]);
 
   return (
-    <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-gradient-to-br from-ink-800 via-ink-700 to-steel-600">
+    <div className="group relative aspect-video w-full overflow-hidden rounded-2xl bg-gradient-to-br from-ink-800 via-ink-700 to-steel-600">
       {frame ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={frame} alt="" className="absolute inset-0 h-full w-full object-cover" />
@@ -34,8 +34,9 @@ export function LastVideoPreview({ lessonId, src, position, finished, href }: { 
           />
         )
       )}
-      <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25" aria-hidden>
-        <span className="text-6xl text-gold-text/90 drop-shadow-lg">▶</span>
+      {/* Bosilganda (yoki sichqoncha ustida) fon qorayadi va uchburchak kichrayadi — bosilgani darhol seziladi */}
+      <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25 transition-colors group-hover:bg-black/35 group-active:bg-black/45" aria-hidden>
+        <span className="text-6xl text-gold-text/90 drop-shadow-lg transition-transform group-active:scale-90">▶</span>
       </span>
       <Link href={href} className="absolute inset-0" aria-label="Darsni davom ettirish" />
     </div>

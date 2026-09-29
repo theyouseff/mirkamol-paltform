@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { preload } from "react-dom";
+import { TouchFeedback } from "@/components/TouchFeedback";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="uz">
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}><div aria-hidden className="auth-bg fixed inset-0 -z-10" />
+        <TouchFeedback />
         {children}
       </body>
     </html>

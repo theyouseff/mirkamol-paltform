@@ -37,7 +37,7 @@ export default async function LessonPage({ params, searchParams }: { params: Pro
 
   return (
     <>
-      <Link href={`/cabinet/modules/${mod.id}`} className="text-sm font-medium text-gold-text/80 hover:text-gold-text">← {mod.title}</Link>
+      <Link href={`/cabinet/modules/${mod.id}`} className="text-sm font-medium text-gold-text/80 hover:text-gold-text active:text-gold-text">← {mod.title}</Link>
 
       <div className="mt-5">
         <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">
@@ -76,7 +76,7 @@ export default async function LessonPage({ params, searchParams }: { params: Pro
             {mod.lessons.map((l, i) => {
               const active = l.id === id;
               const open = l.state === "open";
-              const cls = `flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm transition ${active ? "bg-gold/20 text-gold-text ring-1 ring-gold/50" : open ? "text-gold-text/80 hover:bg-white/5 hover:text-gold-text" : "cursor-not-allowed text-gold-text/40"}`;
+              const cls = `flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm transition ${active ? "bg-gold/20 text-gold-text ring-1 ring-gold/50" : open ? "text-gold-text/80 hover:bg-white/5 hover:text-gold-text active:bg-white/10 active:text-gold-text" : "cursor-not-allowed text-gold-text/40"}`;
               const inner = (
                 <>
                   <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${active ? "bg-gold text-ink-950" : done.has(l.id) ? "bg-gold/30 text-gold-text" : "bg-white/10"}`}>

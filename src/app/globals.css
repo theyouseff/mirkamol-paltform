@@ -37,10 +37,17 @@
 body {
   background: #151922;
   color: #e6b04f;
+  /* Telefonda bosilganda chiqadigan sur' yaltirash o'chirilgan — o'rniga har bir tugma/havolada o'zimizning bosilish effekti ishlaydi */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Har bir tugma, havola va bosiladigan blok: 300ms kechikish/qo'sh-bosishda kattalashtirish yo'q — bosilgani darhol seziladi */
+a, button, summary, [role="button"] {
+  touch-action: manipulation;
 }
 
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition disabled:opacity-50 cursor-pointer;
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition disabled:opacity-50 cursor-pointer active:scale-[0.97];
 }
 
 /* Yaltiroq oltin matn (narxlar): yuqorida nur, o'rtada chiziq, pastda iliq oltin */
@@ -75,7 +82,7 @@ body {
     pointer-events: none;
   }
   &:hover { filter: brightness(1.07) saturate(1.06); }
-  &:active { transform: translateY(1px); }
+  &:active { transform: translateY(1px) scale(0.96); filter: brightness(0.96); }
 }
 
 @utility btn-primary {
@@ -83,11 +90,11 @@ body {
 }
 
 @utility btn-outline {
-  @apply btn border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50;
+  @apply btn border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 active:bg-zinc-100;
 }
 
 @utility btn-danger {
-  @apply btn border border-red-200 bg-white text-red-600 hover:bg-red-50;
+  @apply btn border border-red-200 bg-white text-red-600 hover:bg-red-50 active:bg-red-100;
 }
 
 @utility input {
@@ -116,6 +123,11 @@ body {
     @apply border-gold;
     transform: translateY(-2px);
     box-shadow: 0 16px 32px -14px rgb(212 175 55 / 0.8);
+  }
+  &:active {
+    @apply border-gold;
+    transform: scale(0.97);
+    box-shadow: 0 6px 16px -10px rgb(212 175 55 / 0.7);
   }
 }
 
