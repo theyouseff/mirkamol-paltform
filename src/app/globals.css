@@ -118,7 +118,10 @@ a, button, summary, [role="button"] {
 @utility card-gold {
   @apply card border-2 border-gold;
   box-shadow: 0 10px 26px -14px rgb(212 175 55 / 0.6);
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  /* box-shadow animatsiyaga kiritilmagan: uni tinimsiz o'lchamlab (blur) qayta chizish qimmat va
+     bosilgach sahifa o'tishini sekinlashtirib, blok "ushlanib qolgandek" ko'rinishga sabab bo'ladi.
+     Shu sabab u darhol o'zgaradi (sakrab), faqat joylashuv/hoshiya rangi yumshoq o'tadi (tez, 150ms) */
+  transition: transform 0.15s, border-color 0.15s;
   &:hover {
     @apply border-gold;
     transform: translateY(-2px);
