@@ -7,6 +7,7 @@ import { lessonHint } from "@/lib/access";
 import { totalDuration } from "@/lib/format";
 import { isOwnVideo, ownVideoSrc } from "@/lib/video-source";
 import { VideoLessonGrid } from "@/components/VideoLessonGrid";
+import { ModuleIcon } from "@/components/ModuleIcon";
 
 export default async function ModulePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -36,8 +37,13 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
     <>
       <Link href={`/cabinet/courses/${course.slug}`} className="text-sm font-medium text-gold-text/80 hover:text-gold-text active:text-gold-text">← {course.title}</Link>
       <div className="mt-5">
-        <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">{index + 1}-modul</p>
-        <h1 className="mt-1 text-3xl font-bold sm:text-4xl">{mod.title}</h1>
+        <div className="flex items-center gap-4">
+          <ModuleIcon src={mod.iconUrl} size="lg" />
+          <div className="min-w-0">
+            <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">{index + 1}-modul</p>
+            <h1 className="mt-1 text-3xl font-bold sm:text-4xl">{mod.title}</h1>
+          </div>
+        </div>
         {mod.description && <p className="mt-3 text-lg text-gold-text/85">{mod.description}</p>}
         <p className="mt-6 text-sm font-medium uppercase tracking-widest text-gold-text/70">{mod.lessons.length} ta video dars{totalTime && ` · jami ${totalTime}`}</p>
       </div>

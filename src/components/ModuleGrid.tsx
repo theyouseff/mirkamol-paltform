@@ -1,10 +1,11 @@
 import type { CSSProperties } from "react";
 import { CardLink } from "./CardLink";
 import { ProgressBar } from "./ProgressBar";
+import { ModuleIcon } from "./ModuleIcon";
 
 const step = (i: number) => ({ "--i": i }) as CSSProperties;
 
-export type ModuleCard = { id: string; title: string; description: string; lessonCount: number; doneCount: number; available: number; totalTime?: string; coverUrl?: string };
+export type ModuleCard = { id: string; title: string; description: string; lessonCount: number; doneCount: number; available: number; totalTime?: string; coverUrl?: string; iconUrl?: string };
 
 // Kurs ichidagi modul bloklari; bosilganda modul ichidagi video darslar ochiladi.
 export function ModuleGrid({ modules }: { modules: ModuleCard[] }) {
@@ -28,8 +29,13 @@ export function ModuleGrid({ modules }: { modules: ModuleCard[] }) {
             {m.totalTime && <span className="absolute bottom-2 right-2 rounded-md bg-black/55 px-2 py-0.5 text-xs font-medium text-white">{m.totalTime}</span>}
           </div>
           <div className="p-5">
-            <p className="text-xs font-medium uppercase tracking-wider text-gold-text/60">{i + 1}-modul</p>
-            <h3 className="mt-1 text-xl font-bold text-gold-text">{m.title}</h3>
+            <div className="flex items-center gap-3">
+              <ModuleIcon src={m.iconUrl} />
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-wider text-gold-text/60">{i + 1}-modul</p>
+                <h3 className="mt-1 text-xl font-bold text-gold-text">{m.title}</h3>
+              </div>
+            </div>
             {m.description && <p className="mt-2 text-sm leading-relaxed text-gold-text/80">{m.description}</p>}
             <div className="mt-4 space-y-2">
               <ProgressBar dark value={m.available ? (m.doneCount / m.available) * 100 : 0} />

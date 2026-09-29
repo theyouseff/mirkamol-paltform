@@ -3,13 +3,13 @@
 import { useRef, useState } from "react";
 import { uploadImage } from "@/lib/actions/upload";
 
-const MAX_WIDTH = 1600;
 const MAX_BYTES = 900 * 1024;
 
-// Rasmni yuklashdan oldin kichraytiradi (eni 1600 px gacha, WebP) — katta telefon/kamera rasmlari ham tez yuklansin.
-async function shrink(file: File): Promise<Blob> {
+// Rasmni yuklashdan oldin kichraytiradi (WebP) — katta telefon/kamera rasmlari ham tez yuklansin.
+// Muqova: eni 1600 px gacha; ikonka: uzun tomoni 256 px gacha. WebP shaffof fonni saqlaydi (PNG ikonka orqasi qora bo'lib qolmaydi).
+async function shrink(file: File, icon: boolean): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, MAX_WIDTH / bitmap.width);
+  const scale = icon ? Math.min(1, 256 / Math.max(bitmap.width, bitmap.height)) : Math.min(1, 1600 / bitmap.width);
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
@@ -24,7 +24,8 @@ async function shrink(file: File): Promise<Blob> {
 }
 
 // Rasm maydoni: havola yozish YOKI kompyuterdan yuklash. Yuklangach manzil maydonga yoziladi; formadagi «Saqlash» bosilgach saqlanadi.
-export function ImageField({ name, defaultValue = "", placeholder, inputClassName = "input" }: { name: string; defaultValue?: string; placeholder?: string; inputClassName?: string }) {
+// icon — kichik kvadrat ikonka (256 px gacha kichraytiriladi, oldindan ko'rinishi ham kvadrat).
+export function ImageField({ name, defaultValue = "", placeholder, inputClassName = "input", icon = false }: { name: string; defaultValue?: string; placeholder?: string; inputClassName?: string; icon?: boolean }) {
   const [value, setValue] = useState(defaultValue);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -35,13 +36,13 @@ export function ImageField({ name, defaultValue = "", placeholder, inputClassNam
     setBusy(true);
     setMsg(null);
     try {
-      const blob = await shrink(f);
+      const blob = await shrink(f, icon);
       const fd = new FormData();
-      fd.append("file", new File([blob], "cover", { type: blob.type }));
+      fd.append("file", new File([blob], icon ? "icon" : "cover", { type: blob.type }));
       const res = await uploadImage(fd);
       if (res.url) {
         setValue(res.url);
-        setMsg({ ok: true, text: "Rasm yuklandi. Saqlash tugmasini bosing." });
+        setMsg({ ok: true, text: `${icon ? "Ikonka" : "Rasm"} yuklandi. Saqlash tugmasini bosing.` });
       } else setMsg({ ok: false, text: res.error ?? "Yuklab bo'lmadi" });
     } catch (e) {
       setMsg({ ok: false, text: e instanceof Error ? e.message : "Yuklab bo'lmadi" });
@@ -62,7 +63,7 @@ export function ImageField({ name, defaultValue = "", placeholder, inputClassNam
       </div>
       {value && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={value} alt="" className="h-24 rounded-lg border border-zinc-200 object-cover" />
+        <img src={value} alt="" className={icon ? "h-14 w-14 rounded-xl border border-zinc-200 bg-ink-900 object-contain p-1.5" : "h-24 rounded-lg border border-zinc-200 object-cover"} />
       )}
       {msg && <p className={`text-xs ${msg.ok ? "text-green-700" : "text-red-600"}`}>{msg.text}</p>}
     </div>

@@ -92,7 +92,7 @@ export async function updateModule(formData: FormData) {
   await requireAdmin();
   await prisma.module.update({
     where: { id: str(formData, "id") },
-    data: { title: str(formData, "title"), description: str(formData, "description"), coverUrl: str(formData, "coverUrl") },
+    data: { title: str(formData, "title"), description: str(formData, "description"), coverUrl: str(formData, "coverUrl"), iconUrl: str(formData, "iconUrl") },
   });
   revalidatePath("/", "layout");
 }

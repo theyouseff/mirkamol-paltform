@@ -71,6 +71,7 @@ model Module {
   title       String
   description String   @default("")
   coverUrl    String   @default("") // modul kartochkasidagi rasm (masalan /modules/nom.webp yoki https://...)
+  iconUrl     String   @default("") // modul ikonkasi: kartochkada va modul sahifasida nomi yonida (/api/img/... yoki https://...)
   order       Int      @default(0)
   course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   lessons     Lesson[]

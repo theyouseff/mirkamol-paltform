@@ -99,6 +99,7 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
                 </div>
                 <input name="description" className="input text-zinc-600" defaultValue={m.description} placeholder="Modul haqida qisqa tavsif (ixtiyoriy)" />
                 <ImageField name="coverUrl" defaultValue={m.coverUrl} inputClassName="input text-zinc-600" placeholder="Modul rasmi: havola yoki kompyuterdan yuklang (ixtiyoriy)" />
+                <ImageField icon name="iconUrl" defaultValue={m.iconUrl} inputClassName="input text-zinc-600" placeholder="Modul ikonkasi: havola yoki kompyuterdan yuklang (ixtiyoriy, PNG shaffof fonli bo'lsa yaxshi)" />
               </form>
             </div>
             <ul className="divide-y divide-zinc-100">

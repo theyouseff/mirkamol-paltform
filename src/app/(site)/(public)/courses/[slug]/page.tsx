@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { adminContactUrl } from "@/lib/config";
 import { totalDuration } from "@/lib/format";
+import { ModuleIcon } from "@/components/ModuleIcon";
 
 // Sotuv sahifasi: hamma ko'radi, lekin faqat dastur (modul va dars nomlari). Video va matn — faqat kabinetda.
 export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -55,8 +56,13 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
         <div className="mt-5 grid gap-5 lg:grid-cols-2">
           {course.modules.map((m, i) => (
             <section key={m.id} className="glass p-5">
-              <p className="text-xs font-medium uppercase tracking-wider text-gold-text/60">{i + 1}-modul{totalDuration(m.lessons.map((l) => l.duration)) && ` · ${totalDuration(m.lessons.map((l) => l.duration))}`}</p>
-              <h3 className="mt-1 text-lg font-bold">{m.title}</h3>
+              <div className="flex items-center gap-3">
+                <ModuleIcon src={m.iconUrl} />
+                <div className="min-w-0">
+                  <p className="text-xs font-medium uppercase tracking-wider text-gold-text/60">{i + 1}-modul{totalDuration(m.lessons.map((l) => l.duration)) && ` · ${totalDuration(m.lessons.map((l) => l.duration))}`}</p>
+                  <h3 className="mt-1 text-lg font-bold">{m.title}</h3>
+                </div>
+              </div>
               {m.description && <p className="mt-1 text-sm text-gold-text/75">{m.description}</p>}
               <ul className="mt-4 space-y-2">
                 {m.lessons.map((l, li) => (
