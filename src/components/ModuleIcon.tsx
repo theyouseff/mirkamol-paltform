@@ -2,8 +2,8 @@
 // Ikonka qo'yilmagan bo'lsa, n berilgan bo'lsa plitkada modul raqami (oltin), berilmagan bo'lsa hech narsa chiqmaydi.
 const SIZES = {
   sm: "h-10 w-10 rounded-xl p-1.5 text-base",
-  md: "h-16 w-16 rounded-2xl p-2.5 text-2xl",
-  lg: "h-16 w-16 rounded-2xl p-2.5 text-2xl sm:h-20 sm:w-20 sm:p-3",
+  md: "h-16 w-16 rounded-2xl p-1.5 text-2xl",
+  lg: "h-16 w-16 rounded-2xl p-1.5 text-2xl sm:h-20 sm:w-20 sm:p-2",
 };
 
 export function ModuleIcon({ src, n, size = "sm" }: { src?: string | null; n?: number; size?: keyof typeof SIZES }) {
