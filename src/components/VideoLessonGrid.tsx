@@ -8,7 +8,7 @@ export type LessonCard = { id: string; title: string; duration: string; state: L
 
 function Play() {
   return (
-    <span className="gold-gloss relative isolate flex h-14 w-14 items-center justify-center overflow-hidden rounded-full transition-transform duration-300 before:rounded-none! group-hover:scale-110 group-active:scale-110 group-data-[opening]:scale-110">
+    <span className="gold-gloss relative isolate flex h-14 w-14 items-center justify-center overflow-hidden rounded-full transition-transform duration-300 before:rounded-none! group-hover:scale-105 group-active:scale-105 group-data-[opening]:scale-105">
       <svg viewBox="0 0 24 24" className="ml-0.5 h-6 w-6" fill="currentColor" aria-hidden>
         <path d="M8 5.5v13a1 1 0 001.5.86l10.5-6.5a1 1 0 000-1.72L9.5 4.64A1 1 0 008 5.5z" />
       </svg>
