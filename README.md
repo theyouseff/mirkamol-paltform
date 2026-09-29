@@ -36,7 +36,7 @@ Har bir **(o'quvchi, kurator)** juftligining alohida suhbati bor: kuratorlar bir
 ## Muqova rasmi yuklash
 Admin → Kurslar → kursni tahrirlash: **Muqova rasmi** maydonida havola yozish yoki **Kompyuterdan yuklash** tugmasi (JPG/PNG/WebP). Brauzer rasmni yuklashdan oldin kichraytiradi (eni 1600 px gacha, WebP), rasm bazada saqlanadi va `/api/img/<id>` orqali beriladi (bir yil keshlanadi). Yuklangach «Saqlash» tugmasini bosing.
 
-**Modul ikonkasi** (modul kartochkasida rasm yo'q — faqat ikonka, raqam, nom, vaqt va progress): Admin → kurs → modul formasidagi ikonka maydoni — havola yoki kompyuterdan yuklash (256 px gacha kichraytiriladi, PNG'ning shaffof foni saqlanadi). Ikonka qo'yilmasa, plitkada modul raqami chiqadi. LOR modullari uchun tayyor oltin ikonkalar: `public/icons/modules/*.svg` (maydonga masalan `/icons/modules/peshona.svg` yoziladi). Eski (almashtirilgan) rasm bazada qoladi, lekin hech qayerda ko'rinmaydi.
+**Modul ikonkasi** (modul kartochkasida rasm yo'q — faqat ikonka, raqam, nom, vaqt va progress): Admin → kurs → modul formasidagi ikonka maydoni — havola yoki kompyuterdan yuklash (256 px gacha kichraytiriladi, PNG'ning shaffof foni saqlanadi). Ikonka qo'yilmasa, plitkada modul raqami chiqadi. LOR modullari ikonkalari: `public/icons/modules/*.webp` (shaffof fonli; maydonga masalan `/icons/modules/peshona.webp` yoziladi). Eski (almashtirilgan) rasm bazada qoladi, lekin hech qayerda ko'rinmaydi.
 
 ## Online holati va kirish xabari
 - **Online:** o'quvchi oxirgi 2 daqiqada sahifa ochgan yoki video ko'rgan bo'lsa, Analitikada «Oxirgi faollik» o'rnida yashil chiroqcha bilan **Online** chiqadi (sahifa har 20 soniyada o'zi yangilanadi).
