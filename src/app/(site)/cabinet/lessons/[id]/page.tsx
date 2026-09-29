@@ -9,7 +9,6 @@ import { LessonVideo } from "@/components/LessonVideo";
 import { FileVideo } from "@/components/FileVideo";
 import { isOwnVideo, ownVideoSrc } from "@/lib/video-source";
 import { kinescopeId, toEmbedUrl } from "@/lib/format";
-import { LessonContent } from "@/components/LessonContent";
 
 export default async function LessonPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ play?: string }> }) {
   const { id } = await params;
@@ -55,13 +54,6 @@ export default async function LessonPage({ params, searchParams }: { params: Pro
           ) : (
             <VideoPlayer url={lesson.videoUrl} />
           ))}
-
-          {lesson.content && (
-            <section className="glass p-6 sm:p-7">
-              <h2 className="mb-4 text-xl font-bold">Dars haqida</h2>
-              <LessonContent text={lesson.content} />
-            </section>
-          )}
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             {prev ? <Link href={`/cabinet/lessons/${prev.id}`} className="btn-outline">← Oldingi dars</Link> : <span />}
