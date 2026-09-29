@@ -8,6 +8,7 @@ import {
 } from "@/lib/actions/admin";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ConfirmButton } from "@/components/ConfirmButton";
+import { MoneyInput } from "@/components/admin/MoneyInput";
 
 export default async function AdminCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -58,8 +59,8 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="label">Kurs narxi (so&apos;m)</label>
-              <input name="price" type="number" min={0} className="input" defaultValue={course.price} />
-              <p className="mt-1 text-xs text-zinc-400">Saytda ko&apos;rinmaydi. Faqat «O&apos;quvchi qo&apos;shish» formasida summa avtomatik to&apos;ladi.</p>
+              <MoneyInput name="price" defaultValue={course.price} placeholder="Masalan, 1 500 000" />
+              <p className="mt-1 text-xs text-zinc-400">Qo&apos;lda yozing (masalan 1 500 000). Saytda ko&apos;rinmaydi, faqat «O&apos;quvchi qo&apos;shish» formasida summa avtomatik to&apos;ladi (u yerda o&apos;zgartirsa ham bo&apos;ladi).</p>
             </div>
           </div>
           <div>

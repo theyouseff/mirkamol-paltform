@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { addStudent, type AddStudentState } from "@/lib/actions/admin";
 import { SubmitButton } from "../SubmitButton";
+import { MoneyInput } from "./MoneyInput";
 
 type CourseOption = { id: string; label: string; price: number };
 
@@ -50,7 +51,7 @@ export function AddStudentForm({ courses }: { courses: CourseOption[] }) {
           </div>
           <div>
             <label className="label">To&apos;langan summa</label>
-            <input name="amount" type="number" min={0} className="input" value={amount} onChange={(e) => setAmount(Number(e.target.value))} />
+            <MoneyInput name="amount" value={amount} onValueChange={setAmount} />
           </div>
           <div>
             <label className="label">Manba</label>
