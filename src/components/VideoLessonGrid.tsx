@@ -64,7 +64,7 @@ export function VideoLessonGrid({ lessons }: { lessons: LessonCard[] }) {
           <Link
             key={l.id}
             href={`/cabinet/lessons/${l.id}`}
-            className="enter glass group block overflow-hidden transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-ink-950/70 active:scale-[0.97] active:border-gold/70 active:bg-ink-950/70"
+            className="enter glass group relative block overflow-hidden transition duration-300 hover:-translate-y-1 hover:border-gold/70 hover:bg-ink-950/70 active:z-20 active:scale-105 active:border-gold/70 active:bg-ink-950/70 active:shadow-[0_0_40px_8px_rgba(212,175,55,0.22)]"
             style={step(i)}
           >
             {body}

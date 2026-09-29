@@ -125,9 +125,9 @@ a, button, summary, [role="button"] {
     box-shadow: 0 16px 32px -14px rgb(212 175 55 / 0.8);
   }
   &:active {
-    @apply border-gold;
-    transform: scale(0.97);
-    box-shadow: 0 6px 16px -10px rgb(212 175 55 / 0.7);
+    @apply border-gold relative z-20;
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 0 24px 48px -16px rgb(212 175 55 / 0.55), 0 0 40px 8px rgb(212 175 55 / 0.18);
   }
 }
 
