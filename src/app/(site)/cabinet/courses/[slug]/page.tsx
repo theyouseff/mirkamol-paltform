@@ -27,7 +27,6 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
       id: m.id,
       title: m.title,
       description: m.description,
-      coverUrl: m.coverUrl,
       iconUrl: m.iconUrl,
       lessonCount: m.lessons.length,
       totalTime: totalDuration(m.lessons.map((l) => l.duration)),

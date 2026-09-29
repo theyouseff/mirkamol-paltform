@@ -38,7 +38,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
       <Link href={`/cabinet/courses/${course.slug}`} className="text-sm font-medium text-gold-text/80 hover:text-gold-text active:text-gold-text">← {course.title}</Link>
       <div className="mt-5">
         <div className="flex items-center gap-4">
-          <ModuleIcon src={mod.iconUrl} size="lg" />
+          <ModuleIcon src={mod.iconUrl} n={index + 1} size="lg" />
           <div className="min-w-0">
             <p className="text-sm font-medium uppercase tracking-widest text-gold-text/70">{index + 1}-modul</p>
             <h1 className="mt-1 text-3xl font-bold sm:text-4xl">{mod.title}</h1>

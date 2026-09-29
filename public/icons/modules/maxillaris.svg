@@ -1,0 +1,12 @@
+<svg aria-label="Sinus maxillaris" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+<defs><linearGradient id="g" x1="0" y1="4" x2="0" y2="60" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#f8d27a"/><stop offset="1" stop-color="#c9962a"/></linearGradient></defs>
+<g stroke="url(#g)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+<path d="M12 36 C9 20 18 7 32 7 C46 7 55 20 52 36"/>
+<path d="M12 36 C12 46 15 53 20 57 L44 57 C49 53 52 46 52 36"/>
+<circle cx="22" cy="26" r="6"/><circle cx="42" cy="26" r="6"/>
+<path fill="url(#g)" fill-opacity="0.32" d="M15 37 L27 35 L27 49 C22 50 17 47 15 43 Z"/>
+<path fill="url(#g)" fill-opacity="0.32" d="M49 37 L37 35 L37 49 C42 50 47 47 49 43 Z"/>
+<path d="M29 48 C29 42 30 37 32 36 C34 37 35 42 35 48 Z"/>
+<path d="M24 57 V53 M29 57 V53 M35 57 V53 M40 57 V53" stroke-width="1.8"/>
+</g>
+</svg>

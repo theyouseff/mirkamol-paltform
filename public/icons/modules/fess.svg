@@ -1,0 +1,12 @@
+<svg aria-label="FESS" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+<defs><linearGradient id="g" x1="0" y1="4" x2="0" y2="60" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#f8d27a"/><stop offset="1" stop-color="#c9962a"/></linearGradient></defs>
+<g stroke="url(#g)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+<path d="M11 8 C14 18 16 25 10 37 C8 41 10 45 14 45 L21 45 C21 49 24 52 28 52"/>
+<path d="M24 41 L47 18" stroke-width="3.2"/>
+<path d="M46 19 L53 12" stroke-width="7"/>
+<circle cx="56.5" cy="8.5" r="3.2"/>
+<path d="M52 14 C58 20 59 28 55 34"/>
+<circle fill="url(#g)" fill-opacity="0.32" cx="22" cy="43" r="3.4"/>
+<path d="M16 47 L13 50 M20 50 L19 54 M15 42 L11 42" stroke-width="1.8"/>
+</g>
+</svg>

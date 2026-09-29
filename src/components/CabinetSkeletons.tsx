@@ -14,6 +14,25 @@ function CardSkeleton({ i }: { i: number }) {
   );
 }
 
+// Modul kartochkasi: chapda ikonka plitkasi, yonida raqam va nom, pastda progress
+function ModuleCardSkeleton() {
+  return (
+    <div className="glass p-5 sm:p-6">
+      <div className="flex items-start gap-4">
+        <div className="skeleton h-16 w-16 shrink-0 rounded-2xl" />
+        <div className="flex-1 space-y-3 pt-1">
+          <div className="skeleton h-3 w-16" />
+          <div className="skeleton h-5 w-3/4" />
+        </div>
+      </div>
+      <div className="mt-6 space-y-2">
+        <div className="skeleton h-2 w-full rounded-full" />
+        <div className="skeleton h-4 w-32" />
+      </div>
+    </div>
+  );
+}
+
 function Grid({ count }: { count: number }) {
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -35,22 +54,29 @@ export function CourseSkeleton() {
         <div className="skeleton mt-2 h-2 w-full rounded-full" />
         <div className="skeleton h-11 w-64 rounded-xl" />
       </div>
-      <div className="mt-8">
-        <Grid count={3} />
+      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <ModuleCardSkeleton key={i} />
+        ))}
       </div>
     </div>
   );
 }
 
-// Modul sahifasi: modul raqami, nomi, video darslar
+// Modul sahifasi: ikonka, modul raqami, nomi, video darslar
 export function ModuleSkeleton() {
   return (
     <div className="zoom-in" aria-busy aria-label="Yuklanmoqda">
       <div className="skeleton h-4 w-32" />
-      <div className="mt-5 space-y-3">
-        <div className="skeleton h-4 w-20" />
-        <div className="skeleton h-9 w-2/3" />
-        <div className="skeleton mt-6 h-4 w-44" />
+      <div className="mt-5 flex items-center gap-4">
+        <div className="skeleton h-16 w-16 shrink-0 rounded-2xl sm:h-20 sm:w-20" />
+        <div className="flex-1 space-y-3">
+          <div className="skeleton h-4 w-20" />
+          <div className="skeleton h-9 w-2/3" />
+        </div>
+      </div>
+      <div className="mt-6">
+        <div className="skeleton h-4 w-44" />
       </div>
       <div className="mt-5">
         <Grid count={3} />

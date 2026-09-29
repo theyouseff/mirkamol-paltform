@@ -57,7 +57,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
           {course.modules.map((m, i) => (
             <section key={m.id} className="glass p-5">
               <div className="flex items-center gap-3">
-                <ModuleIcon src={m.iconUrl} />
+                <ModuleIcon src={m.iconUrl} n={i + 1} />
                 <div className="min-w-0">
                   <p className="text-xs font-medium uppercase tracking-wider text-gold-text/60">{i + 1}-modul{totalDuration(m.lessons.map((l) => l.duration)) && ` · ${totalDuration(m.lessons.map((l) => l.duration))}`}</p>
                   <h3 className="mt-1 text-lg font-bold">{m.title}</h3>
