@@ -409,7 +409,7 @@ export async function resetStudentPassword(_: ResetPasswordState, formData: Form
   const password = generatePassword();
   await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(password), vaultPassword: sealPassword(password) } });
   const mail = mailStatus(await sendNewPassword(user.email, user.name, password));
-  return { password, ...mail };
+  return { password, ...mail }; // ro'yxat yangilanmaydi: yaratilgan parol shu joyda ko'rinib turadi (sahifa yangilangach «Ko'rsatish» chiqadi)
 }
 
 // ---------- Mualliflar ----------

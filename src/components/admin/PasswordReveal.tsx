@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { revealPassword } from "@/lib/actions/admin";
+import { ResetPasswordButton } from "./ResetPasswordButton";
 
 // Admin ro'yxatida o'quvchi parolini ko'rsatadi. Parol sahifa bilan birga kelmaydi: "Ko'rsatish" bosilganda serverdan olinadi
 // va 30 soniyadan keyin yana yashiriladi. has=false: parol saqlanmagan (o'quvchi o'zi o'zgartirgan yoki eski akkaunt).
@@ -17,7 +18,19 @@ export function PasswordReveal({ userId, has }: { userId: string; has: boolean }
     return () => clearTimeout(t);
   }, [pw]);
 
-  if (!has) return <span className="text-xs text-zinc-400" title="O'quvchi parolni o'zi o'zgartirgan yoki akkaunt eski. «Yangi parol» tugmasi bilan yangisini yaratsangiz, shu yerda ko'rinadi.">—</span>;
+  // Parol saqlanmagan: akkaunt vazifadan oldin ochilgan yoki o'quvchi parolni o'zi o'zgartirgan. Eski parolni tiklab bo'lmaydi (bazada faqat xesh).
+  // Yangisini yaratsangiz, shu yerda ko'rinadi (va emailga ketadi); eski parol ishlamay qoladi.
+  if (!has)
+    return (
+      <span className="inline-flex flex-col items-start gap-1">
+        <span className="text-xs text-zinc-400">Saqlanmagan</span>
+        <ResetPasswordButton
+          userId={userId}
+          label="Parol yaratish"
+          message={"Yangi parol yaratiladi va shu yerda ko'rinadi (o'quvchining emailiga ham yuboriladi).\n\nDiqqat: o'quvchining ESKI paroli ishlamay qoladi va u hamma qurilmadan chiqib ketadi. Davom etasizmi?"}
+        />
+      </span>
+    );
 
   if (pw) {
     return (
