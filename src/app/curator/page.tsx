@@ -6,7 +6,7 @@ export default async function CuratorPage({ searchParams }: { searchParams: Prom
   const { q, student } = await searchParams;
   const user = await requireCurator();
   // Kurator faqat o'ziga biriktirilgan kurslardagi o'quvchilarni ko'radi (admin — hammasini)
-  if (user.role === "ADMIN") return <AnalyticsView basePath="/curator" q={q} student={student} canAnnotate />;
+  if (user.role === "ADMIN") return <AnalyticsView basePath="/curator" q={q} student={student} canAnnotate contacts />; // admin ko'rsa — telefon va parol ham chiqadi; kuratorga chiqmaydi
 
   const assigned = await prisma.curatorCourse.findMany({ where: { curatorId: user.id }, include: { course: { select: { title: true } } } });
   if (assigned.length === 0) {

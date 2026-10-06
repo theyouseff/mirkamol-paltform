@@ -33,6 +33,7 @@ export async function sendMail(to: string, subject: string, text: string, html: 
   }
 }
 
+// Eslatma: o'quvchiga ketadigan xatlarga (login, parol, kurs, eslatma) telefon raqam HECH QACHON qo'yilmaydi — bu funksiyalar raqamni umuman olmaydi.
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
 const codeBox = (code: string) =>

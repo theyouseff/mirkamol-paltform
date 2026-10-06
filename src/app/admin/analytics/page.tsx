@@ -60,7 +60,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
 
   return (
     <div className="space-y-10">
-      <AnalyticsView basePath="/admin/analytics" q={q} student={student} canAnnotate />
+      <AnalyticsView basePath="/admin/analytics" q={q} student={student} canAnnotate contacts />
       <CourseChats courses={chats} />
     </div>
   );

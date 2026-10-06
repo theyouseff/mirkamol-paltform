@@ -8,6 +8,11 @@ import { missedFrom, ONLINE_MS, WATCHING_MS } from "@/lib/activity";
 import { AutoRefresh } from "@/components/analytics/AutoRefresh";
 import { EmailStudent } from "@/components/analytics/EmailStudent";
 import { StudentLink, SwitchProvider, TopPanel } from "@/components/admin/StudentSwitch";
+import { PasswordReveal } from "@/components/admin/PasswordReveal";
+import { PhoneCell } from "@/components/admin/PhoneCell";
+
+// Analitikadagi o'quvchi: telefon va parol nusxasi faqat admin (contacts) so'rovida keladi
+type StudentRow = { id: string; name: string; email: string; createdAt: Date; lastSeenAt: Date | null; watchingAt: Date | null; enrollments: { courseId: string }[]; phone?: string | null; vaultPassword?: string | null };
 
 const step = (i: number) => ({ "--i": i }) as CSSProperties;
 
@@ -43,12 +48,27 @@ const duration = (seconds: number) => {
   return h ? `${h} soat ${m} daq` : `${m} daq`;
 };
 
+// O'quvchi blokida telefon raqam va parol (faqat admin ko'radi; kuratorga umuman chiqmaydi)
+function ContactLines({ userId, phone, hasPassword }: { userId: string; phone: string | null; hasPassword: boolean }) {
+  return (
+    <div className="mt-1.5 space-y-1 text-xs text-zinc-500">
+      <div className="flex flex-wrap items-center gap-1">Telefon: <PhoneCell userId={userId} phone={phone} /></div>
+      <div className="flex flex-wrap items-center gap-1.5">Parol: <PasswordReveal userId={userId} has={hasPassword} /></div>
+    </div>
+  );
+}
+
 // O'quvchilar analitikasi (faqat ko'rish). Admin ham, kurator ham shuni ishlatadi; basePath — sahifaning manzili.
-export async function AnalyticsView({ basePath, q = "", student = "", courseIds, subtitle, canAnnotate = false }: { basePath: string; q?: string; student?: string; courseIds?: string[]; subtitle?: string; canAnnotate?: boolean }) {
+// contacts — faqat admin uchun: o'quvchi blokida telefon raqam va parol (kurator ko'rmaydi)
+export async function AnalyticsView({ basePath, q = "", student = "", courseIds, subtitle, canAnnotate = false, contacts = false }: { basePath: string; q?: string; student?: string; courseIds?: string[]; subtitle?: string; canAnnotate?: boolean; contacts?: boolean }) {
   const weekAgo = Date.now() - 7 * 24 * 3600_000;
 
-  const [users, lessons, watches, progress] = await Promise.all([
-    prisma.user.findMany({ where: { role: "STUDENT", enrollments: { some: courseIds ? { courseId: { in: courseIds } } : {} } }, include: { enrollments: { select: { courseId: true } } } }),
+  const [users, lessons, watches, progress, courseList] = await Promise.all([
+    // Faqat kerakli maydonlar olinadi (parol xeshi hech qachon yuklanmaydi). Telefon va parol nusxasi — faqat admin (contacts) uchun.
+    prisma.user.findMany({
+      where: { role: "STUDENT", enrollments: { some: courseIds ? { courseId: { in: courseIds } } : {} } },
+      select: { id: true, name: true, email: true, createdAt: true, lastSeenAt: true, watchingAt: true, enrollments: { select: { courseId: true } }, ...(contacts ? { phone: true, vaultPassword: true } : {}) },
+    }) as unknown as Promise<StudentRow[]>,
     prisma.lesson.findMany({
       where: courseIds ? { module: { courseId: { in: courseIds } } } : {},
       select: { id: true, title: true, order: true, videoUrl: true, moduleId: true, module: { select: { title: true, order: true, courseId: true } } },
@@ -56,6 +76,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
     }),
     prisma.lessonWatch.findMany({ where: courseIds ? { lesson: { module: { courseId: { in: courseIds } } } } : {} }),
     prisma.lessonProgress.findMany({ select: { userId: true, lessonId: true } }),
+    prisma.course.findMany({ where: courseIds ? { id: { in: courseIds } } : {}, orderBy: { title: "asc" }, select: { id: true, title: true } }),
   ]);
 
   const lessonById = new Map(lessons.map((l) => [l.id, l]));
@@ -140,6 +161,22 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
     { label: "O'rtacha progress", value: `${all.length ? Math.round(all.reduce((n, r) => n + pct(r.completed, r.mine.length), 0) / all.length) : 0}%` },
     { label: "Jami ko'rilgan vaqt", value: duration(watches.reduce((n, w) => n + w.watched, 0)) },
   ];
+
+  // ---- O'quvchilar kurslar bo'yicha bo'linadi. Bir nechta kursga yozilgan o'quvchi har bir kursning bo'limida chiqadi;
+  // progress va "oxirgi ko'rgan dars" shu kurs bo'yicha hisoblanadi.
+  const segments = courseList.map((course) => {
+    const cl = lessonsByCourse.get(course.id) ?? [];
+    const ids = new Set(cl.map((l) => l.id));
+    const items = rows
+      .filter((r) => r.u.enrollments.some((e) => e.courseId === course.id))
+      .map((r) => ({
+        ...r,
+        mine: cl,
+        completed: cl.filter((l) => done.has(`${r.u.id}:${l.id}`)).length,
+        last: [...r.myWatches.values()].filter((w) => ids.has(w.lessonId)).sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())[0],
+      }));
+    return { course, items };
+  }).filter((seg) => seg.items.length > 0 || !q);
 
   // ---- Tanlangan o'quvchi: oxirgi ko'rgan video va uning 4 ta asosiy metrikasi
   const lastLesson = selected?.last ? lessonById.get(selected.last.lessonId) : undefined;
@@ -278,7 +315,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-end justify-between gap-2">
-          <h2 className="text-lg font-semibold">O&apos;quvchilar <span className="text-sm font-normal text-gold-text/60">— metrikalarini ko&apos;rish uchun tanlang</span></h2>
+          <h2 className="text-lg font-semibold">O&apos;quvchilar <span className="text-sm font-normal text-gold-text/60">— kurslar bo&apos;yicha; metrikalarini ko&apos;rish uchun tanlang</span></h2>
           <form className="flex gap-2">
             {student && <input type="hidden" name="student" value={student} />}
             <input name="q" defaultValue={q} className="input w-64" placeholder="Ism yoki email" />
@@ -286,81 +323,101 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
           </form>
         </div>
 
-        <div className="card overflow-x-auto p-0 max-lg:hidden">
-          <table className="w-full min-w-[860px] text-sm">
-            <thead className="bg-zinc-50 text-left text-zinc-500">
-              <tr><th className="px-4 py-3">O&apos;quvchi</th><th>Progress</th><th>Oxirgi ko&apos;rgan dars</th><th>Oxirgi faollik</th><th></th></tr>
-            </thead>
-            <tbody>
-              {rows.map(({ u, mine, completed, last, lastActive, online, watching }) => {
-                const lastLesson = last && lessonById.get(last.lessonId);
-                const active = u.id === student;
-                return (
-                  <tr key={u.id} className={`border-t border-zinc-100 align-top transition-colors duration-300 ${active ? "bg-amber-50" : "hover:bg-zinc-50"}`}>
-                    <td className="px-4 py-3">
-                      <StudentLink href={href({ student: u.id })} className="font-medium text-brand hover:underline">{u.name}</StudentLink>
-                      <p className="text-xs text-zinc-400">{u.email}</p>
-                    </td>
-                    <td className="w-48 py-3 pr-4">
-                      <ProgressBar value={pct(completed, mine.length)} />
-                      <p className="mt-1 text-xs text-zinc-500">{completed} / {mine.length} dars tugatgan</p>
-                    </td>
-                    <td className="py-3 pr-4">
-                      {last && lastLesson ? (
-                        <>
-                          <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">{numbering.get(lastLesson.id)}</p>
-                          <p className="font-medium">{lastLesson.title}</p>
-                          <p className="text-xs text-zinc-500">
-                            To&apos;xtagan joyi: <b>{formatClock(last.position)}</b> / {formatClock(last.duration)} ({pct(last.position, last.duration)}%)
-                          </p>
-                        </>
-                      ) : (
-                        <span className="text-zinc-400">Hali video ko&apos;rmagan</span>
-                      )}
-                    </td>
-                    <td className="py-3 pr-4 text-zinc-500"><Presence online={online} watching={watching} at={lastActive} /></td>
-                    <td className="py-3 pr-4 text-right">
-                      <StudentLink href={href({ student: u.id })} className={active ? "text-xs font-medium text-zinc-400" : "btn-outline px-2.5 py-1 text-xs"}>{active ? "Tanlangan" : "Ko'rish →"}</StudentLink>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {rows.length === 0 && <p className="p-6 text-center text-zinc-500">O&apos;quvchilar topilmadi</p>}
-        </div>
-
-        {/* Telefon va planshet: jadval o'rniga kartochkalar */}
-        <div className="space-y-3 lg:hidden">
-          {rows.map(({ u, mine, completed, last, lastActive, online, watching }) => {
-            const lastLesson = last && lessonById.get(last.lessonId);
-            const active = u.id === student;
-            return (
-              <div key={u.id} className={`card space-y-3 p-4 text-sm transition-colors duration-300 ${active ? "bg-amber-50" : ""}`}>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <StudentLink href={href({ student: u.id })} className="font-medium text-brand">{u.name}</StudentLink>
-                    <p className="truncate text-xs text-zinc-400">{u.email}</p>
-                  </div>
-                  <Presence online={online} watching={watching} at={lastActive} className="shrink-0 text-xs text-zinc-500" />
-                </div>
-                <div>
-                  <ProgressBar value={pct(completed, mine.length)} />
-                  <p className="mt-1 text-xs text-zinc-500">{completed} / {mine.length} dars tugatgan</p>
-                </div>
-                {last && lastLesson ? (
-                  <p className="text-xs text-zinc-500">
-                    <span className="font-medium text-zinc-700">{numbering.get(lastLesson.id)} · {lastLesson.title}</span> · to&apos;xtagan joyi <b>{formatClock(last.position)}</b> / {formatClock(last.duration)}
-                  </p>
-                ) : (
-                  <p className="text-xs text-zinc-400">Hali video ko&apos;rmagan</p>
-                )}
-                <StudentLink href={href({ student: u.id })} className={active ? "text-xs font-medium text-zinc-400" : "btn-outline px-3 py-1.5 text-xs"}>{active ? "Tanlangan" : "Ko'rish →"}</StudentLink>
+        {segments.map((seg) => (
+          <details key={seg.course.id} open className="card group overflow-hidden p-0">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 hover:bg-zinc-50">
+              <div className="min-w-0">
+                <h3 className="truncate font-semibold">{seg.course.title}</h3>
+                <p className="text-sm text-zinc-500">{seg.items.length} o&apos;quvchi · {seg.items.filter((i) => i.online).length} ta hozir online</p>
               </div>
-            );
-          })}
-          {rows.length === 0 && <p className="card text-center text-zinc-500">O&apos;quvchilar topilmadi</p>}
-        </div>
+              <span className="text-zinc-400 transition group-open:rotate-180" aria-hidden>▾</span>
+            </summary>
+            <div className="border-t border-zinc-100">
+              {seg.items.length === 0 ? (
+                <p className="p-6 text-center text-zinc-500">Bu kursda o&apos;quvchi topilmadi</p>
+              ) : (
+                <>
+                  <div className="overflow-x-auto max-lg:hidden">
+                    <table className="w-full min-w-[860px] text-sm">
+                      <thead className="bg-zinc-50 text-left text-zinc-500">
+                        <tr><th className="px-4 py-3">O&apos;quvchi</th><th>Progress</th><th>Oxirgi ko&apos;rgan dars</th><th>Oxirgi faollik</th><th></th></tr>
+                      </thead>
+                      <tbody>
+                        {seg.items.map(({ u, mine, completed, last, lastActive, online, watching }) => {
+                          const lastLesson = last && lessonById.get(last.lessonId);
+                          const active = u.id === student;
+                          return (
+                            <tr key={u.id} className={`border-t border-zinc-100 align-top transition-colors duration-300 ${active ? "bg-amber-50" : "hover:bg-zinc-50"}`}>
+                              <td className="px-4 py-3">
+                                <StudentLink href={href({ student: u.id })} className="font-medium text-brand hover:underline">{u.name}</StudentLink>
+                                <p className="text-xs text-zinc-400">{u.email}</p>
+                                {contacts && <ContactLines userId={u.id} phone={u.phone ?? null} hasPassword={!!u.vaultPassword} />}
+                              </td>
+                              <td className="w-48 py-3 pr-4">
+                                <ProgressBar value={pct(completed, mine.length)} />
+                                <p className="mt-1 text-xs text-zinc-500">{completed} / {mine.length} dars tugatgan</p>
+                              </td>
+                              <td className="py-3 pr-4">
+                                {last && lastLesson ? (
+                                  <>
+                                    <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">{numbering.get(lastLesson.id)}</p>
+                                    <p className="font-medium">{lastLesson.title}</p>
+                                    <p className="text-xs text-zinc-500">
+                                      To&apos;xtagan joyi: <b>{formatClock(last.position)}</b> / {formatClock(last.duration)} ({pct(last.position, last.duration)}%)
+                                    </p>
+                                  </>
+                                ) : (
+                                  <span className="text-zinc-400">Hali video ko&apos;rmagan</span>
+                                )}
+                              </td>
+                              <td className="py-3 pr-4 text-zinc-500"><Presence online={online} watching={watching} at={lastActive} /></td>
+                              <td className="py-3 pr-4 text-right">
+                                <StudentLink href={href({ student: u.id })} className={active ? "text-xs font-medium text-zinc-400" : "btn-outline px-2.5 py-1 text-xs"}>{active ? "Tanlangan" : "Ko'rish →"}</StudentLink>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Telefon va planshet: jadval o'rniga kartochkalar */}
+                  <div className="space-y-3 p-3 lg:hidden">
+                    {seg.items.map(({ u, mine, completed, last, lastActive, online, watching }) => {
+                      const lastLesson = last && lessonById.get(last.lessonId);
+                      const active = u.id === student;
+                      return (
+                        <div key={u.id} className={`space-y-3 rounded-xl border border-zinc-200 p-4 text-sm transition-colors duration-300 ${active ? "bg-amber-50" : "bg-white"}`}>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <StudentLink href={href({ student: u.id })} className="font-medium text-brand">{u.name}</StudentLink>
+                              <p className="truncate text-xs text-zinc-400">{u.email}</p>
+                              {contacts && <ContactLines userId={u.id} phone={u.phone ?? null} hasPassword={!!u.vaultPassword} />}
+                            </div>
+                            <Presence online={online} watching={watching} at={lastActive} className="shrink-0 text-xs text-zinc-500" />
+                          </div>
+                          <div>
+                            <ProgressBar value={pct(completed, mine.length)} />
+                            <p className="mt-1 text-xs text-zinc-500">{completed} / {mine.length} dars tugatgan</p>
+                          </div>
+                          {last && lastLesson ? (
+                            <p className="text-xs text-zinc-500">
+                              <span className="font-medium text-zinc-700">{numbering.get(lastLesson.id)} · {lastLesson.title}</span> · to&apos;xtagan joyi <b>{formatClock(last.position)}</b> / {formatClock(last.duration)}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-zinc-400">Hali video ko&apos;rmagan</p>
+                          )}
+                          <StudentLink href={href({ student: u.id })} className={active ? "text-xs font-medium text-zinc-400" : "btn-outline px-3 py-1.5 text-xs"}>{active ? "Tanlangan" : "Ko'rish →"}</StudentLink>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+          </details>
+        ))}
+        {rows.length === 0 && <p className="card text-center text-zinc-500">O&apos;quvchilar topilmadi</p>}
       </section>
     </div>
     </SwitchProvider>

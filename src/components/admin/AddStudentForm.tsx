@@ -67,7 +67,7 @@ export function AddStudentForm({ courses }: { courses: CourseOption[] }) {
         <div>
           <label className="label">Telefon raqam <span className="font-normal text-zinc-400">(ixtiyoriy)</span></label>
           <input name="phone" type="tel" inputMode="tel" autoComplete="off" className="input sm:max-w-sm" placeholder="+998 90 123 45 67" value={f.phone} onChange={set("phone")} />
-          <p className="mt-1 text-xs text-zinc-400">Faqat admin ko&apos;radi. Mavjud o&apos;quvchiga yozsangiz, raqami yangilanadi.</p>
+          <p className="mt-1 text-xs text-zinc-400">Faqat admin ko&apos;radi, o&apos;quvchiga yuboriladigan xatga qo&apos;yilmaydi. Mavjud o&apos;quvchida raqam bo&apos;lmasa qo&apos;shiladi; bor raqam o&apos;zgarmaydi (ro&apos;yxatdagi ✎ bilan o&apos;zgartiriladi).</p>
         </div>
 
         <div>

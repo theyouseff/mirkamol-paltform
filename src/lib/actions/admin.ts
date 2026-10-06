@@ -266,8 +266,9 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
     // Yangi o'quvchiga tayyor parol beriladi: email va shu parol bilan to'g'ridan-to'g'ri kiradi (keyin «Parol» bo'limida o'zgartiradi)
     password = generatePassword();
     user = await prisma.user.create({ data: { name, email, phone, passwordHash: await hashPassword(password), vaultPassword: sealPassword(password) } });
-  } else if (phone && user.phone !== phone) {
-    user = await prisma.user.update({ where: { id: user.id }, data: { phone } }); // mavjud o'quvchiga yangi raqam yozilgan bo'lsa — yangilanadi
+  } else if (phone && !user.phone) {
+    // Mavjud o'quvchida raqam yo'q bo'lsa — to'ldiriladi. Raqami bor bo'lsa O'ZGARMAYDI (faqat ro'yxatdagi ✎ bilan o'zgartiriladi).
+    user = await prisma.user.update({ where: { id: user.id }, data: { phone } });
   }
 
   const opened: string[] = [];
