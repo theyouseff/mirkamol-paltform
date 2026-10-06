@@ -60,6 +60,12 @@ Yangi dars videosini R2'ga yuklab, darsga ulagach (Mac'da, terminalda):
 3. `npx tsx --env-file=.env scripts/make-thumbs.ts --link` — rasmi bor darslarga baza'da manzilni yozadi.
 Terminalsiz: Admin → dars → **Kartochka rasmi** maydoniga rasmni kompyuterdan yuklash yoki havola yozish ham mumkin.
 
+## O'quvchi paroli, ko'p kurs, reyting
+- **Parolni ko'rish (faqat admin).** Admin → O'quvchilar → «Parol» ustunida **Ko'rsatish**: parol bosilganda serverdan olinadi va 30 soniyadan keyin yana yashiriladi. Platforma yaratgan parollar (yangi o'quvchi, «Yangi parol», kurator o'rnatgani) AES-256-GCM bilan shifrlab saqlanadi (kalit `AUTH_SECRET`dan olinadi, bazaning o'zida kalit yo'q). O'quvchi parolni **o'zi o'zgartirsa**, saqlangan nusxa o'chadi (uning shaxsiy paroli boshqa saytlarda ham bo'lishi mumkin), eski akkauntlarda ham parol yo'q — «Yangi parol» tugmasi bilan yangisi yaratiladi va ko'rinadi.
+- **Bir nechta kurs.** «O'quvchi qo'shish» formasida kurslar belgilash qutichalari (soni cheklanmagan), har biri uchun alohida summa va to'lov yozuvi. Ro'yxatdagi o'quvchida kurs belgilari yonida **+ kurs** — qo'shimcha kurs ochadi (eskilari qoladi; ⇄ esa almashtiradi).
+- **Kurs ajratilishi.** O'quvchi faqat o'zi yozilgan kurslarni ko'radi (katalog, kabinet, darslar, postlar, chat, «Oxirgi ko'rgan video»); kursdan chiqarilgan/almashtirilgan o'quvchiga eski kursning videosi ko'rinmaydi. Reyting ham faqat shu kurs o'quvchilaridan tuziladi.
+- **Reyting (Leader board)** kurs sahifasi pastida: eng yaxshi 10 + o'quvchining o'z o'rni; boshqalarga faqat «Ism F.» ko'rinadi (admin to'liq ismni ko'radi). Ballar: dars ko'rib tugatilsa +100 (video ≥80% haqiqiy ijro), tugamagan dars ko'rgan ulushiga qarab ≤60, modul tugatilsa +150, kurs tugatilsa +500, ketma-ket faol kunlar har kun +15 (≤150). «Shu hafta» — oxirgi 7 kunda tugatilgan dars (+100) va faol kun (+20). Teng ballda oldin yetgan yuqori. Qoidalar `src/lib/leaderboard.ts` da (`POINTS`).
+
 ## Postlar
 Menyuda **Kabinet**dan keyin **Postlar**: kurator o'z kursi uchun e'lon/yangilik yozadi, o'quvchi faqat o'qiydi (yoza olmaydi). Har bir post **faqat o'z kursida** ko'rinadi: masalan, LOR kuratorining posti marketing kursi o'quvchisiga chiqmaydi. Kurator postni `/curator/posts` sahifasida yozadi (faqat o'ziga biriktirilgan kurslarga) va faqat o'zinikini o'chira oladi. O'quvchi bir nechta kursga yozilgan bo'lsa, postlarni kurs bo'yicha saralaydi.
 

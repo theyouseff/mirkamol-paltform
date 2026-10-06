@@ -8,6 +8,8 @@ import { fulfillOrder } from "@/lib/access";
 import { remindOrder } from "@/lib/reminders";
 import { normalizeEmail } from "@/lib/format";
 import { generatePassword, hashPassword } from "@/lib/password";
+import { openPassword, sealPassword } from "@/lib/vault";
+import { isLimited, recordAttempt } from "@/lib/rate-limit";
 import { sendCourseOpened, sendCuratorAccess, sendNewPassword, sendStudentAccess, type MailResult } from "@/lib/mail";
 
 const str = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
@@ -219,7 +221,7 @@ export async function deleteOrder(formData: FormData) {
 export type MailStatus = "sent" | "failed" | "skipped";
 export type AddStudentState = {
   error?: string;
-  result?: { name: string; email: string; course: string; isNew: boolean; password: string | null; mail: MailStatus; mailReason?: string };
+  result?: { name: string; email: string; courses: string[]; skipped: string[]; isNew: boolean; password: string | null; mail: MailStatus; mailReason?: string };
 };
 
 function mailStatus(r: MailResult | null): { mail: MailStatus; mailReason?: string } {
@@ -227,65 +229,75 @@ function mailStatus(r: MailResult | null): { mail: MailStatus; mailReason?: stri
   return r.sent ? { mail: "sent" } : { mail: "failed", mailReason: r.reason };
 }
 
-// To'lov admin tomonidan tasdiqlangach: akkaunt ochadi (yoki mavjudini topadi), kursni ochadi va yangi o'quvchiga
-// emailga bir martalik kod yuboradi — parolni o'quvchining o'zi qo'yadi.
+// Bitta kursni o'quvchiga ochadi: to'lov yozuvi (buyurtma) yaratadi va kursga kirishni beradi. Kurs allaqachon ochiq bo'lsa — false.
+async function grantCourse(user: { id: string; name: string; email: string }, courseId: string, amount: number, source: string, note: string) {
+  if (await prisma.enrollment.findUnique({ where: { userId_courseId: { userId: user.id, courseId } }, select: { id: true } })) return false;
+  const order = await prisma.$transaction(async (tx) => {
+    const last = await tx.order.findFirst({ orderBy: { number: "desc" }, select: { number: true } });
+    return tx.order.create({
+      data: { number: (last?.number ?? 1000) + 1, userId: user.id, buyerName: user.name, buyerEmail: user.email, courseId, amount: Math.max(0, amount), utmSource: source, note },
+    });
+  });
+  await fulfillOrder(order.id, "manual");
+  return true;
+}
+
+// To'lov admin tomonidan tasdiqlangach: akkaunt ochadi (yoki mavjudini topadi), BELGILANGAN BARCHA kurslarni ochadi (har biri uchun alohida
+// to'lov yozuvi va summa) va yangi o'quvchiga emailga login va tayyor parol yuboradi.
 export async function addStudent(_: AddStudentState, formData: FormData): Promise<AddStudentState> {
   await requireAdmin();
   const email = normalizeEmail(str(formData, "email"));
   if (!email) return { error: "Email noto'g'ri" };
-  const course = await prisma.course.findUnique({ where: { id: str(formData, "courseId") } });
-  if (!course) return { error: "Kursni tanlang" };
+  const ids = [...new Set(formData.getAll("courseId").map(String).filter(Boolean))];
+  if (ids.length === 0) return { error: "Kamida bitta kursni belgilang" };
+  const found = await prisma.course.findMany({ where: { id: { in: ids } }, orderBy: { title: "asc" } });
+  if (found.length === 0) return { error: "Kursni tanlang" };
 
   let user = await prisma.user.findUnique({ where: { email } });
   const isNew = !user;
   let password: string | null = null; // faqat yangi akkaunt uchun: tayyor parol (emailga ketadi va panelda ko'rinadi)
 
-  if (user) {
-    const enrollment = await prisma.enrollment.findUnique({
-      where: { userId_courseId: { userId: user.id, courseId: course.id } },
-    });
-    if (enrollment) return { error: `${user.name} ga «${course.title}» allaqachon ochiq.` };
-  } else {
+  if (!user) {
     const name = str(formData, "name");
     if (name.length < 2) return { error: "Yangi o'quvchi uchun ism va familiyani yozing" };
     // Yangi o'quvchiga tayyor parol beriladi: email va shu parol bilan to'g'ridan-to'g'ri kiradi (keyin «Parol» bo'limida o'zgartiradi)
     password = generatePassword();
-    user = await prisma.user.create({ data: { name, email, passwordHash: await hashPassword(password) } });
+    user = await prisma.user.create({ data: { name, email, passwordHash: await hashPassword(password), vaultPassword: sealPassword(password) } });
   }
 
-  const order = await prisma.$transaction(async (tx) => {
-    const last = await tx.order.findFirst({ orderBy: { number: "desc" }, select: { number: true } });
-    return tx.order.create({
-      data: {
-        number: (last?.number ?? 1000) + 1,
-        userId: user!.id,
-        buyerName: user!.name,
-        buyerEmail: user!.email,
-        courseId: course.id,
-        amount: int(formData, "amount"),
-        utmSource: str(formData, "source"),
-        note: str(formData, "note"),
-      },
-    });
-  });
-  await fulfillOrder(order.id, "manual");
+  const opened: string[] = [];
+  const skipped: string[] = [];
+  for (const c of found) {
+    const ok = await grantCourse(user, c.id, int(formData, `amount_${c.id}`), str(formData, "source"), str(formData, "note"));
+    (ok ? opened : skipped).push(c.title);
+  }
+  if (opened.length === 0) return { error: `${user.name} ga tanlangan kurslar allaqachon ochiq: ${skipped.join(", ")}.` };
 
   let mail: MailResult | null = null;
   if (formData.get("sendMail") === "on") {
-    mail = password
-      ? await sendStudentAccess(email, user.name, course.title, password)
-      : await sendCourseOpened(email, user.name, course.title);
+    const titles = opened.join(", ");
+    mail = password ? await sendStudentAccess(email, user.name, titles, password) : await sendCourseOpened(email, user.name, titles);
   }
   revalidatePath("/admin", "layout");
-  const status = mailStatus(mail);
-  return {
-    result: {
-      name: user.name, email, course: course.title, isNew,
-      // Parol panelda ham ko'rinadi (xat ketmasa yoki o'quvchi yo'qotsa, admin uni Telegramda yuboradi)
-      password,
-      ...status,
-    },
-  };
+  return { result: { name: user.name, email, courses: opened, skipped, isNew, password, ...mailStatus(mail) } };
+}
+
+export type AddCourseState = { error?: string; ok?: string };
+
+// Kursi bor (yoki yo'q) o'quvchiga qo'shimcha kurs ochadi — eski kurslari o'z joyida qoladi (almashtirishdan farqli). Summa va email xabari ixtiyoriy.
+export async function addCourseToStudent(_: AddCourseState, formData: FormData): Promise<AddCourseState> {
+  await requireAdmin();
+  const user = await prisma.user.findUnique({ where: { id: str(formData, "userId") }, select: { id: true, name: true, email: true, role: true } });
+  if (!user || user.role !== "STUDENT") return { error: "O'quvchi topilmadi" };
+  const course = await prisma.course.findUnique({ where: { id: str(formData, "courseId") }, select: { id: true, title: true } });
+  if (!course) return { error: "Kursni tanlang" };
+  const ok = await grantCourse(user, course.id, int(formData, "amount"), "", "Qo'shimcha kurs");
+  if (!ok) return { error: `«${course.title}» allaqachon ochiq` };
+  if (formData.get("sendMail") === "on") await sendCourseOpened(user.email, user.name, course.title);
+  revalidatePath("/admin", "layout");
+  revalidatePath("/cabinet", "layout");
+  revalidatePath("/curator", "layout");
+  return { ok: `«${course.title}» ochildi` };
 }
 
 // O'quvchini kursdan chiqaradi: kursga kirish yopiladi va kurator ro'yxatidan tushadi. Akkaunt, to'lov yozuvi va ko'rish natijalari saqlanadi
@@ -379,7 +391,7 @@ export async function addCurator(_: AddCuratorState, formData: FormData): Promis
   const name = str(formData, "name");
   if (name.length < 2) return { error: "Kurator ismini yozing" };
   const password = generatePassword();
-  const user = await prisma.user.create({ data: { name, email, role: "CURATOR", passwordHash: await hashPassword(password) } });
+  const user = await prisma.user.create({ data: { name, email, role: "CURATOR", passwordHash: await hashPassword(password), vaultPassword: sealPassword(password) } });
   const courses = await assignCourses(user.id, formData.getAll("courseId").map(String));
   const mail = formData.get("sendMail") === "on" ? await sendCuratorAccess(email, name, password) : null;
   const status = mailStatus(mail);
@@ -395,7 +407,7 @@ export async function resetStudentPassword(_: ResetPasswordState, formData: Form
   const user = await prisma.user.findUnique({ where: { id: str(formData, "id") } });
   if (!user) return { error: "Foydalanuvchi topilmadi" };
   const password = generatePassword();
-  await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(password) } });
+  await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(password), vaultPassword: sealPassword(password) } });
   const mail = mailStatus(await sendNewPassword(user.email, user.name, password));
   return { password, ...mail };
 }
@@ -449,4 +461,16 @@ export async function setUserRole(formData: FormData) {
   if (id === admin.id || !["ADMIN", "CURATOR", "STUDENT"].includes(role)) return;
   await prisma.user.update({ where: { id }, data: { role } });
   revalidatePath("/admin/students");
+}
+
+// Admin o'quvchining parolini ko'radi: faqat platforma yaratgan parol (yangi akkaunt, "Yangi parol", kurator o'rnatgani) saqlanadi.
+// O'quvchi o'zi o'zgartirgan yoki eski akkauntlarda parol yo'q — null (u holda "Yangi parol" tugmasi bilan yangisini yaratish mumkin).
+// Parol sahifa bilan birga emas, faqat shu amal bilan, bosilganda olinadi.
+export async function revealPassword(userId: string): Promise<{ password: string | null; error?: string }> {
+  const admin = await requireAdmin();
+  const key = `reveal:${admin.id}`;
+  if (await isLimited([{ key, max: 120 }], 10 * 60_000)) return { password: null, error: "Juda ko'p so'rov, biroz kuting" };
+  await recordAttempt([key]);
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { vaultPassword: true } });
+  return { password: openPassword(user?.vaultPassword) };
 }

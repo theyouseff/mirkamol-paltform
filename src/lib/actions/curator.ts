@@ -7,6 +7,7 @@ import { canManageStudent } from "@/lib/curator-scope";
 import { addDays, tashkentDay } from "@/lib/format";
 import { isDayStatus } from "@/lib/day-status";
 import { hashPassword, passwordProblem } from "@/lib/password";
+import { sealPassword } from "@/lib/vault";
 
 const assertCanManage = canManageStudent;
 
@@ -49,7 +50,7 @@ export async function setStudentPassword(studentId: string, newPassword: string)
   if (!target || target.role !== "STUDENT") return { ok: false, error: "O'quvchi topilmadi" };
 
   // Parol o'zgargach sessiya izi (pv) o'zgaradi — o'quvchi hamma qurilmadan chiqib ketadi
-  await prisma.user.update({ where: { id: studentId }, data: { passwordHash: await hashPassword(newPassword) } });
+  await prisma.user.update({ where: { id: studentId }, data: { passwordHash: await hashPassword(newPassword), vaultPassword: sealPassword(newPassword) } });
   await prisma.passwordReset.deleteMany({ where: { userId: studentId } });
   return { ok: true };
 }

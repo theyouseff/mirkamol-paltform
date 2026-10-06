@@ -7,9 +7,11 @@ import { ModuleGrid } from "@/components/ModuleGrid";
 import { ProgressBar } from "@/components/ProgressBar";
 import { totalDuration } from "@/lib/format";
 import { ThumbPrefetch } from "@/components/ThumbPrefetch";
+import { Leaderboard } from "@/components/Leaderboard";
 
-export default async function StudentCoursePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function StudentCoursePage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ lb?: string }> }) {
   const { slug } = await params;
+  const { lb } = await searchParams;
   const user = await requireUser();
   const found = await prisma.course.findUnique({ where: { slug }, select: { id: true } });
   if (!found) notFound();
@@ -57,6 +59,8 @@ export default async function StudentCoursePage({ params }: { params: Promise<{ 
         <ModuleGrid modules={cards} />
         {cards.length === 0 && <p className="text-gold-text/70">Bu kursda hozircha modullar yo&apos;q.</p>}
       </div>
+      {/* Faqat shu kursga yozilganlar (yoki admin) bu sahifani ko'radi, reyting ham faqat shu kurs o'quvchilaridan tuziladi */}
+      <Leaderboard courseId={course.id} viewerId={user.id} viewerIsAdmin={user.role === "ADMIN"} period={lb === "week" ? "week" : "all"} />
     </>
   );
 }

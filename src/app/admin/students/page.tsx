@@ -8,6 +8,8 @@ import { AddStudentForm } from "@/components/admin/AddStudentForm";
 import { AddCuratorForm } from "@/components/admin/AddCuratorForm";
 import { CuratorList } from "@/components/admin/CuratorList";
 import { ResetPasswordButton } from "@/components/admin/ResetPasswordButton";
+import { PasswordReveal } from "@/components/admin/PasswordReveal";
+import { AddCourseInline } from "@/components/admin/AddCourseInline";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ConfirmButton } from "@/components/ConfirmButton";
 
@@ -44,6 +46,12 @@ function CourseBadge({ userId, userName, courseId, title, others }: { userId: st
       )}
     </div>
   );
+}
+
+// "+ kurs": o'quvchi hali yozilmagan kurslarni qo'shish (hammasiga yozilgan bo'lsa — ko'rinmaydi)
+function AddCourseSlot({ u, courses }: { u: { id: string; enrollments: { courseId: string }[] }; courses: { id: string; title: string; price: number }[] }) {
+  const rest = courses.filter((c) => !u.enrollments.some((e) => e.courseId === c.id));
+  return rest.length > 0 ? <AddCourseInline userId={u.id} courses={rest} /> : null;
 }
 
 // Akkauntni butunlay o'chirish (faqat o'quvchi uchun)
@@ -102,17 +110,19 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
     <div className="overflow-x-auto max-lg:hidden">
         <table className="w-full min-w-[900px] text-sm">
           <thead className="bg-zinc-50 text-left text-zinc-500">
-            <tr><th className="px-4 py-3">Ism</th><th>Email</th><th>Kurslar</th><th>Darslar</th><th>Qo&apos;shilgan</th><th>Rol</th><th></th></tr>
+            <tr><th className="px-4 py-3">Ism</th><th>Email</th><th>Parol</th><th>Kurslar</th><th>Darslar</th><th>Qo&apos;shilgan</th><th>Rol</th><th></th></tr>
           </thead>
           <tbody>
             {list.map((u) => (
               <tr key={u.id} className="border-t border-zinc-100 align-top">
                 <td className="px-4 py-3 font-medium">{u.name}</td>
                 <td>{u.email}</td>
+                <td className="pr-2">{u.id !== admin.id && <PasswordReveal userId={u.id} has={!!u.vaultPassword} />}</td>
                 <td>
                   <div className="flex flex-wrap gap-1">
                     {u.enrollments.map((e) => <CourseBadge key={e.id} userId={u.id} userName={u.name} courseId={e.courseId} title={e.course.title} others={courses.filter((c) => !u.enrollments.some((x) => x.courseId === c.id))} />)}
-                    {u.enrollments.length === 0 && <span className="text-zinc-400">—</span>}
+                    {u.enrollments.length === 0 && u.role !== "STUDENT" && <span className="text-zinc-400">—</span>}
+                    {u.role === "STUDENT" && <AddCourseSlot u={u} courses={courses} />}
                   </div>
                 </td>
                 <td>{u._count.progress}</td>
@@ -150,10 +160,12 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
             <div>
               <p className="font-medium">{u.name}</p>
               <p className="break-all text-xs text-zinc-400">{u.email}</p>
+              {u.id !== admin.id && <p className="mt-1 text-xs text-zinc-500">Parol: <PasswordReveal userId={u.id} has={!!u.vaultPassword} /></p>}
             </div>
             <div className="flex flex-wrap gap-1">
               {u.enrollments.map((e) => <CourseBadge key={e.id} userId={u.id} userName={u.name} courseId={e.courseId} title={e.course.title} others={courses.filter((c) => !u.enrollments.some((x) => x.courseId === c.id))} />)}
-              {u.enrollments.length === 0 && <span className="text-zinc-400">Kursi yo&apos;q</span>}
+              {u.enrollments.length === 0 && u.role !== "STUDENT" && <span className="text-zinc-400">Kursi yo&apos;q</span>}
+              {u.role === "STUDENT" && <AddCourseSlot u={u} courses={courses} />}
             </div>
             <p className="text-xs text-zinc-500">Tugatgan darslari: {u._count.progress} · Qo&apos;shilgan: {formatDate(u.createdAt)}</p>
             {u.id === admin.id ? (

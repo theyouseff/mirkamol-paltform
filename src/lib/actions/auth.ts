@@ -105,7 +105,7 @@ export async function activateWithCode(_: AuthState, formData: FormData): Promis
     return { error: "Email yoki kod noto'g'ri, yoki kod eskirgan" };
   }
 
-  const updated = await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(password) } });
+  const updated = await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(password), vaultPassword: null } });
   await prisma.passwordReset.deleteMany({ where: { userId: user.id } });
   await clearAttempts([...keys, `login:email:${email}`]);
   // Kod emailga kelgan — egasi ekani tasdiqlangan, shu zahoti kiritamiz

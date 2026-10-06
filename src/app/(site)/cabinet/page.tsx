@@ -21,7 +21,8 @@ export default async function CabinetPage() {
     prisma.lesson.count({ where: inMyCourses }),
     prisma.lessonProgress.count({ where: { userId: user.id, lesson: inMyCourses } }),
     prisma.lessonWatch.findFirst({
-      where: { userId: user.id },
+      // Faqat hozir yozilgan kurslardan: kursdan chiqarilgan/almashtirilgan o'quvchiga eski kursning videosi (va havolasi) ko'rinib qolmasin
+      where: { userId: user.id, lesson: inMyCourses },
       orderBy: { updatedAt: "desc" },
       include: { lesson: { select: { id: true, title: true, videoUrl: true, moduleId: true, module: { select: { title: true, courseId: true } } } } },
     }),

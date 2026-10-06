@@ -67,7 +67,7 @@ export async function changePassword(_: PasswordState, formData: FormData): Prom
     return { error: "Joriy parol noto'g'ri" };
   }
   await clearAttempts([key]);
-  const updated = await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(next) } });
+  const updated = await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(next), vaultPassword: null } });
   // Boshqa qurilmalardagi eski sessiyalar bekor bo'ladi; bu qurilma yangi sessiya bilan qoladi
   await createSession(updated);
   return { ok: true };
