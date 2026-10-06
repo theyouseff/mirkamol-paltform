@@ -126,7 +126,7 @@ export function AddStudentForm({ courses }: { courses: CourseOption[] }) {
             <div className="rounded-lg bg-white p-3">
               <p>Login (email): <b>{r.email}</b></p>
               <p>Parol: <b className="font-mono text-base">{r.password}</b></p>
-              <p className="mt-1 text-xs text-zinc-500">O&apos;quvchi shu email va parol bilan kiradi. Xat ketmasa yoki yo&apos;qolsa, parolni o&apos;quvchiga Telegramda shaxsiy xabarda yuboring. Parolni keyin ham o&apos;quvchilar ro&apos;yxatida «Ko&apos;rsatish» tugmasi bilan ko&apos;rishingiz mumkin (o&apos;quvchi uni o&apos;zi o&apos;zgartirmaguncha).</p>
+              <p className="mt-1 text-xs text-zinc-500">O&apos;quvchi shu email va parol bilan kiradi. Xat ketmasa yoki yo&apos;qolsa, parolni o&apos;quvchiga Telegramda shaxsiy xabarda yuboring. Parolni keyin ham Analitika bo&apos;limida, o&apos;quvchi blokida «Ko&apos;rsatish» tugmasi bilan ko&apos;rishingiz mumkin (o&apos;quvchi uni o&apos;zi o&apos;zgartirmaguncha).</p>
             </div>
           )}
           <p className={r.mail === "failed" ? "text-amber-700" : "text-zinc-600"}>

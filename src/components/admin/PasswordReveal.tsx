@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { revealPassword } from "@/lib/actions/admin";
 import { ResetPasswordButton } from "./ResetPasswordButton";
 
-// Admin ro'yxatida o'quvchi parolini ko'rsatadi. Parol sahifa bilan birga kelmaydi: "Ko'rsatish" bosilganda serverdan olinadi
+// Admin analitikasida o'quvchi blokida parolini ko'rsatadi. Parol sahifa bilan birga kelmaydi: "Ko'rsatish" bosilganda serverdan olinadi
 // va 30 soniyadan keyin yana yashiriladi. has=false: parol saqlanmagan (o'quvchi o'zi o'zgartirgan yoki eski akkaunt).
 export function PasswordReveal({ userId, has }: { userId: string; has: boolean }) {
   const [pw, setPw] = useState<string | null>(null);

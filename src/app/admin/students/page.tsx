@@ -8,9 +8,7 @@ import { AddStudentForm } from "@/components/admin/AddStudentForm";
 import { AddCuratorForm } from "@/components/admin/AddCuratorForm";
 import { CuratorList } from "@/components/admin/CuratorList";
 import { ResetPasswordButton } from "@/components/admin/ResetPasswordButton";
-import { PasswordReveal } from "@/components/admin/PasswordReveal";
 import { AddCourseInline } from "@/components/admin/AddCourseInline";
-import { PhoneCell } from "@/components/admin/PhoneCell";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ConfirmButton } from "@/components/ConfirmButton";
 
@@ -111,17 +109,13 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
     <div className="overflow-x-auto max-lg:hidden">
         <table className="w-full min-w-[900px] text-sm">
           <thead className="bg-zinc-50 text-left text-zinc-500">
-            <tr><th className="px-4 py-3">Ism</th><th>Email</th><th>Parol</th><th>Kurslar</th><th>Darslar</th><th>Qo&apos;shilgan</th><th>Rol</th><th></th></tr>
+            <tr><th className="px-4 py-3">Ism</th><th>Email</th><th>Kurslar</th><th>Darslar</th><th>Qo&apos;shilgan</th><th>Rol</th><th></th></tr>
           </thead>
           <tbody>
             {list.map((u) => (
               <tr key={u.id} className="border-t border-zinc-100 align-top">
                 <td className="px-4 py-3 font-medium">{u.name}</td>
-                <td>
-                  {u.email}
-                  <div><PhoneCell userId={u.id} phone={u.phone} /></div>
-                </td>
-                <td className="pr-2">{u.id !== admin.id && <PasswordReveal userId={u.id} has={!!u.vaultPassword} />}</td>
+                <td>{u.email}</td>
                 <td>
                   <div className="flex flex-wrap gap-1">
                     {u.enrollments.map((e) => <CourseBadge key={e.id} userId={u.id} userName={u.name} courseId={e.courseId} title={e.course.title} others={courses.filter((c) => !u.enrollments.some((x) => x.courseId === c.id))} />)}
@@ -164,12 +158,6 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
             <div>
               <p className="font-medium">{u.name}</p>
               <p className="break-all text-xs text-zinc-400">{u.email}</p>
-              <PhoneCell userId={u.id} phone={u.phone} />
-              {u.id !== admin.id && (
-                <div className="mt-1 text-xs text-zinc-500">
-                  Parol: <PasswordReveal userId={u.id} has={!!u.vaultPassword} />
-                </div>
-              )}
             </div>
             <div className="flex flex-wrap gap-1">
               {u.enrollments.map((e) => <CourseBadge key={e.id} userId={u.id} userName={u.name} courseId={e.courseId} title={e.course.title} others={courses.filter((c) => !u.enrollments.some((x) => x.courseId === c.id))} />)}
