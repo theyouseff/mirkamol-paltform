@@ -22,14 +22,14 @@ export function PasswordReveal({ userId, has }: { userId: string; has: boolean }
   // Yangisini yaratsangiz, shu yerda ko'rinadi (va emailga ketadi); eski parol ishlamay qoladi.
   if (!has)
     return (
-      <span className="inline-flex flex-col items-start gap-1">
+      <div className="flex flex-col items-start gap-1">
         <span className="text-xs text-zinc-400">Saqlanmagan</span>
         <ResetPasswordButton
           userId={userId}
           label="Parol yaratish"
           message={"Yangi parol yaratiladi va shu yerda ko'rinadi (o'quvchining emailiga ham yuboriladi).\n\nDiqqat: o'quvchining ESKI paroli ishlamay qoladi va u hamma qurilmadan chiqib ketadi. Davom etasizmi?"}
         />
-      </span>
+      </div>
     );
 
   if (pw) {

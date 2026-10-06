@@ -14,6 +14,7 @@ model User {
   name         String
   passwordHash String
   vaultPassword String?  // platforma yaratgan parolning shifrlangan nusxasi (adminga ko'rsatish uchun); o'quvchi parolni o'zi o'zgartirsa — null
+  phone        String?   // telefon raqam (+998901234567 ko'rinishida, ixtiyoriy); faqat admin ko'radi
   role         String    @default("STUDENT") // ADMIN | CURATOR | STUDENT
   createdAt    DateTime  @default(now())
   watchingAt   DateTime? // video hozir ijro etilayotgan bo'lsa — oxirgi urilish vaqti (15 soniyada bir yangilanadi, pauzada bo'shatiladi)

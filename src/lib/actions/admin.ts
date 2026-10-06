@@ -7,6 +7,7 @@ import { requireAdmin } from "@/lib/auth";
 import { fulfillOrder } from "@/lib/access";
 import { remindOrder } from "@/lib/reminders";
 import { normalizeEmail } from "@/lib/format";
+import { normalizePhone } from "@/lib/phone";
 import { generatePassword, hashPassword } from "@/lib/password";
 import { openPassword, sealPassword } from "@/lib/vault";
 import { isLimited, recordAttempt } from "@/lib/rate-limit";
@@ -248,6 +249,8 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
   await requireAdmin();
   const email = normalizeEmail(str(formData, "email"));
   if (!email) return { error: "Email noto'g'ri" };
+  const phone = normalizePhone(str(formData, "phone"));
+  if (phone === undefined) return { error: "Telefon raqam noto'g'ri. Masalan: +998 90 123 45 67" };
   const ids = [...new Set(formData.getAll("courseId").map(String).filter(Boolean))];
   if (ids.length === 0) return { error: "Kamida bitta kursni belgilang" };
   const found = await prisma.course.findMany({ where: { id: { in: ids } }, orderBy: { title: "asc" } });
@@ -262,7 +265,9 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
     if (name.length < 2) return { error: "Yangi o'quvchi uchun ism va familiyani yozing" };
     // Yangi o'quvchiga tayyor parol beriladi: email va shu parol bilan to'g'ridan-to'g'ri kiradi (keyin «Parol» bo'limida o'zgartiradi)
     password = generatePassword();
-    user = await prisma.user.create({ data: { name, email, passwordHash: await hashPassword(password), vaultPassword: sealPassword(password) } });
+    user = await prisma.user.create({ data: { name, email, phone, passwordHash: await hashPassword(password), vaultPassword: sealPassword(password) } });
+  } else if (phone && user.phone !== phone) {
+    user = await prisma.user.update({ where: { id: user.id }, data: { phone } }); // mavjud o'quvchiga yangi raqam yozilgan bo'lsa — yangilanadi
   }
 
   const opened: string[] = [];
@@ -473,4 +478,15 @@ export async function revealPassword(userId: string): Promise<{ password: string
   await recordAttempt([key]);
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { vaultPassword: true } });
   return { password: openPassword(user?.vaultPassword) };
+}
+
+// Admin o'quvchining telefon raqamini qo'shadi/o'zgartiradi/o'chiradi (bo'sh qoldirsa — o'chadi). Raqamni faqat admin ko'radi.
+export async function updatePhone(userId: string, input: string): Promise<{ ok: boolean; phone?: string | null; error?: string }> {
+  await requireAdmin();
+  const phone = normalizePhone(input);
+  if (phone === undefined) return { ok: false, error: "Raqam noto'g'ri. Masalan: +998 90 123 45 67" };
+  const r = await prisma.user.updateMany({ where: { id: userId }, data: { phone } });
+  if (r.count === 0) return { ok: false, error: "Foydalanuvchi topilmadi" };
+  revalidatePath("/admin/students");
+  return { ok: true, phone };
 }

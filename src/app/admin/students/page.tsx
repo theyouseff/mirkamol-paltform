@@ -10,6 +10,7 @@ import { CuratorList } from "@/components/admin/CuratorList";
 import { ResetPasswordButton } from "@/components/admin/ResetPasswordButton";
 import { PasswordReveal } from "@/components/admin/PasswordReveal";
 import { AddCourseInline } from "@/components/admin/AddCourseInline";
+import { PhoneCell } from "@/components/admin/PhoneCell";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ConfirmButton } from "@/components/ConfirmButton";
 
@@ -116,7 +117,10 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
             {list.map((u) => (
               <tr key={u.id} className="border-t border-zinc-100 align-top">
                 <td className="px-4 py-3 font-medium">{u.name}</td>
-                <td>{u.email}</td>
+                <td>
+                  {u.email}
+                  <div><PhoneCell userId={u.id} phone={u.phone} /></div>
+                </td>
                 <td className="pr-2">{u.id !== admin.id && <PasswordReveal userId={u.id} has={!!u.vaultPassword} />}</td>
                 <td>
                   <div className="flex flex-wrap gap-1">
@@ -160,7 +164,12 @@ export default async function AdminStudentsPage({ searchParams }: { searchParams
             <div>
               <p className="font-medium">{u.name}</p>
               <p className="break-all text-xs text-zinc-400">{u.email}</p>
-              {u.id !== admin.id && <p className="mt-1 text-xs text-zinc-500">Parol: <PasswordReveal userId={u.id} has={!!u.vaultPassword} /></p>}
+              <PhoneCell userId={u.id} phone={u.phone} />
+              {u.id !== admin.id && (
+                <div className="mt-1 text-xs text-zinc-500">
+                  Parol: <PasswordReveal userId={u.id} has={!!u.vaultPassword} />
+                </div>
+              )}
             </div>
             <div className="flex flex-wrap gap-1">
               {u.enrollments.map((e) => <CourseBadge key={e.id} userId={u.id} userName={u.name} courseId={e.courseId} title={e.course.title} others={courses.filter((c) => !u.enrollments.some((x) => x.courseId === c.id))} />)}

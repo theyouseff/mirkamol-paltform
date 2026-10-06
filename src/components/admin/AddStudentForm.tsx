@@ -1,8 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { addStudent, type AddStudentState } from "@/lib/actions/admin";
-import { SubmitButton } from "../SubmitButton";
 import { MoneyInput } from "./MoneyInput";
 
 type CourseOption = { id: string; label: string; price: number };
@@ -15,9 +14,19 @@ const MAIL_TEXT = {
 
 export function AddStudentForm({ courses }: { courses: CourseOption[] }) {
   const [state, action] = useActionState<AddStudentState, FormData>(addStudent, {});
+  const [pending, startTransition] = useTransition();
   // Belgilangan kurslar va har birining summasi (kurs narxi bilan to'ladi, qo'lda o'zgartirsa bo'ladi). Soni cheklanmagan.
   const [picked, setPicked] = useState<Record<string, number>>({});
+  // Matn maydonlari o'zimizda saqlanadi: xato chiqsa (masalan noto'g'ri raqam) yozilgan narsa o'chib ketmaydi; faqat muvaffaqiyatdan keyin tozalanadi
+  const [f, setF] = useState({ email: "", name: "", phone: "", source: "", note: "" });
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
   const r = state.result;
+  useEffect(() => {
+    if (state.result) {
+      setF({ email: "", name: "", phone: "", source: "", note: "" });
+      setPicked({});
+    }
+  }, [state.result]);
   const toggle = (c: CourseOption, on: boolean) =>
     setPicked((p) => {
       const next = { ...p };
@@ -36,16 +45,29 @@ export function AddStudentForm({ courses }: { courses: CourseOption[] }) {
           To&apos;lov kelgach shu yerda kiriting: yangi o&apos;quvchiga akkaunt ochiladi, tayyor parol yaratilib emailiga yuboriladi — o&apos;quvchi email va shu parol bilan kiradi (keyin «Parol» bo&apos;limida o&apos;zgartira oladi). Bir nechta kursni birdan belgilasangiz bo&apos;ladi. Mavjud o&apos;quvchiga faqat yangi kurslar qo&apos;shiladi (eskilari qoladi).
         </p>
       </div>
-      <form action={action} className="space-y-3">
+      {/* <form action> emas, onSubmit: React "action" tugagach formani o'zi tozalab yuboradi (qutichalar belgisi yo'qolardi). Tozalash faqat muvaffaqiyatdan keyin, o'zimiz. */}
+      <form
+        className="space-y-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const fd = new FormData(e.currentTarget);
+          startTransition(() => action(fd));
+        }}
+      >
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label className="label">Email</label>
-            <input name="email" type="email" className="input" placeholder="ism@gmail.com" required />
+            <input name="email" type="email" className="input" placeholder="ism@gmail.com" required value={f.email} onChange={set("email")} />
           </div>
           <div>
             <label className="label">Ism va familiya <span className="font-normal text-zinc-400">(yangi o&apos;quvchi uchun)</span></label>
-            <input name="name" className="input" placeholder="Masalan, Aziz Karimov" />
+            <input name="name" className="input" placeholder="Masalan, Aziz Karimov" value={f.name} onChange={set("name")} />
           </div>
+        </div>
+        <div>
+          <label className="label">Telefon raqam <span className="font-normal text-zinc-400">(ixtiyoriy)</span></label>
+          <input name="phone" type="tel" inputMode="tel" autoComplete="off" className="input sm:max-w-sm" placeholder="+998 90 123 45 67" value={f.phone} onChange={set("phone")} />
+          <p className="mt-1 text-xs text-zinc-400">Faqat admin ko&apos;radi. Mavjud o&apos;quvchiga yozsangiz, raqami yangilanadi.</p>
         </div>
 
         <div>
@@ -76,20 +98,20 @@ export function AddStudentForm({ courses }: { courses: CourseOption[] }) {
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label className="label">Manba</label>
-            <input name="source" list="sources" className="input" placeholder="Instagram" />
+            <input name="source" list="sources" className="input" placeholder="Instagram" value={f.source} onChange={set("source")} />
             <datalist id="sources">
               <option value="Instagram" /><option value="Telegram" /><option value="Vebinar" /><option value="Tavsiya" /><option value="Reklama" />
             </datalist>
           </div>
           <div>
             <label className="label">Izoh</label>
-            <input name="note" className="input" placeholder="Masalan: kartaga tushdi, skrinshot Telegramda" />
+            <input name="note" className="input" placeholder="Masalan: kartaga tushdi, skrinshot Telegramda" value={f.note} onChange={set("note")} />
           </div>
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="sendMail" defaultChecked /> Emailga login va parol yuborilsin
         </label>
-        <SubmitButton disabled={count === 0}>{count > 1 ? `${count} ta kursni ochish` : "Kirish ochish"}</SubmitButton>
+        <button type="submit" disabled={count === 0 || pending} className="btn-primary">{pending ? "Kuting..." : count > 1 ? `${count} ta kursni ochish` : "Kirish ochish"}</button>
       </form>
 
       {state.error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>}
