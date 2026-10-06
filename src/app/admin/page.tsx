@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatDate, formatPrice } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/StatusBadge";
@@ -6,6 +7,7 @@ import { ADMIN_TELEGRAM } from "@/lib/config";
 import { mailConfigured } from "@/lib/mail";
 
 export default async function AdminDashboard() {
+  await requireAdmin(); // layout bir marta tekshiradi; sahifaning o'zi ham tekshiradi (layout sahifa almashganda qayta ishlamaydi)
   const since = new Date(Date.now() - 30 * 24 * 3600 * 1000);
   const [revenue, revenue30, paidCount, pendingCount, students, recent, bySource, paidOrders] = await Promise.all([
     prisma.order.aggregate({ where: { status: "PAID" }, _sum: { amount: true } }),

@@ -8,7 +8,7 @@ import { createSession } from "@/lib/auth";
 import { normalizeEmail } from "@/lib/format";
 import { clearAttempts, clientIp, isLimited, recordAttempt } from "@/lib/rate-limit";
 import { mailConfigured, sendResetCode } from "@/lib/mail";
-import { MIN_PASSWORD } from "@/lib/constants";
+import { hashPassword, passwordProblem, BCRYPT_COST } from "@/lib/password";
 import { homeFor } from "@/lib/roles";
 import { createResetCode, RESET_TTL_MS, verifyResetCode } from "@/lib/reset";
 
@@ -22,11 +22,18 @@ const TOO_MANY = "Juda ko'p urinish. Birozdan keyin qayta urinib ko'ring.";
 let dummyHash: string | undefined;
 
 // Faqat ichki yo'llarga qaytaramiz (open redirect'dan himoya). Kurator faqat o'z panelidagi manzilga qaytadi.
+// "/\\evil.com" va "/%5Cevil.com" brauzerda "//evil.com" bo'lib qoladi — shuning uchun manzilni haqiqatan ham ichki ekanini URL orqali tekshiramiz.
 function safeNext(next: FormDataEntryValue | null, role: string) {
   const value = typeof next === "string" ? next : "";
-  if (!value.startsWith("/") || value.startsWith("//")) return null;
-  if (role === "CURATOR" && !value.startsWith("/curator")) return null;
-  return value;
+  if (!value.startsWith("/") || value.startsWith("//") || /[\\\u0000-\u001f]/.test(value)) return null;
+  try {
+    const u = new URL(value, "https://internal.invalid");
+    if (u.origin !== "https://internal.invalid" || u.pathname.startsWith("//")) return null;
+    if (role === "CURATOR" && !u.pathname.startsWith("/curator")) return null;
+    return u.pathname + u.search;
+  } catch {
+    return null;
+  }
 }
 
 export async function login(_: AuthState, formData: FormData): Promise<AuthState> {
@@ -41,7 +48,7 @@ export async function login(_: AuthState, formData: FormData): Promise<AuthState
   if (await isLimited(rules, LOGIN_WINDOW)) return { error: TOO_MANY };
 
   const user = email ? await prisma.user.findUnique({ where: { email } }) : null;
-  dummyHash ??= await bcrypt.hash("dummy-password", 10);
+  dummyHash ??= await bcrypt.hash("dummy-password", BCRYPT_COST);
   const ok = await bcrypt.compare(password, user?.passwordHash ?? dummyHash);
   if (!user || !ok) {
     await recordAttempt(keys);
@@ -84,7 +91,8 @@ export async function activateWithCode(_: AuthState, formData: FormData): Promis
   const code = String(formData.get("code") ?? "");
   const password = String(formData.get("password") ?? "");
   if (!email) return { error: "Email noto'g'ri" };
-  if (password.length < MIN_PASSWORD) return { error: `Parol kamida ${MIN_PASSWORD} ta belgidan iborat bo'lsin` };
+  const problem = passwordProblem(password, email);
+  if (problem) return { error: problem };
 
   // Kodni terib topib bo'lmasligi uchun urinishlar cheklanadi
   const ip = await clientIp();
@@ -97,7 +105,7 @@ export async function activateWithCode(_: AuthState, formData: FormData): Promis
     return { error: "Email yoki kod noto'g'ri, yoki kod eskirgan" };
   }
 
-  const updated = await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(password, 10) } });
+  const updated = await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(password) } });
   await prisma.passwordReset.deleteMany({ where: { userId: user.id } });
   await clearAttempts([...keys, `login:email:${email}`]);
   // Kod emailga kelgan — egasi ekani tasdiqlangan, shu zahoti kiritamiz

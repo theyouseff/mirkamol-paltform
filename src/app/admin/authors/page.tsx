@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { requireAdmin } from "@/lib/auth";
 import { createAuthor, deleteAuthor, setAuthorCourses, updateAuthor } from "@/lib/actions/admin";
 import { formatPrice } from "@/lib/format";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -6,6 +7,7 @@ import { ConfirmButton } from "@/components/ConfirmButton";
 import { CourseMenu } from "@/components/admin/CourseMenu";
 
 export default async function AdminAuthorsPage() {
+  await requireAdmin(); // layout bir marta tekshiradi; sahifaning o'zi ham tekshiradi (layout sahifa almashganda qayta ishlamaydi)
   const [authors, paid, courses] = await Promise.all([
     prisma.author.findMany({ orderBy: { name: "asc" }, include: { courses: { select: { id: true, title: true } } } }),
     prisma.order.findMany({ where: { status: "PAID" }, select: { amount: true, course: { select: { authorId: true } } } }),

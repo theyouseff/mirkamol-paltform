@@ -1,10 +1,11 @@
 "use server";
 
 import bcrypt from "bcryptjs";
+import { hashPassword, passwordProblem } from "@/lib/password";
+import { clearAttempts, isLimited, recordAttempt } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { createSession, requireUser } from "@/lib/auth";
-import { MIN_PASSWORD } from "@/lib/constants";
 import { getEnrollment, lessonState } from "@/lib/access";
 import { markSeen } from "@/lib/activity";
 
@@ -56,9 +57,17 @@ export async function changePassword(_: PasswordState, formData: FormData): Prom
   const user = await requireUser();
   const current = String(formData.get("current") ?? "");
   const next = String(formData.get("next") ?? "");
-  if (next.length < MIN_PASSWORD) return { error: `Yangi parol kamida ${MIN_PASSWORD} ta belgidan iborat bo'lsin` };
-  if (!(await bcrypt.compare(current, user.passwordHash))) return { error: "Joriy parol noto'g'ri" };
-  const updated = await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(next, 10) } });
+  const problem = passwordProblem(next, user.email);
+  if (problem) return { error: problem.replace("Parol", "Yangi parol") };
+  // Joriy parolni terib topishga urinishlar cheklanadi (sessiyasi o'g'irlangan hujumchi parolni almashtirib oladigan bo'lmasin)
+  const key = `pw:${user.id}`;
+  if (await isLimited([{ key, max: 5 }], 15 * 60_000)) return { error: "Juda ko'p urinish. Birozdan keyin qayta urinib ko'ring." };
+  if (!(await bcrypt.compare(current, user.passwordHash))) {
+    await recordAttempt([key]);
+    return { error: "Joriy parol noto'g'ri" };
+  }
+  await clearAttempts([key]);
+  const updated = await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(next) } });
   // Boshqa qurilmalardagi eski sessiyalar bekor bo'ladi; bu qurilma yangi sessiya bilan qoladi
   await createSession(updated);
   return { ok: true };

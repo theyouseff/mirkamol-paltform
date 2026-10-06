@@ -13,6 +13,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       "Content-Type": img.mime,
       "Cache-Control": "public, max-age=31536000, immutable",
       "X-Content-Type-Options": "nosniff",
+      // Biror yo'l bilan HTML/SVG kirib qolsa ham, bu manzilda hech narsa bajarilmasin
+      "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+      "Cross-Origin-Resource-Policy": "cross-origin",
     },
   });
 }

@@ -81,6 +81,13 @@ Menyuda **Kabinet**dan keyin **Postlar**: kurator o'z kursi uchun e'lon/yangilik
 - **Kinescope'da domen cheklovi**: Kinescope → loyiha sozlamalari → Xavfsizlik (Domain restriction) → `ilmaviya.vercel.app` ni qo'shing. Busiz embed havolasini istalgan saytga qo'yib ko'rsatish mumkin.
 - Kirishda urinishlar chegarasi (5 xato → 15 daqiqa kutish). Parol o'zgarsa yoki tiklansa, boshqa qurilmalardagi sessiyalar yopiladi.
 - Vercel'da **AUTH_SECRET** albatta sozlang; admin dashboardda sozlanmagan narsalar ko'rsatiladi.
+- **Videolarni yopish (R2) — eng muhimi.** R2 ning ochiq manzili (`pub-….r2.dev`) bilan turgan video fayllarni nomini bilgan har kim kirmasdan yuklab olishi mumkin. Yopiq shaklda (`r2:nom.mp4`) video faqat kursga yozilgan o'quvchiga, 4 soat yaroqli imzolangan havola bilan beriladi. O'tkazish tartibi:
+  1. Cloudflare → R2 → **Manage API tokens** → token (Object Read & Write, faqat shu bucket). Kalitlarni `.env` va Vercel → Environment Variables ga yozing: `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`.
+  2. R2 bucket → Settings → **CORS Policy**: ruxsat etilgan manzil `https://ilmaviya.vercel.app`, usul `GET, HEAD`, sarlavhalar `Range`.
+  3. `npx tsx --env-file=.env scripts/privatize-videos.ts` (ko'rib chiqish), keyin `--apply` — darslar `r2:` shaklga o'tadi (fayli topilmaganlari o'zgarmaydi).
+  4. Saytda videolar ochilishini tekshiring, so'ng bucket → Settings → **Public access (r2.dev) → Disable**. Shundan keyin ochiq havolalar ishlamaydi.
+- Sessiya: admin va kurator — 7 kun, o'quvchi — 30 kun. Parol xeshi bcrypt (narx 12), parol 8–72 belgi, juda oddiy parollar rad etiladi, joriy parolni terib topishga urinish ham cheklangan. Sarlavhalar: CSP (faqat o'zimizning manzil, Kinescope, R2, YouTube), HSTS, clickjacking himoyasi; `/admin`, `/cabinet`, `/curator` hech qayerda keshlanmaydi va qidiruvda chiqmaydi.
+- GitHub repo **Private** bo'lsin (Settings → General → Danger Zone → Change visibility): kod ochiq turishi hujumchiga yo'l ko'rsatadi.
 - Demo kursga namuna modul/darslarni yuklash: `npx tsx prisma/import-demo.ts` (o'quvchisi bo'lgan kursga tegmaydi).
 
 - **Progress avtomatik:** Kinescope videosi oxirigacha ko'rilsa (≥80% haqiqiy ijro; surib o'tkazish sanalmaydi) dars "ko'rildi" bo'ladi. Qo'lda «Darsni tugatdim» tugmasi yo'q: dars faqat video ko'rilganda tugaydi (Kinescope yoki o'z videosi).

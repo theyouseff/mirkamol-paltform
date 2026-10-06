@@ -6,9 +6,8 @@ import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { fulfillOrder } from "@/lib/access";
 import { remindOrder } from "@/lib/reminders";
-import bcrypt from "bcryptjs";
 import { normalizeEmail } from "@/lib/format";
-import { generatePassword } from "@/lib/password";
+import { generatePassword, hashPassword } from "@/lib/password";
 import { sendCourseOpened, sendCuratorAccess, sendNewPassword, sendStudentAccess, type MailResult } from "@/lib/mail";
 
 const str = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
@@ -251,7 +250,7 @@ export async function addStudent(_: AddStudentState, formData: FormData): Promis
     if (name.length < 2) return { error: "Yangi o'quvchi uchun ism va familiyani yozing" };
     // Yangi o'quvchiga tayyor parol beriladi: email va shu parol bilan to'g'ridan-to'g'ri kiradi (keyin «Parol» bo'limida o'zgartiradi)
     password = generatePassword();
-    user = await prisma.user.create({ data: { name, email, passwordHash: await bcrypt.hash(password, 10) } });
+    user = await prisma.user.create({ data: { name, email, passwordHash: await hashPassword(password) } });
   }
 
   const order = await prisma.$transaction(async (tx) => {
@@ -380,7 +379,7 @@ export async function addCurator(_: AddCuratorState, formData: FormData): Promis
   const name = str(formData, "name");
   if (name.length < 2) return { error: "Kurator ismini yozing" };
   const password = generatePassword();
-  const user = await prisma.user.create({ data: { name, email, role: "CURATOR", passwordHash: await bcrypt.hash(password, 10) } });
+  const user = await prisma.user.create({ data: { name, email, role: "CURATOR", passwordHash: await hashPassword(password) } });
   const courses = await assignCourses(user.id, formData.getAll("courseId").map(String));
   const mail = formData.get("sendMail") === "on" ? await sendCuratorAccess(email, name, password) : null;
   const status = mailStatus(mail);
@@ -396,7 +395,7 @@ export async function resetStudentPassword(_: ResetPasswordState, formData: Form
   const user = await prisma.user.findUnique({ where: { id: str(formData, "id") } });
   if (!user) return { error: "Foydalanuvchi topilmadi" };
   const password = generatePassword();
-  await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(password, 10) } });
+  await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(password) } });
   const mail = mailStatus(await sendNewPassword(user.email, user.name, password));
   return { password, ...mail };
 }

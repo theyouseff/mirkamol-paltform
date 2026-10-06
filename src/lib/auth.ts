@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "./db";
-import { SESSION_COOKIE, signSession, verifySession } from "./session";
+import { SESSION_COOKIE, sessionDays, signSession, verifySession } from "./session";
 import { homeFor, isStaff } from "./roles";
 
 // Parol xeshining qisqa izi. Parol o'zgarsa iz ham o'zgaradi va eski sessiyalar yaroqsiz bo'ladi.
@@ -16,7 +16,7 @@ export async function createSession(user: { id: string; role: string; passwordHa
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24 * sessionDays(user.role),
   });
 }
 

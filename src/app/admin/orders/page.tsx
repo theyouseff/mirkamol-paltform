@@ -1,4 +1,5 @@
 import { buyer } from "@/lib/buyer";
+import { requireAdmin } from "@/lib/auth";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
@@ -90,6 +91,7 @@ function DeleteOrder({ o, className }: { o: OrderRow; className: string }) {
 }
 
 export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ status?: string; q?: string; author?: string }> }) {
+  await requireAdmin(); // layout bir marta tekshiradi; sahifaning o'zi ham tekshiradi (layout sahifa almashganda qayta ishlamaydi)
   const { status = "", q = "", author = "" } = await searchParams;
   const where: Prisma.OrderWhereInput = {
     ...(status && { status }),

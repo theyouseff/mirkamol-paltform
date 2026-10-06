@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { addDays, tashkentDay } from "@/lib/format";
 import { remindOrder } from "@/lib/reminders";
@@ -9,7 +10,10 @@ export const runtime = "nodejs";
 // emailga eslatma yuboradi. Faqat Vercel Cron chaqiradi: CRON_SECRET env orqali himoyalangan.
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) return new Response("Ruxsat yo'q", { status: 401 });
+  // Doimiy vaqtli taqqoslash: javob vaqtidan kalitni harfma-harf topib bo'lmasin
+  const given = Buffer.from(req.headers.get("authorization") ?? "");
+  const want = Buffer.from(`Bearer ${secret}`);
+  if (!secret || given.length !== want.length || !timingSafeEqual(given, want)) return new Response("Ruxsat yo'q", { status: 401 });
 
   const today = tashkentDay();
   const due = await prisma.order.findMany({

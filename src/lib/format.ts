@@ -33,7 +33,7 @@ export function toEmbedUrl(url: string) {
   if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
   const kinescope = url.match(/kinescope\.io\/(?:embed\/)?([\w-]+)/);
   if (kinescope) return `https://kinescope.io/embed/${kinescope[1]}`;
-  return url;
+  return /^https:\/\//i.test(url) ? url : null; // "javascript:" / "data:" kabi havolalar iframe'ga berilmaydi
 }
 
 // 462 -> "7:42", 3725 -> "1:02:05"

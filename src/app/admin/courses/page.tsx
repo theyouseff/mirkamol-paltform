@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { createCourse } from "@/lib/actions/admin";
 import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function AdminCoursesPage() {
+  await requireAdmin(); // layout bir marta tekshiradi; sahifaning o'zi ham tekshiradi (layout sahifa almashganda qayta ishlamaydi)
   const courses = await prisma.course.findMany({
     orderBy: { createdAt: "desc" },
     include: { author: true, _count: { select: { enrollments: true, modules: true } } },

@@ -17,19 +17,23 @@ const secret = getSecret();
 // pv — parol xeshining qisqa izi: parol o'zgarsa, eski sessiyalar avtomatik bekor bo'ladi.
 export type Session = { userId: string; role: string; pv: string };
 
+// Admin va kurator sessiyasi qisqa (o'g'irlangan sessiya uzoq yashamasin), o'quvchiniki — har kuni qayta kirmasligi uchun uzunroq.
+export const sessionDays = (role: string) => (role === "ADMIN" || role === "CURATOR" ? 7 : 30);
+
 export async function signSession(session: Session) {
   return new SignJWT(session)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("30d")
+    .setExpirationTime(`${sessionDays(session.role)}d`)
     .sign(secret);
 }
 
 export async function verifySession(token?: string): Promise<Session | null> {
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, secret);
-    return { userId: payload.userId as string, role: payload.role as string, pv: (payload.pv as string) ?? "" };
+    const { payload } = await jwtVerify(token, secret, { algorithms: ["HS256"] }); // faqat HS256 (algoritm almashtirib aldash yo'q)
+    if (typeof payload.userId !== "string" || typeof payload.role !== "string") return null;
+    return { userId: payload.userId, role: payload.role, pv: typeof payload.pv === "string" ? payload.pv : "" };
   } catch {
     return null;
   }

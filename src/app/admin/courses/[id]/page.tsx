@@ -1,4 +1,5 @@
 import { ImageField } from "@/components/admin/ImageField";
+import { requireAdmin } from "@/lib/auth";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -11,6 +12,7 @@ import { ConfirmButton } from "@/components/ConfirmButton";
 import { MoneyInput } from "@/components/admin/MoneyInput";
 
 export default async function AdminCoursePage({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdmin(); // layout bir marta tekshiradi; sahifaning o'zi ham tekshiradi (layout sahifa almashganda qayta ishlamaydi)
   const { id } = await params;
   const authors = await prisma.author.findMany({ orderBy: { name: "asc" } });
   const course = await prisma.course.findUnique({

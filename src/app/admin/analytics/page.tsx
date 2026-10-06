@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/db";
+import { requireAdmin } from "@/lib/auth";
 import { AnalyticsView } from "@/components/analytics/AnalyticsView";
 import { CourseChats, type CourseChatData } from "@/components/admin/CourseChats";
 
 export default async function AdminAnalyticsPage({ searchParams }: { searchParams: Promise<{ q?: string; student?: string }> }) {
+  await requireAdmin(); // layout bir marta tekshiradi; sahifaning o'zi ham tekshiradi (layout sahifa almashganda qayta ishlamaydi)
   const { q, student } = await searchParams;
 
   const [courses, last, unread] = await Promise.all([

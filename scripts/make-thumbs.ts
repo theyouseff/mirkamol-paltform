@@ -6,10 +6,11 @@
 //   npx tsx --env-file=.env scripts/make-thumbs.ts --link    3) rasmi bor darslarga baza'da manzil yozadi (shundan keyin sayt ishlata boshlaydi)
 //
 // Yangi dars qo'shilsa shu uchala qadamni takrorlang (mavjud rasmlarga tegmaydi; qayta olish uchun --force).
-// Faqat https havolali (R2) videolar; Kinescope/YouTube darslar avvalgidek qoladi.
+// Faqat https yoki r2: havolali videolar; Kinescope/YouTube darslar avvalgidek qoladi.
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync } from "node:fs";
 import { PrismaClient } from "@prisma/client";
+import { ownVideoSrc } from "../src/lib/video-source";
 
 const link = process.argv.includes("--link");
 const force = process.argv.includes("--force");
@@ -30,7 +31,7 @@ const retry = async <T>(f: () => Promise<T>) => {
 async function main() {
   const lessons = await retry(() =>
     prisma.lesson.findMany({
-      where: { videoUrl: { startsWith: "https://" } },
+      where: { OR: [{ videoUrl: { startsWith: "https://" } }, { videoUrl: { startsWith: "r2:" } }] },
       orderBy: [{ module: { course: { title: "asc" } } }, { module: { order: "asc" } }, { order: "asc" }],
       select: { id: true, title: true, videoUrl: true, thumbUrl: true, module: { select: { order: true } } },
     }),
@@ -50,7 +51,10 @@ async function main() {
     }
     if (existsSync(file) && !force) continue;
     try {
-      execFileSync("swift", ["scripts/frame.swift", l.videoUrl, file, "3", "640"], { stdio: ["ignore", "pipe", "pipe"], timeout: 180_000 });
+      // Yopiq (r2:) video uchun vaqtinchalik imzolangan havola olinadi
+      const src = l.videoUrl.startsWith("r2:") ? await ownVideoSrc(l) : l.videoUrl;
+      if (!src) throw new Error("video manzili olinmadi (R2_* sozlanganmi?)");
+      execFileSync("swift", ["scripts/frame.swift", src, file, "3", "640"], { stdio: ["ignore", "pipe", "pipe"], timeout: 180_000 });
       console.log("tayyor:", label);
       made++;
     } catch (e) {

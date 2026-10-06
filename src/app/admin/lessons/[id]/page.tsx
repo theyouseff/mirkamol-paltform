@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireAdmin } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { deleteLesson, updateLesson } from "@/lib/actions/admin";
@@ -13,6 +14,7 @@ import { ImageField } from "@/components/admin/ImageField";
 const toTashkentInput = (d: Date | null) => (d ? new Date(d.getTime() + 5 * 3600_000).toISOString().slice(0, 16) : "");
 
 export default async function AdminLessonPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdmin(); // layout bir marta tekshiradi; sahifaning o'zi ham tekshiradi (layout sahifa almashganda qayta ishlamaydi)
   const { id } = await params;
   const lesson = await prisma.lesson.findUnique({
     where: { id },
