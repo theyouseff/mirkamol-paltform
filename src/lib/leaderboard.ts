@@ -65,13 +65,13 @@ export function shortName(name: string) {
 export type BoardRow = { rank: number; userId: string; name: string; points: number; lessonsDone: number; streak: number };
 export type Board = { rows: BoardRow[]; totalLessons: number; participants: number };
 
-// Kursdagi hamma yozilgan o'quvchining reytingi. Faqat ball olganlar ro'yxatga kiradi; teng ballda kim oldin yetgan bo'lsa shu yuqori.
-export async function loadBoard(courseId: string, period: Period): Promise<Board> {
+// Kursdagi hamma yozilgan o'quvchining reytingi. Faqat ball olganlar ro'yxatga kiradi (admin reytingida includeZero bilan hammasi); teng ballda kim oldin yetgan bo'lsa shu yuqori.
+export async function loadBoard(courseId: string, period: Period, opts: { includeZero?: boolean } = {}): Promise<Board> {
   const today = tashkentDay();
   const lessons = await prisma.lesson.findMany({ where: { module: { courseId } }, select: { id: true, moduleId: true } });
   const enrolled = await prisma.enrollment.findMany({ where: { courseId, user: { role: "STUDENT" } }, select: { userId: true, user: { select: { name: true } } }, take: 5000 });
   const userIds = enrolled.map((e) => e.userId);
-  if (lessons.length === 0 || userIds.length === 0) return { rows: [], totalLessons: lessons.length, participants: userIds.length };
+  if ((lessons.length === 0 && !opts.includeZero) || userIds.length === 0) return { rows: [], totalLessons: lessons.length, participants: userIds.length };
   const lessonIds = lessons.map((l) => l.id);
 
   const [progress, watches, loginDays] = await Promise.all([
@@ -93,7 +93,7 @@ export async function loadBoard(courseId: string, period: Period): Promise<Board
       name: e.user.name,
       ...scoreStudent({ lessons, done: doneBy.get(e.userId) ?? new Map(), watches: watchBy.get(e.userId) ?? new Map(), days: daysBy.get(e.userId) ?? new Set(), today, period }),
     }))
-    .filter((s) => s.points > 0)
+    .filter((s) => opts.includeZero || s.points > 0)
     .sort((a, b) => b.points - a.points || (a.lastDone?.getTime() ?? Infinity) - (b.lastDone?.getTime() ?? Infinity) || a.name.localeCompare(b.name));
 
   return {

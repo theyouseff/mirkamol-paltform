@@ -10,6 +10,7 @@ const links = [
   { href: "/admin/orders", label: "🧾 To'lovlar" },
   { href: "/admin/students", label: "👥 O'quvchilar" },
   { href: "/admin/analytics", label: "📈 Analitika" },
+  { href: "/admin/ranking", label: "🏆 Reyting" },
 ];
 
 export function AdminNav() {
