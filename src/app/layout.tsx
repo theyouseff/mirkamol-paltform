@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   title: "ilmaviya",
   description: "Onlayn kurslar platformasi",
   appleWebApp: { capable: true, title: "ilmaviya", statusBarStyle: "black-translucent" },
-  icons: { apple: "/pwa/192" },
 };
 
 export const viewport: Viewport = { themeColor: "#151922" };
