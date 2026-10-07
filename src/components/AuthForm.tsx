@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import type { CSSProperties } from "react";
 import { login, type AuthState } from "@/lib/actions/auth";
-import { ADMIN_TELEGRAM, adminContactUrl } from "@/lib/config";
+import { adminContactUrl } from "@/lib/config";
 import { SubmitButton } from "./SubmitButton";
 import { authCard, authError, authInput, authLink } from "./auth-ui";
 
@@ -40,11 +40,7 @@ export function AuthForm() {
       <div className="enter space-y-2 text-center text-sm text-gold-text/80" style={step(5)}>
         <p>
           Akkauntingiz yo&apos;qmi?{" "}
-          {ADMIN_TELEGRAM ? (
-            <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className={`${authLink} underline decoration-gold-text/60 underline-offset-4 transition hover:decoration-gold-text`}>Adminga yozish</a>
-          ) : (
-            "Adminga yozing"
-          )}
+          <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className={`${authLink} underline decoration-gold-text/60 underline-offset-4 transition hover:decoration-gold-text`}>Adminga yozish</a>
         </p>
       </div>
     </form>

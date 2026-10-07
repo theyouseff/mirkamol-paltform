@@ -3,7 +3,6 @@ import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatDate, formatPrice } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/StatusBadge";
-import { ADMIN_TELEGRAM } from "@/lib/config";
 import { mailConfigured } from "@/lib/mail";
 
 export default async function AdminDashboard() {
@@ -37,9 +36,6 @@ export default async function AdminDashboard() {
   }
   if (!mailConfigured()) {
     todo.push({ title: "Email yuborish (SMTP) sozlanmagan", hint: "Parollar emailga ketmaydi va o'quvchi parolni o'zi tiklay olmaydi. Parolni shu paneldan ko'chirib yuborasiz. SMTP_* o'zgaruvchilari — .env.example da." });
-  }
-  if (!ADMIN_TELEGRAM) {
-    todo.push({ title: "Telegram username kiritilmagan", hint: "Vercel'da NEXT_PUBLIC_ADMIN_TELEGRAM = username (@siz). Shundan keyin «Adminga yozish» tugmalari ishlaydi." });
   }
 
   const stats = [

@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { requestPasswordReset, type ResetRequestState } from "@/lib/actions/auth";
-import { ADMIN_TELEGRAM, adminContactUrl } from "@/lib/config";
+import { adminContactUrl } from "@/lib/config";
 import { SubmitButton } from "./SubmitButton";
 import { authCard, authError, authInput, authLink } from "./auth-ui";
 
@@ -30,7 +30,7 @@ export function ForgotForm() {
         <h1 className="text-2xl font-bold">Parolni tiklash</h1>
         <p className="text-sm text-gold-text/80">
           Parolni tiklash uchun adminga yozing — yangi parol beriladi.{" "}
-          {ADMIN_TELEGRAM && <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className={authLink}>Telegram</a>}
+          <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className={authLink}>Telegram</a>
         </p>
         <Link href="/login" className={`${authLink} block text-sm`}>← Kirish sahifasiga</Link>
       </div>

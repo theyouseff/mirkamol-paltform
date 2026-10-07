@@ -1,8 +1,8 @@
-// Admin bilan aloqa: Telegram username (@ belgisisiz). Masalan: "mirkamol".
-// Vercel'da NEXT_PUBLIC_ADMIN_TELEGRAM env orqali ham berish mumkin (kodni o'zgartirmasdan).
-export const ADMIN_TELEGRAM = process.env.NEXT_PUBLIC_ADMIN_TELEGRAM ?? "Prodyc3r";
+// Admin bilan aloqa: Telegram username (@ belgisisiz). Saytdagi hamma Telegram havolalari (yumaloq tugma, «Adminga yozish»,
+// «Kursga yozilish», parol tiklash sahifasi, to'lov eslatmasi xati) shu akkauntga ochiladi.
+export const ADMIN_TELEGRAM = "AlishervichA";
 
-export const adminContactUrl = ADMIN_TELEGRAM ? `https://t.me/${ADMIN_TELEGRAM}` : "";
+export const adminContactUrl = `https://t.me/${ADMIN_TELEGRAM}`;
 
-// Yumaloq tilla Telegram tugmasi (yuqori menyu va kirish oynasi) — doim shu kanal/akkauntga ochiladi.
-export const telegramUrl = "https://t.me/AlishervichA";
+// Yumaloq tilla Telegram tugmasi (yuqori menyu va kirish oynasi)
+export const telegramUrl = adminContactUrl;

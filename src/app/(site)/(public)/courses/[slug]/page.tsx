@@ -41,11 +41,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               <Link href={`/cabinet/courses/${course.slug}`} className="btn-primary">Kursni ochish</Link>
             ) : (
               <>
-                {adminContactUrl ? (
-                  <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">Kursga yozilish</a>
-                ) : (
-                  <p className="text-sm text-gold-text/80">Kursga yozilish uchun adminga yozing</p>
-                )}
+                <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">Kursga yozilish</a>
                 <Link href="/login" className="btn-outline">Kirish</Link>
               </>
             )}
