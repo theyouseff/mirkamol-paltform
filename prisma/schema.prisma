@@ -65,6 +65,7 @@ model Course {
   orders      Order[]
   curators    CuratorCourse[]
   posts       Post[]
+  files       CourseFile[]
 }
 
 model Module {
@@ -253,4 +254,19 @@ model PlatformEntry {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
+}
+
+// Kursning qo'shimcha materiallari (masalan check-list PDF'lar). Fayl bazada; faqat kursga yozilgan o'quvchi, kurator va admin ochadi.
+model CourseFile {
+  id        String   @id @default(cuid())
+  courseId  String
+  title     String
+  mime      String   @default("application/pdf")
+  size      Int      @default(0)
+  data      Bytes
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
 }

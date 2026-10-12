@@ -5,13 +5,17 @@ import { getSession } from "@/lib/auth";
 import { adminContactUrl } from "@/lib/config";
 import { totalDuration } from "@/lib/format";
 import { ModuleIcon } from "@/components/ModuleIcon";
+import { CourseFiles } from "@/components/CourseFiles";
 
 // Sotuv sahifasi: hamma ko'radi, lekin faqat dastur (modul va dars nomlari). Video va matn — faqat kabinetda.
 export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const course = await prisma.course.findUnique({
     where: { slug },
-    include: { modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, select: { id: true, title: true, duration: true } } } } },
+    include: {
+      modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" }, select: { id: true, title: true, duration: true } } } },
+      files: { orderBy: [{ order: "asc" }, { createdAt: "asc" }], select: { id: true, title: true, size: true } }, // faqat nomlari; fayl o'zi /api/file orqali, ruxsat bilan
+    },
   });
   if (!course) notFound();
   const session = await getSession();
@@ -71,6 +75,8 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               </ul>
             </section>
           ))}
+          {/* Kirgan foydalanuvchi bu yerga faqat kursga yozilgan (yoki admin) bo'lsa yetib keladi — unga fayllar ochiladi */}
+          <CourseFiles files={course.files} linked={!!session} />
         </div>
       </div>
     </>

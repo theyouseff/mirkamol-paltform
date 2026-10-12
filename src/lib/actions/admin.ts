@@ -167,6 +167,49 @@ export async function deleteLesson(formData: FormData) {
   redirect(`/admin/courses/${lesson.module.courseId}`);
 }
 
+// ---------- Kurs materiallari (check-list PDF) ----------
+
+const MAX_FILE_BYTES = 2.5 * 1024 * 1024; // serverActions.bodySizeLimit (3 MB) ichida qolsin
+export type CourseFileState = { error?: string; ok?: number };
+
+// PDF yuklash: faqat haqiqiy PDF (fayl "%PDF-" bilan boshlanadi), 2.5 MB gacha. Nomi yozilmasa fayl nomidan olinadi.
+export async function uploadCourseFile(_: CourseFileState, formData: FormData): Promise<CourseFileState> {
+  await requireAdmin();
+  const courseId = str(formData, "courseId");
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "Fayl tanlanmadi" };
+  if (file.size > MAX_FILE_BYTES) return { error: "Fayl juda katta (2.5 MB dan oshmasin)" };
+  const data = Buffer.from(await file.arrayBuffer());
+  if (data.subarray(0, 5).toString("latin1") !== "%PDF-") return { error: "Faqat PDF fayl yuklash mumkin" };
+  const title = (str(formData, "title") || file.name.replace(/\.pdf$/i, "")).slice(0, 200);
+  const last = await prisma.courseFile.aggregate({ where: { courseId }, _max: { order: true } });
+  await prisma.courseFile.create({ data: { courseId, title, data, size: data.length, order: (last._max.order ?? 0) + 1 } });
+  revalidatePath("/", "layout");
+  return { ok: Date.now() };
+}
+
+export async function updateCourseFile(formData: FormData) {
+  await requireAdmin();
+  const title = str(formData, "title").slice(0, 200);
+  if (!title) return;
+  await prisma.courseFile.update({ where: { id: str(formData, "id") }, data: { title } });
+  revalidatePath("/", "layout");
+}
+
+export async function moveCourseFile(formData: FormData) {
+  await requireAdmin();
+  const f = await prisma.courseFile.findUniqueOrThrow({ where: { id: str(formData, "id") }, select: { id: true, courseId: true } });
+  const siblings = await prisma.courseFile.findMany({ where: { courseId: f.courseId }, orderBy: [{ order: "asc" }, { createdAt: "asc" }], select: { id: true } });
+  await reorder(siblings.map((x) => x.id), f.id, str(formData, "dir"), (id, order) => prisma.courseFile.update({ where: { id }, data: { order } }));
+  revalidatePath("/", "layout");
+}
+
+export async function deleteCourseFile(formData: FormData) {
+  await requireAdmin();
+  await prisma.courseFile.delete({ where: { id: str(formData, "id") } });
+  revalidatePath("/", "layout");
+}
+
 // ---------- Buyurtmalar va o'quvchilar ----------
 
 export async function markOrderPaid(formData: FormData) {

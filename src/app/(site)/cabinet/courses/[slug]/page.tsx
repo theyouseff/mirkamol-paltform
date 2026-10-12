@@ -8,6 +8,7 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { totalDuration } from "@/lib/format";
 import { ThumbPrefetch } from "@/components/ThumbPrefetch";
 import { Leaderboard } from "@/components/Leaderboard";
+import { CourseFiles } from "@/components/CourseFiles";
 
 export default async function StudentCoursePage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ lb?: string }> }) {
   const { slug } = await params;
@@ -19,6 +20,8 @@ export default async function StudentCoursePage({ params, searchParams }: { para
   const { course, modules, hasAccess, done, flatLessons } = await loadCourseForStudent(found.id, user);
   // Yozilmagan kurs (boshqa kurs) o'quvchiga umuman ko'rinmaydi
   if (!hasAccess) notFound();
+
+  const files = await prisma.courseFile.findMany({ where: { courseId: course.id }, orderBy: [{ order: "asc" }, { createdAt: "asc" }], select: { id: true, title: true, size: true } });
 
   const available = flatLessons.filter((l) => l.state !== "locked");
   const completed = available.filter((l) => done.has(l.id)).length;
@@ -59,6 +62,7 @@ export default async function StudentCoursePage({ params, searchParams }: { para
         <ModuleGrid modules={cards} />
         {cards.length === 0 && <p className="text-gold-text/70">Bu kursda hozircha modullar yo&apos;q.</p>}
       </div>
+      <CourseFiles files={files} linked className="mt-5 max-w-3xl" />
       {/* Faqat shu kursga yozilganlar (yoki admin) bu sahifani ko'radi, reyting ham faqat shu kurs o'quvchilaridan tuziladi */}
       <Leaderboard courseId={course.id} viewerId={user.id} viewerIsAdmin={user.role === "ADMIN"} period={lb === "week" ? "week" : "all"} />
     </>

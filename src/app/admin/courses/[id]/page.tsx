@@ -5,8 +5,10 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import {
-  createLesson, createModule, deleteCourse, deleteModule, moveLesson, moveModule, updateCourse, updateModule,
+  createLesson, createModule, deleteCourse, deleteCourseFile, deleteModule, moveCourseFile, moveLesson, moveModule, updateCourse, updateCourseFile, updateModule,
 } from "@/lib/actions/admin";
+import { CourseFileUpload } from "@/components/admin/CourseFileUpload";
+import { FILES_BLOCK_TITLE } from "@/components/CourseFiles";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { MoneyInput } from "@/components/admin/MoneyInput";
@@ -19,6 +21,7 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
     where: { id },
     include: {
       modules: { orderBy: { order: "asc" }, include: { lessons: { orderBy: { order: "asc" } } } },
+      files: { orderBy: [{ order: "asc" }, { createdAt: "asc" }], select: { id: true, title: true, size: true } },
     },
   });
   if (!course) notFound();
@@ -133,6 +136,34 @@ export default async function AdminCoursePage({ params }: { params: Promise<{ id
           <input name="title" className="input flex-1" placeholder="Yangi modul nomi" />
           <SubmitButton>+ Modul</SubmitButton>
         </form>
+      </section>
+
+      <section className="card space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold">{FILES_BLOCK_TITLE} (PDF)</h2>
+          <p className="text-sm text-zinc-500">Modullardan keyin alohida blok bo&apos;lib chiqadi. Sotuv sahifasida faqat nomlari ko&apos;rinadi; faylni faqat kursga yozilgan o&apos;quvchi (va admin, shu kurs kuratori) ochadi.</p>
+        </div>
+        {course.files.length > 0 && (
+          <ul className="divide-y divide-zinc-100 rounded-xl border border-zinc-200">
+            {course.files.map((f, fi) => (
+              <li key={f.id} className="flex flex-wrap items-center gap-2 p-2.5">
+                <form action={moveCourseFile} className="flex gap-1">
+                  <input type="hidden" name="id" value={f.id} />
+                  <button name="dir" value="up" disabled={fi === 0} className="btn-outline px-2 py-1" title="Yuqoriga">↑</button>
+                  <button name="dir" value="down" disabled={fi === course.files.length - 1} className="btn-outline px-2 py-1" title="Pastga">↓</button>
+                </form>
+                <form action={updateCourseFile} className="flex min-w-0 flex-1 gap-2 max-sm:basis-full">
+                  <input type="hidden" name="id" value={f.id} />
+                  <input name="title" className="input min-w-0 flex-1" defaultValue={f.title} required />
+                  <SubmitButton className="btn-outline">Saqlash</SubmitButton>
+                  <ConfirmButton formAction={deleteCourseFile} message="PDF fayl o'chiriladi. Davom etasizmi?">✕</ConfirmButton>
+                </form>
+                <a href={`/api/file/${f.id}`} target="_blank" rel="noopener" className="text-sm text-gold-text hover:underline">Ochish ↗ <span className="text-xs text-zinc-400">{Math.max(1, Math.round(f.size / 1024))} KB</span></a>
+              </li>
+            ))}
+          </ul>
+        )}
+        <CourseFileUpload courseId={course.id} />
       </section>
 
       <section className="card border-red-200">
