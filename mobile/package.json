@@ -1,0 +1,22 @@
+{
+  "name": "ilmaviya-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "ilmaviya mobil ilovasi (Android + iOS): ilmaviya.vercel.app saytini ochadi",
+  "scripts": {
+    "sync": "cap sync",
+    "assets": "capacitor-assets generate --android --ios --iconBackgroundColor '#151922' --iconBackgroundColorDark '#151922' --splashBackgroundColor '#151922' --splashBackgroundColorDark '#151922'",
+    "android": "cap open android",
+    "ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/browser": "^8.0.5",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/ios": "^8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.3"
+  }
+}

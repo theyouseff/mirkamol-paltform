@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { login, type AuthState } from "@/lib/actions/auth";
 import { adminContactUrl } from "@/lib/config";
+import { isAppUserAgent } from "@/lib/app-mode";
 import { SubmitButton } from "./SubmitButton";
 import { authCard, authError, authInput, authLink } from "./auth-ui";
 
@@ -18,7 +19,12 @@ export function AuthForm() {
   const [code, setCode] = useState("");
   // Boshqa qurilma kirgani uchun shu qurilmadan chiqarilgan bo'lsa (/login?r=device)
   const [kicked, setKicked] = useState(false);
-  useEffect(() => setKicked(new URLSearchParams(window.location.search).get("r") === "device"), []);
+  // Mobil ilovada "Akkauntingiz yo'qmi? Adminga yozish" (sotuvga yo'naltirish) ko'rsatilmaydi — App Store qoidasi
+  const [inApp, setInApp] = useState(false);
+  useEffect(() => {
+    setKicked(new URLSearchParams(window.location.search).get("r") === "device");
+    setInApp(isAppUserAgent(navigator.userAgent));
+  }, []);
 
   // "next" ni statik sahifani buzmasdan, yuborish paytida manzildan olamiz
   const submit = (formData: FormData) => {
@@ -59,9 +65,14 @@ export function AuthForm() {
         <SubmitButton className="btn-primary w-full py-3.5 text-base">{state.needCode ? "Tasdiqlash" : "Kirish"}</SubmitButton>
       </div>
       <div className="enter space-y-2 text-center text-sm text-gold-text/80" style={step(5)}>
+        {!inApp && (
+          <p>
+            Akkauntingiz yo&apos;qmi?{" "}
+            <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className={`${authLink} underline decoration-gold-text/60 underline-offset-4 transition hover:decoration-gold-text`}>Adminga yozish</a>
+          </p>
+        )}
         <p>
-          Akkauntingiz yo&apos;qmi?{" "}
-          <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className={`${authLink} underline decoration-gold-text/60 underline-offset-4 transition hover:decoration-gold-text`}>Adminga yozish</a>
+          <a href="/privacy" className="text-xs text-gold-text/60 underline-offset-2 hover:underline">Maxfiylik siyosati</a>
         </p>
       </div>
     </form>

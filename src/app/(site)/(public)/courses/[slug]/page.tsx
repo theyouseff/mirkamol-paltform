@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { headers } from "next/headers";
+import { isAppUserAgent } from "@/lib/app-mode";
 import { adminContactUrl } from "@/lib/config";
 import { totalDuration } from "@/lib/format";
 import { ModuleIcon } from "@/components/ModuleIcon";
@@ -45,7 +47,8 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               <Link href={`/cabinet/courses/${course.slug}`} className="btn-primary">Kursni ochish</Link>
             ) : (
               <>
-                <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">Kursga yozilish</a>
+                {/* Ilovada sotuv tugmasi yo'q (App Store qoidasi); u yerga mehmon middleware orqali yetib kelmaydi ham */}
+                {!isAppUserAgent((await headers()).get("user-agent")) && <a href={adminContactUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">Kursga yozilish</a>}
                 <Link href="/login" className="btn-outline">Kirish</Link>
               </>
             )}

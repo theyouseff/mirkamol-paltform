@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySession } from "@/lib/session";
 import { homeFor } from "@/lib/roles";
+import { isAppUserAgent } from "@/lib/app-mode";
 
 export async function middleware(req: NextRequest) {
   const session = await verifySession(req.cookies.get(SESSION_COOKIE)?.value);
@@ -9,6 +10,13 @@ export async function middleware(req: NextRequest) {
   // "/" va "/login" statik sahifalar (tezkor). Kirgan foydalanuvchi bu yerda turmaydi — o'z oynasiga o'tadi.
   if (pathname === "/" || pathname === "/login") {
     if (session) return NextResponse.redirect(new URL(homeFor(session.role), req.url));
+    return NextResponse.next();
+  }
+
+  // Kurslar katalogi va sotuv sahifalari — mehmonga faqat saytda; ilovada kirmagan foydalanuvchi kirish oynasiga o'tadi
+  // (App Store: ilova ichida tashqi to'lov/sotuvga yo'naltirib bo'lmaydi)
+  if (pathname === "/courses" || pathname.startsWith("/courses/")) {
+    if (!session && isAppUserAgent(req.headers.get("user-agent"))) return NextResponse.redirect(new URL("/login", req.url));
     return NextResponse.next();
   }
 
@@ -32,4 +40,4 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = { matcher: ["/", "/login", "/cabinet/:path*", "/admin/:path*", "/curator/:path*"] };
+export const config = { matcher: ["/", "/login", "/courses", "/courses/:path*", "/cabinet/:path*", "/admin/:path*", "/curator/:path*"] };

@@ -1,0 +1,19 @@
+{
+  "appId": "ilmaviya.app",
+  "appName": "ilmaviya",
+  "webDir": "www",
+  "backgroundColor": "#151922",
+  "appendUserAgent": "IlmaviyaApp/1.0",
+  "server": {
+    "url": "https://ilmaviya.vercel.app",
+    "errorPath": "offline.html",
+    "allowNavigation": ["ilmaviya.vercel.app", "kinescope.io", "*.kinescope.io", "*.r2.dev", "*.r2.cloudflarestorage.com", "www.youtube.com", "www.youtube-nocookie.com"]
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#151922"
+  }
+}

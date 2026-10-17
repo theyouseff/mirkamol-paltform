@@ -32,7 +32,9 @@ export function deviceLabel(ua: string) {
               : /Linux/.test(ua)
                 ? "Linux"
                 : "Noma'lum qurilma";
-  const browser = /Telegram/i.test(ua)
+  const browser = /IlmaviyaApp/.test(ua)
+    ? "ilova"
+    : /Telegram/i.test(ua)
     ? "Telegram"
     : /Instagram/.test(ua)
       ? "Instagram"

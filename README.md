@@ -80,6 +80,9 @@ Kurs dasturida modullardan keyin **Check - listlar** bloki: kursning PDF fayllar
 - **Admin → Analitika:** o'quvchi blokida faol qurilmalari («iPhone · Safari»); o'quvchi tanlansa «Qurilmalar» kartochkasi: shahar, IP, birinchi va oxirgi kirish, almashtirishlar soni (⚠️ shubhali / ⛔ bloklangan), bitta qurilmani **Chiqarish** yoki **Hammasidan chiqarish** (almashtirish hisobini ham nolga tushiradi — bloklangan o'quvchini shu bilan ochasiz). Kuratorga bu ma'lumot ko'rinmaydi.
 - Qoidalar `src/lib/devices.ts` da (`DEVICE_LIMIT`, `SWAP_LIMIT`). Bazaga: `prisma/sql/21-devices.sql`. Joriy etilganda hamma o'quvchi bir marta qayta kiradi (eski sessiyalarda qurilma yo'q).
 
+## Mobil ilova
+`mobile/` — Android va iOS ilovasi (Capacitor): saytni ochadi, ekranni yozib olishdan himoyalaydi, ilovada sotuv tugmalari yo'q. Yig'ish va do'konga yuklash tartibi: `mobile/README.md`. Maxfiylik siyosati: `/privacy`.
+
 ## Postlar
 Menyuda **Kabinet**dan keyin **Postlar**: kurator o'z kursi uchun e'lon/yangilik yozadi, o'quvchi faqat o'qiydi (yoza olmaydi). Har bir post **faqat o'z kursida** ko'rinadi: masalan, LOR kuratorining posti marketing kursi o'quvchisiga chiqmaydi. Kurator postni `/curator/posts` sahifasida yozadi (faqat o'ziga biriktirilgan kurslarga) va faqat o'zinikini o'chira oladi. O'quvchi bir nechta kursga yozilgan bo'lsa, postlarni kurs bo'yicha saralaydi.
 
