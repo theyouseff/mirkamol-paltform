@@ -58,7 +58,7 @@ function ContactLines({ userId, phone, hasPassword, devices }: { userId: string;
     <div className="mt-1.5 space-y-1 text-xs text-zinc-500">
       <div className="flex flex-wrap items-center gap-1">Telefon: <PhoneCell userId={userId} phone={phone} /></div>
       <div className="flex flex-wrap items-center gap-1.5">Parol: <PasswordReveal userId={userId} has={hasPassword} /></div>
-      <div>Qurilma: {devices.length ? devices.join(", ") : <span className="text-zinc-400">hali kirmagan</span>}</div>
+      <div>Qurilma: {devices.length ? devices.join(", ") : <span className="text-zinc-400">yozuv yo&apos;q (qurilmalar 17-oktabrdan yoziladi — keyingi kirishida chiqadi)</span>}</div>
     </div>
   );
 }
@@ -206,12 +206,13 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
     ? (await prisma.dayNote.findMany({ where: { userId: selected.u.id } })).map((n) => ({ day: n.day, status: n.status as DayNote["status"], reason: n.reason, author: n.authorName }))
     : [];
   const loginDays = selected ? (await prisma.loginDay.findMany({ where: { userId: selected.u.id }, select: { day: true } })).map((d) => d.day) : [];
-  // Qurilmalar — faqat admin (contacts): ro'yxatda faol qurilma nomlari, tanlangan o'quvchida to'liq ma'lumot
+  // Qurilmalar — faqat admin (contacts): ro'yxatda faol qurilma nomlari (faoli bo'lmasa — oxirgi kirgan qurilmasi, "chiqarilgan" belgisi bilan),
+  // tanlangan o'quvchida to'liq ma'lumot
   const activeDevices = new Map<string, string[]>();
   if (contacts) {
-    for (const d of await prisma.device.findMany({ where: { revokedAt: null, userId: { in: users.map((u) => u.id) } }, orderBy: { lastSeenAt: "desc" }, select: { userId: true, label: true } })) {
-      activeDevices.set(d.userId, [...(activeDevices.get(d.userId) ?? []), d.label || "Noma'lum"]);
-    }
+    const all = await prisma.device.findMany({ where: { userId: { in: users.map((u) => u.id) } }, orderBy: { lastSeenAt: "desc" }, select: { userId: true, label: true, revokedAt: true } });
+    for (const d of all) if (!d.revokedAt) activeDevices.set(d.userId, [...(activeDevices.get(d.userId) ?? []), d.label || "Noma'lum"]);
+    for (const d of all) if (!activeDevices.has(d.userId)) activeDevices.set(d.userId, [`${d.label || "Noma'lum"} (chiqarilgan)`]);
   }
   const selectedDevices = contacts && selected
     ? await prisma.device.findMany({ where: { userId: selected.u.id }, orderBy: [{ revokedAt: { sort: "desc", nulls: "first" } }, { lastSeenAt: "desc" }], select: { id: true, label: true, place: true, ip: true, createdAt: true, lastSeenAt: true, revokedAt: true, revokeReason: true } })
