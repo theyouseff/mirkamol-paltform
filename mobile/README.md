@@ -9,6 +9,7 @@ Ilovani qayta yuklash faqat **native** qism o'zgarganda kerak: ikonka, nom, ruxs
 | Nomi | `ilmaviya` |
 | ID (Android applicationId / iOS Bundle ID) | `ilmaviya.app` — o'zgartirib bo'lmaydi |
 | Versiya | 1.0 (Android `versionCode 1`) |
+| Eng past tizim | Android 7.0 (minSdk 24), iOS 16.4 — saytning dizayni (Tailwind 4) Safari 16.4+ talab qiladi |
 
 ## Ilovada saytdan farqi
 - **Ekranni yozib olishdan himoya:** Androidda skrinshot va ekran yozuvi butunlay bloklanadi (`MainActivity.java`, FLAG_SECURE);
