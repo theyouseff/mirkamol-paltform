@@ -4,6 +4,7 @@ import type {} from "@kinescope/player-iframe-api-loader/types";
 import { useEffect, useRef, useState } from "react";
 import { load } from "@kinescope/player-iframe-api-loader";
 import { markLessonWatched, saveWatchProgress } from "@/lib/actions/student";
+import { OtherDeviceNotice } from "./OtherDeviceNotice";
 
 // Video oxirigacha ko'rilgan hisoblanishi uchun kerak bo'lgan ulush (boshi/oxiridagi qisqa qismni o'tkazib yuborsa ham bo'ladi)
 const REQUIRED = 0.8;
@@ -31,19 +32,32 @@ export function LessonVideo({ videoId, lessonId, embedUrl, startAt = 0, autoPlay
   const frame = useRef<HTMLIFrameElement>(null);
   const [failed, setFailed] = useState(false);
   const [counted, setCounted] = useState(false);
+  // Shu akkauntda boshqa qurilmada video ochildi — bu yerda to'xtatildi (bir vaqtda faqat bitta qurilmada ko'rish)
+  const [stopped, setStopped] = useState(false);
 
   useEffect(() => {
     let player: Kinescope.IframePlayer.Player | undefined;
     let cancelled = false;
     const seconds = readSeconds(lessonId);
     // Analitika: to'xtagan joyi va ko'rilgan miqdor serverga yuboriladi (o'zgargan bo'lsagina)
-    const track = { pos: 0, duration: 0, sentAt: 0, dirty: false, playing: false };
+    // claim — video endi boshlandi: serverga "ijro shu qurilmada" deb yuboriladi (yuborilguncha saqlanib turadi)
+    const track = { pos: 0, duration: 0, sentAt: 0, dirty: false, playing: false, claim: false };
     // force — pauza/tugash/chiqishda o'zgarish bo'lmasa ham yuboradi ("tomosha qilyapti" holati o'chsin)
     const flush = (force = false) => {
       if (!track.duration || (!force && !track.dirty)) return;
       track.dirty = false;
       track.sentAt = Date.now();
-      saveWatchProgress(lessonId, track.pos, track.duration, seconds.size, track.playing).catch(() => {});
+      const claim = track.playing && track.claim;
+      if (claim) track.claim = false;
+      saveWatchProgress(lessonId, track.pos, track.duration, seconds.size, track.playing, claim)
+        .then((r) => {
+          if (r?.stop && track.playing) {
+            track.playing = false;
+            player?.pause().catch(() => {});
+            setStopped(true);
+          }
+        })
+        .catch(() => {});
     };
     const onHide = () => document.visibilityState === "hidden" && flush(true);
     document.addEventListener("visibilitychange", onHide);
@@ -86,8 +100,13 @@ export function LessonVideo({ videoId, lessonId, embedUrl, startAt = 0, autoPlay
         last = t;
         track.pos = t;
         track.dirty = true;
-        track.playing = true; // vaqt oldinga yurayapti — video ijro etilmoqda
-        if (Date.now() - track.sentAt > HEARTBEAT) flush();
+        if (!track.playing) {
+          // Ijro endi boshlandi (yoki pauzadan davom etdi): ijroni shu qurilmaga olamiz
+          track.playing = true; // vaqt oldinga yurayapti — video ijro etilmoqda
+          track.claim = true;
+          setStopped(false);
+          flush(true);
+        } else if (Date.now() - track.sentAt > HEARTBEAT) flush();
       });
       p.on(p.Events.Ended, async () => {
         track.playing = false;
@@ -125,6 +144,7 @@ export function LessonVideo({ videoId, lessonId, embedUrl, startAt = 0, autoPlay
         allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock"
         allowFullScreen
       />
+      {stopped && <OtherDeviceNotice />}
       {counted && <span className="absolute right-3 top-3 rounded-lg bg-gold px-3 py-1 text-sm font-semibold text-ink-950 shadow-lg">✓ Dars ko&apos;rildi</span>}
     </div>
   );

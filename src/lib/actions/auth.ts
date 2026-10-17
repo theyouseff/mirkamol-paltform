@@ -7,16 +7,23 @@ import { prisma } from "@/lib/db";
 import { createSession } from "@/lib/auth";
 import { normalizeEmail } from "@/lib/format";
 import { clearAttempts, clientIp, isLimited, recordAttempt } from "@/lib/rate-limit";
-import { mailConfigured, sendResetCode } from "@/lib/mail";
+import { mailConfigured, sendDeviceCode, sendResetCode } from "@/lib/mail";
+import { admitDevice, createDeviceCode, consumeDeviceCode } from "@/lib/devices";
 import { hashPassword, passwordProblem, BCRYPT_COST } from "@/lib/password";
 import { homeFor } from "@/lib/roles";
 import { createResetCode, RESET_TTL_MS, verifyResetCode } from "@/lib/reset";
 
-export type AuthState = { error?: string };
+// needCode — o'quvchi limitdan ortiq (yangi) qurilmadan kirmoqda: emailiga kod ketdi, forma kod so'raydi
+export type AuthState = { error?: string; needCode?: boolean; sentTo?: string };
 
 const LOGIN_WINDOW = 15 * 60_000;
 const RESET_WINDOW = 60 * 60_000;
 const TOO_MANY = "Juda ko'p urinish. Birozdan keyin qayta urinib ko'ring.";
+const DEVICE_BLOCKED = "Bu akkauntda qurilmalar juda ko'p almashtirildi. Kirish uchun adminga yozing.";
+const DEVICE_FULL = "Bu akkaunt allaqachon 2 ta qurilmada ochiq. Yangi qurilmadan kirish uchun adminga yozing.";
+
+// "abdulla.karimov@gmail.com" -> "ab***@gmail.com" (kod qayerga ketganini ko'rsatish uchun)
+const maskEmail = (email: string) => email.replace(/^(.{0,2})[^@]*/, "$1***");
 
 // Foydalanuvchi topilmaganda ham bcrypt vaqti sarflansin (email bor-yo'qligini vaqtdan bilib bo'lmasin).
 let dummyHash: string | undefined;
@@ -56,7 +63,39 @@ export async function login(_: AuthState, formData: FormData): Promise<AuthState
   }
 
   await clearAttempts([keys[0]]);
-  await createSession(user);
+
+  // O'quvchi: qurilmalar limiti (akkauntni boshqalarga berishni cheklash). Admin va kurator uchun limit yo'q.
+  let deviceId: string | undefined;
+  if (user.role === "STUDENT") {
+    const code = String(formData.get("code") ?? "").trim();
+    let admission = await admitDevice(user);
+    if (!admission.ok && admission.reason === "code") {
+      if (!code) {
+        if (!mailConfigured()) return { error: DEVICE_FULL };
+        // Kod yuborish: bitta email uchun soatiga 3 ta
+        const sendKey = `devcode:email:${email}`;
+        if (await isLimited([{ key: sendKey, max: 3 }], RESET_WINDOW)) return { error: TOO_MANY };
+        await recordAttempt([sendKey]);
+        const { code: fresh, label } = await createDeviceCode(user.id);
+        const sent = await sendDeviceCode(user.email, user.name, fresh, label);
+        if (!sent.sent) return { error: "Kod yuborib bo'lmadi. Birozdan keyin urinib ko'ring yoki adminga yozing." };
+        return { needCode: true, sentTo: maskEmail(user.email) };
+      }
+      // Kodni terib topishga urinish cheklanadi
+      const codeKey = `devcode:try:${email}`;
+      if (await isLimited([{ key: codeKey, max: 5 }], LOGIN_WINDOW)) return { error: TOO_MANY, needCode: true, sentTo: maskEmail(user.email) };
+      if (!(await consumeDeviceCode(user.id, code))) {
+        await recordAttempt([codeKey]);
+        return { error: "Kod noto'g'ri yoki eskirgan", needCode: true, sentTo: maskEmail(user.email) };
+      }
+      await clearAttempts([codeKey]);
+      admission = await admitDevice(user, true);
+    }
+    if (!admission.ok) return { error: DEVICE_BLOCKED };
+    deviceId = admission.deviceId;
+  }
+
+  await createSession(user, deviceId);
   redirect(safeNext(formData.get("next"), user.role) ?? homeFor(user.role));
 }
 
@@ -108,7 +147,13 @@ export async function activateWithCode(_: AuthState, formData: FormData): Promis
   const updated = await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(password), vaultPassword: null } });
   await prisma.passwordReset.deleteMany({ where: { userId: user.id } });
   await clearAttempts([...keys, `login:email:${email}`]);
-  // Kod emailga kelgan — egasi ekani tasdiqlangan, shu zahoti kiritamiz
-  await createSession(updated);
+  // Kod emailga kelgan — egasi ekani tasdiqlangan, shu zahoti kiritamiz (o'quvchi: bu qurilma tasdiqlangan hisoblanadi, limit to'lgan bo'lsa eng eskisi chiqadi)
+  let deviceId: string | undefined;
+  if (updated.role === "STUDENT") {
+    const admission = await admitDevice(updated, true);
+    if (!admission.ok) return { error: `Parol o'zgartirildi. ${DEVICE_BLOCKED}` };
+    deviceId = admission.deviceId;
+  }
+  await createSession(updated, deviceId);
   redirect(homeFor(updated.role));
 }

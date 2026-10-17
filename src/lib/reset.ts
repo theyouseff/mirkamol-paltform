@@ -10,14 +10,17 @@ const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 export const normalizeCode = (code: string) => code.toUpperCase().replace(/[^A-Z0-9]/g, "");
 
 // Bazada faqat xesh saqlanadi; xesh egasiga bog'langan (boshqa odamning kodi bilan kirib bo'lmaydi).
-const hashCode = (userId: string, code: string) => createHash("sha256").update(`${userId}:${normalizeCode(code)}`).digest("hex");
+export const hashCode = (userId: string, code: string) => createHash("sha256").update(`${userId}:${normalizeCode(code)}`).digest("hex");
 
 // Bir martalik kod: "K7QM-4XPD". Egasining eski kodlari o'chadi.
+export const generateCode = () => Array.from({ length: 8 }, () => ALPHABET[randomInt(ALPHABET.length)]).join("");
+export const formatCode = (raw: string) => `${raw.slice(0, 4)}-${raw.slice(4)}`;
+
 export async function createResetCode(userId: string, ttlMs: number) {
-  const raw = Array.from({ length: 8 }, () => ALPHABET[randomInt(ALPHABET.length)]).join("");
+  const raw = generateCode();
   await prisma.passwordReset.deleteMany({ where: { userId } });
   await prisma.passwordReset.create({ data: { userId, tokenHash: hashCode(userId, raw), expiresAt: new Date(Date.now() + ttlMs) } });
-  return `${raw.slice(0, 4)}-${raw.slice(4)}`;
+  return formatCode(raw);
 }
 
 // Email va kod mos, muddati o'tmagan bo'lsa — foydalanuvchini qaytaradi.

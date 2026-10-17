@@ -210,6 +210,25 @@ export async function deleteCourseFile(formData: FormData) {
   revalidatePath("/", "layout");
 }
 
+// ---------- O'quvchi qurilmalari ----------
+
+// Bitta qurilmadan chiqarish (o'sha qurilmadagi sessiya darhol ishlamay qoladi). Almashtirish hisobiga kirmaydi.
+export async function revokeDevice(formData: FormData) {
+  await requireAdmin();
+  await prisma.device.updateMany({ where: { id: str(formData, "id"), revokedAt: null }, data: { revokedAt: new Date(), revokeReason: "admin" } });
+  revalidatePath("/admin/analytics");
+}
+
+// Hamma qurilmalardan chiqarish va almashtirish hisobini nolga tushirish (bloklangan o'quvchini ochish uchun ham shu).
+export async function resetDevices(formData: FormData) {
+  await requireAdmin();
+  const userId = str(formData, "userId");
+  const now = new Date();
+  await prisma.device.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: now, revokeReason: "admin" } });
+  await prisma.user.update({ where: { id: userId }, data: { deviceResetAt: now } });
+  revalidatePath("/admin/analytics");
+}
+
 // ---------- Buyurtmalar va o'quvchilar ----------
 
 export async function markOrderPaid(formData: FormData) {

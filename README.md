@@ -72,6 +72,14 @@ Terminalsiz: Admin → dars → **Kartochka rasmi** maydoniga rasmni kompyuterda
 ## Check - listlar (PDF materiallar)
 Kurs dasturida modullardan keyin **Check - listlar** bloki: kursning PDF fayllari. Sotuv sahifasida mehmonga faqat nomlari ko'rinadi; kursga yozilgan o'quvchi (kurs sahifasida, modullar ostida) faylni bosib yangi oynada ochadi. Fayllar bazada saqlanadi va `/api/file/<id>` orqali faqat kursga yozilgan o'quvchi, shu kurs kuratori va adminga beriladi. Admin → Kurslar → kurs → **Check - listlar (PDF)**: yuklash (faqat PDF, 2.5 MB gacha), nomini o'zgartirish, ↑↓ tartib, o'chirish. Bazaga jadval: `prisma/sql/20-course-file.sql`.
 
+## Qurilmalar limiti (akkauntni boshqalarga berishni cheklash)
+- O'quvchi bir vaqtda ko'pi bilan **2 ta qurilmada** (brauzerda) kirgan bo'ladi. Admin va kuratorga limit yo'q.
+- 3-qurilmadan kirsa, parol to'g'ri bo'lgach o'quvchining **emailiga kod** ketadi (15 daqiqa amal qiladi, soatiga 3 ta). Kod kiritilsa, eng uzoq ishlatilmagan qurilmadan chiqariladi; u qurilmada «Akkauntingizga boshqa qurilmadan kirildi» xabari chiqadi. «Parolni unutdingizmi» kodi bilan kirish ham shu qurilmani tasdiqlaydi.
+- Oxirgi 30 kunda **3 martadan** ko'p almashtirilsa, yangi qurilmaga kirib bo'lmaydi («adminga yozing»). SMTP sozlanmagan bo'lsa ham 3-qurilmaga faqat admin orqali.
+- **Bir vaqtda bitta video:** boshqa qurilmada video boshlansa, oldingisida video to'xtaydi va xabar chiqadi (play bosilsa, ijro yana shu qurilmaga o'tadi).
+- **Admin → Analitika:** o'quvchi blokida faol qurilmalari («iPhone · Safari»); o'quvchi tanlansa «Qurilmalar» kartochkasi: shahar, IP, birinchi va oxirgi kirish, almashtirishlar soni (⚠️ shubhali / ⛔ bloklangan), bitta qurilmani **Chiqarish** yoki **Hammasidan chiqarish** (almashtirish hisobini ham nolga tushiradi — bloklangan o'quvchini shu bilan ochasiz). Kuratorga bu ma'lumot ko'rinmaydi.
+- Qoidalar `src/lib/devices.ts` da (`DEVICE_LIMIT`, `SWAP_LIMIT`). Bazaga: `prisma/sql/21-devices.sql`. Joriy etilganda hamma o'quvchi bir marta qayta kiradi (eski sessiyalarda qurilma yo'q).
+
 ## Postlar
 Menyuda **Kabinet**dan keyin **Postlar**: kurator o'z kursi uchun e'lon/yangilik yozadi, o'quvchi faqat o'qiydi (yoza olmaydi). Har bir post **faqat o'z kursida** ko'rinadi: masalan, LOR kuratorining posti marketing kursi o'quvchisiga chiqmaydi. Kurator postni `/curator/posts` sahifasida yozadi (faqat o'ziga biriktirilgan kurslarga) va faqat o'zinikini o'chira oladi. O'quvchi bir nechta kursga yozilgan bo'lsa, postlarni kurs bo'yicha saralaydi.
 

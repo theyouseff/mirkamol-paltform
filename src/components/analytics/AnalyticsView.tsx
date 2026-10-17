@@ -10,6 +10,10 @@ import { EmailStudent } from "@/components/analytics/EmailStudent";
 import { StudentLink, SwitchProvider, TopPanel } from "@/components/admin/StudentSwitch";
 import { PasswordReveal } from "@/components/admin/PasswordReveal";
 import { PhoneCell } from "@/components/admin/PhoneCell";
+import { ConfirmButton } from "@/components/ConfirmButton";
+import { SubmitButton } from "@/components/SubmitButton";
+import { resetDevices, revokeDevice } from "@/lib/actions/admin";
+import { DEVICE_LIMIT, SWAP_LIMIT, swapsUsed } from "@/lib/devices";
 
 // Analitikadagi o'quvchi: telefon va parol nusxasi faqat admin (contacts) so'rovida keladi
 type StudentRow = { id: string; name: string; email: string; createdAt: Date; lastSeenAt: Date | null; watchingAt: Date | null; enrollments: { courseId: string }[]; phone?: string | null; vaultPassword?: string | null };
@@ -48,12 +52,69 @@ const duration = (seconds: number) => {
   return h ? `${h} soat ${m} daq` : `${m} daq`;
 };
 
-// O'quvchi blokida telefon raqam va parol (faqat admin ko'radi; kuratorga umuman chiqmaydi)
-function ContactLines({ userId, phone, hasPassword }: { userId: string; phone: string | null; hasPassword: boolean }) {
+// O'quvchi blokida telefon raqam, parol va hozir kirgan qurilmalari (faqat admin ko'radi; kuratorga umuman chiqmaydi)
+function ContactLines({ userId, phone, hasPassword, devices }: { userId: string; phone: string | null; hasPassword: boolean; devices: string[] }) {
   return (
     <div className="mt-1.5 space-y-1 text-xs text-zinc-500">
       <div className="flex flex-wrap items-center gap-1">Telefon: <PhoneCell userId={userId} phone={phone} /></div>
       <div className="flex flex-wrap items-center gap-1.5">Parol: <PasswordReveal userId={userId} has={hasPassword} /></div>
+      <div>Qurilma: {devices.length ? devices.join(", ") : <span className="text-zinc-400">hali kirmagan</span>}</div>
+    </div>
+  );
+}
+
+type DeviceRow = { id: string; label: string; place: string; ip: string; createdAt: Date; lastSeenAt: Date; revokedAt: Date | null; revokeReason: string | null };
+
+// Tanlangan o'quvchining qurilmalari (faqat admin): faol qurilmalar, almashtirish hisobi va chiqarilganlar tarixi
+function DevicesCard({ userId, devices, swaps }: { userId: string; devices: DeviceRow[]; swaps: number }) {
+  const active = devices.filter((d) => !d.revokedAt);
+  const history = devices.filter((d) => d.revokedAt).slice(0, 8);
+  const blocked = swaps >= SWAP_LIMIT;
+  return (
+    <div className="card space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="font-semibold">Qurilmalar</h2>
+          <p className="text-sm text-zinc-500">
+            Faol: <b>{active.length}</b> / {DEVICE_LIMIT} · oxirgi 30 kunda almashtirgan: <b className={swaps >= 2 ? "text-red-600" : ""}>{swaps}</b> / {SWAP_LIMIT}
+            {blocked ? <span className="ml-2 font-medium text-red-600">⛔ yangi qurilmaga kira olmaydi</span> : swaps >= 2 ? <span className="ml-2 font-medium text-amber-600">⚠️ shubhali</span> : null}
+          </p>
+        </div>
+        <form action={resetDevices}>
+          <input type="hidden" name="userId" value={userId} />
+          <ConfirmButton className="btn-outline" message="O'quvchi hamma qurilmalardan chiqariladi va almashtirish hisobi nolga tushadi (bloklangan bo'lsa ochiladi). Davom etasizmi?">Hammasidan chiqarish</ConfirmButton>
+        </form>
+      </div>
+      {active.length > 0 ? (
+        <ul className="divide-y divide-zinc-100 rounded-xl border border-zinc-200">
+          {active.map((d) => (
+            <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm">
+              <div className="min-w-0">
+                <p className="font-medium">{d.label || "Noma'lum qurilma"}</p>
+                <p className="text-xs text-zinc-500">{[d.place, d.ip].filter(Boolean).join(" · ")}{(d.place || d.ip) && " · "}birinchi kirish {timeAgo(d.createdAt)} · oxirgi faollik {timeAgo(d.lastSeenAt)}</p>
+              </div>
+              <form action={revokeDevice}>
+                <input type="hidden" name="id" value={d.id} />
+                <SubmitButton className="btn-outline px-3 py-1 text-xs">Chiqarish</SubmitButton>
+              </form>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-xl bg-zinc-50 px-4 py-4 text-center text-sm text-zinc-500">Hozir hech qaysi qurilmada kirmagan</p>
+      )}
+      {history.length > 0 && (
+        <details className="text-sm">
+          <summary className="cursor-pointer text-zinc-500">Chiqarilgan qurilmalar ({history.length})</summary>
+          <ul className="mt-2 space-y-1 text-xs text-zinc-500">
+            {history.map((d) => (
+              <li key={d.id}>
+                {d.label || "Noma'lum qurilma"}{d.place && ` · ${d.place}`} — {d.revokeReason === "replaced" ? "yangi qurilma uchun chiqarildi" : "admin chiqardi"} {d.revokedAt && timeAgo(d.revokedAt)}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   );
 }
@@ -145,6 +206,17 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
     ? (await prisma.dayNote.findMany({ where: { userId: selected.u.id } })).map((n) => ({ day: n.day, status: n.status as DayNote["status"], reason: n.reason, author: n.authorName }))
     : [];
   const loginDays = selected ? (await prisma.loginDay.findMany({ where: { userId: selected.u.id }, select: { day: true } })).map((d) => d.day) : [];
+  // Qurilmalar — faqat admin (contacts): ro'yxatda faol qurilma nomlari, tanlangan o'quvchida to'liq ma'lumot
+  const activeDevices = new Map<string, string[]>();
+  if (contacts) {
+    for (const d of await prisma.device.findMany({ where: { revokedAt: null, userId: { in: users.map((u) => u.id) } }, orderBy: { lastSeenAt: "desc" }, select: { userId: true, label: true } })) {
+      activeDevices.set(d.userId, [...(activeDevices.get(d.userId) ?? []), d.label || "Noma'lum"]);
+    }
+  }
+  const selectedDevices = contacts && selected
+    ? await prisma.device.findMany({ where: { userId: selected.u.id }, orderBy: [{ revokedAt: { sort: "desc", nulls: "first" } }, { lastSeenAt: "desc" }], select: { id: true, label: true, place: true, ip: true, createdAt: true, lastSeenAt: true, revokedAt: true, revokeReason: true } })
+    : [];
+  const selectedSwaps = contacts && selected ? await swapsUsed(selected.u.id, (await prisma.user.findUnique({ where: { id: selected.u.id }, select: { deviceResetAt: true } }))?.deviceResetAt ?? null) : 0;
 
   const href = (patch: { student?: string; q?: string }) => {
     const p = new URLSearchParams({ ...(q && { q }), ...(student && { student }), ...patch });
@@ -264,6 +336,11 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
               <p className="mt-2 text-2xl font-bold"><Presence online={selected.online} watching={selected.watching} at={selected.lastActive} /></p>
             </div>
           </div>
+          {contacts && (
+            <div className="enter" style={step(5)}>
+              <DevicesCard userId={selected.u.id} devices={selectedDevices} swaps={selectedSwaps} />
+            </div>
+          )}
         </div>
       ) : (
         <>
@@ -351,7 +428,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
                               <td className="px-4 py-3">
                                 <StudentLink href={href({ student: u.id })} className="font-medium text-brand hover:underline">{u.name}</StudentLink>
                                 <p className="text-xs text-zinc-400">{u.email}</p>
-                                {contacts && <ContactLines userId={u.id} phone={u.phone ?? null} hasPassword={!!u.vaultPassword} />}
+                                {contacts && <ContactLines userId={u.id} phone={u.phone ?? null} hasPassword={!!u.vaultPassword} devices={activeDevices.get(u.id) ?? []} />}
                               </td>
                               <td className="w-48 py-3 pr-4">
                                 <ProgressBar value={pct(completed, mine.length)} />
@@ -392,7 +469,7 @@ export async function AnalyticsView({ basePath, q = "", student = "", courseIds,
                             <div className="min-w-0">
                               <StudentLink href={href({ student: u.id })} className="font-medium text-brand">{u.name}</StudentLink>
                               <p className="truncate text-xs text-zinc-400">{u.email}</p>
-                              {contacts && <ContactLines userId={u.id} phone={u.phone ?? null} hasPassword={!!u.vaultPassword} />}
+                              {contacts && <ContactLines userId={u.id} phone={u.phone ?? null} hasPassword={!!u.vaultPassword} devices={activeDevices.get(u.id) ?? []} />}
                             </div>
                             <Presence online={online} watching={watching} at={lastActive} className="shrink-0 text-xs text-zinc-500" />
                           </div>

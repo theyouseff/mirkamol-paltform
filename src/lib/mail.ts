@@ -109,6 +109,19 @@ ${codeBox(code)}
   return sendMail(to, subject, text, html);
 }
 
+// Yangi qurilmadan kirishni tasdiqlash kodi (15 daqiqa). Kod kiritilsa, eng uzoq ishlatilmagan qurilmadan chiqariladi.
+export function sendDeviceCode(to: string, name: string, code: string, device: string) {
+  const subject = "Yangi qurilmadan kirish kodi";
+  const text = `Salom, ${name}!\n\nAkkauntingizga yangi qurilmadan (${device}) kirilmoqda. Tasdiqlash kodi: ${code}\n\nAkkaunt bir vaqtda faqat 2 ta qurilmada ochiq bo'ladi: kod kiritilsa, eng uzoq ishlatilmagan qurilmangizdan chiqasiz. Kod 15 daqiqa amal qiladi.\n\nAgar bu siz bo'lmasangiz, kodni hech kimga bermang va parolingizni o'zgartiring.`;
+  const html = `<div style="font-family:Arial,sans-serif;max-width:480px;line-height:1.6">
+<p>Salom, <b>${esc(name)}</b>!</p>
+<p>Akkauntingizga yangi qurilmadan (<b>${esc(device)}</b>) kirilmoqda. Tasdiqlash kodi:</p>
+${codeBox(code)}
+<p>Akkaunt bir vaqtda faqat 2 ta qurilmada ochiq bo'ladi: kod kiritilsa, eng uzoq ishlatilmagan qurilmangizdan chiqasiz.</p>
+<p style="color:#666;font-size:13px">Kod 15 daqiqa amal qiladi. Agar bu siz bo'lmasangiz, kodni hech kimga bermang va parolingizni o'zgartiring.</p></div>`;
+  return sendMail(to, subject, text, html);
+}
+
 // Admin/kurator o'quvchiga o'z matnini yuboradi (javob shu xodimning emailiga boradi)
 export function sendStaffMessage(to: string, studentName: string, senderName: string, senderEmail: string, message: string) {
   const subject = `ilmaviya: ${senderName} dan xabar`;

@@ -19,6 +19,8 @@ model User {
   createdAt    DateTime  @default(now())
   watchingAt   DateTime? // video hozir ijro etilayotgan bo'lsa — oxirgi urilish vaqti (15 soniyada bir yangilanadi, pauzada bo'shatiladi)
   lastSeenAt   DateTime? // oxirgi faollik (sahifa ochish yoki video ko'rish); "online" holati va kirish xabari shundan
+  watchingDevice String? // video hozir qaysi qurilmada ijro etilyapti (Device.id): bir vaqtda faqat bitta qurilmada ko'rish mumkin
+  deviceResetAt  DateTime? // admin qurilmalarni tozalagan vaqt: qurilma almashtirish hisobi shundan boshlanadi
 
   enrollments    Enrollment[]
   orders         Order[]
@@ -32,6 +34,8 @@ model User {
   entries        PlatformEntry[]
   posts          Post[]
   resets         PasswordReset[]
+  devices        Device[]
+  deviceCodes    DeviceCode[]
 }
 
 // Kurs muallifi (ekspert). Barcha to'lovlar egasining hisobiga tushadi — muallif bo'yicha hisobot uchun.
@@ -269,4 +273,33 @@ model CourseFile {
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@index([courseId])
+}
+
+// O'quvchi kirgan qurilma (brauzer). Akkauntni boshqalarga berishni cheklash: bir vaqtda ko'pi bilan DEVICE_LIMIT ta faol qurilma.
+// Brauzerda uzoq muddatli tasodifiy kalit (cookie) turadi, bazada faqat uning xeshi. revokedAt — qurilmadan chiqarilgan (sessiyasi ishlamaydi).
+model Device {
+  id           String    @id @default(cuid())
+  userId       String
+  tokenHash    String
+  label        String    @default("") // "iPhone · Safari"
+  userAgent    String    @default("")
+  ip           String    @default("")
+  place        String    @default("") // "Toshkent, UZ" (Vercel sarlavhalaridan)
+  createdAt    DateTime  @default(now())
+  lastSeenAt   DateTime  @default(now())
+  revokedAt    DateTime?
+  revokeReason String?   // replaced — yangi qurilma uchun chiqarildi; admin — admin tozaladi
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Yangi (limitdan ortiq) qurilmadan kirishni tasdiqlash kodi: emailga yuboriladi, bazada faqat xeshi.
+model DeviceCode {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { preconnect } from "react-dom";
 import { saveFrame } from "@/lib/last-frame";
 import { markLessonWatched, saveWatchProgress } from "@/lib/actions/student";
+import { OtherDeviceNotice } from "./OtherDeviceNotice";
 
 // LessonVideo (Kinescope) bilan bir xil qoidalar: ≥80% haqiqiy ijro oxirigacha ko'rildi hisoblanadi, surib o'tish sanalmaydi.
 const REQUIRED = 0.8;
@@ -29,6 +30,8 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
   const video = useRef<HTMLVideoElement>(null);
   const [counted, setCounted] = useState(false);
   const [error, setError] = useState(false);
+  // Shu akkauntda boshqa qurilmada video ochildi — bu yerda to'xtatildi (bir vaqtda faqat bitta qurilmada ko'rish)
+  const [stopped, setStopped] = useState(false);
   // Boshqa manzildan (R2) kelgan videoning kadrini saqlash uchun crossOrigin kerak. Server CORS ruxsat bermasa (masalan boshqa domen), u o'chiriladi va video oddiy ijro etiladi
   const remote = !!src && /^https?:/.test(src);
   const [cors, setCors] = useState(true);
@@ -37,7 +40,8 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
     const el = video.current;
     if (!el || !src) return;
     const seconds = readSeconds(lessonId);
-    const track = { pos: 0, duration: 0, sentAt: 0, dirty: false };
+    // claim — video endi boshlandi: serverga "ijro shu qurilmada" deb yuboriladi (yuborilguncha saqlanib turadi)
+    const track = { pos: 0, duration: 0, sentAt: 0, dirty: false, claim: false };
     let last: number | null = null;
     let sent = false;
 
@@ -46,7 +50,21 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
       if (!trackProgress || !track.duration || (!force && !track.dirty)) return;
       track.dirty = false;
       track.sentAt = Date.now();
-      saveWatchProgress(lessonId, track.pos, track.duration, seconds.size, playing).catch(() => {});
+      const claim = playing && track.claim;
+      if (claim) track.claim = false;
+      saveWatchProgress(lessonId, track.pos, track.duration, seconds.size, playing, claim)
+        .then((r) => {
+          if (r?.stop && !el.paused) {
+            el.pause();
+            setStopped(true);
+          }
+        })
+        .catch(() => {});
+    };
+    const onPlay = () => {
+      setStopped(false);
+      track.claim = true;
+      flush(true, true);
     };
     const onMeta = () => {
       track.duration = el.duration || 0;
@@ -95,6 +113,7 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
     el.addEventListener("timeupdate", onTime);
     el.addEventListener("seeked", onSeeked);
     el.addEventListener("pause", onPause);
+    el.addEventListener("play", onPlay);
     el.addEventListener("ended", onEnded);
     document.addEventListener("visibilitychange", onHide);
     if (el.readyState >= 1) onMeta();
@@ -103,6 +122,7 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
       el.removeEventListener("timeupdate", onTime);
       el.removeEventListener("seeked", onSeeked);
       el.removeEventListener("pause", onPause);
+      el.removeEventListener("play", onPlay);
       el.removeEventListener("ended", onEnded);
       document.removeEventListener("visibilitychange", onHide);
       saveSeconds(lessonId, seconds);
@@ -143,6 +163,7 @@ export function FileVideo({ lessonId, src, startAt = 0, autoPlay = false, trackP
         onContextMenu={(e) => e.preventDefault()}
       />
       {(error || !src) && <p className="absolute inset-0 flex items-center justify-center bg-black/80 p-6 text-center text-sm text-white/80">Videoni yuklab bo&apos;lmadi. Sahifani yangilang yoki adminga yozing.</p>}
+      {stopped && <OtherDeviceNotice />}
       {counted && <span className="absolute right-3 top-3 rounded-lg bg-gold px-3 py-1 text-sm font-semibold text-ink-950 shadow-lg">✓ Dars ko&apos;rildi</span>}
     </div>
   );
